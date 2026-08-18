@@ -49,7 +49,6 @@ Feature: Paper, ink, and a second voice
       And its ingredients are set in the reading face
       And its method is set in the reading face
 
-  @planned
   @rule:the-masthead-names-the-book
   Rule: The masthead says what this is, not what the repository is called
 

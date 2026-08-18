@@ -44,24 +44,59 @@ body {
   font: 17px/1.6 var(--reading);
 }
 
-/* The page of the book, lying on the paper ground. */
+/* The page of the book, lying on the paper ground. The gradient is the crease
+   the binding pulls into the paper — it is what makes this a page of something
+   rather than a card floating on a colour. */
 .app {
   position: relative;
   max-width: 36rem;
   margin: 0 auto;
-  padding: 3.4rem 2rem 2.5rem;
-  background: var(--page);
+  padding: 3.6rem 2rem 2.6rem;
+  background-color: var(--page);
+  background-image: linear-gradient(
+    to right,
+    rgb(62 42 20 / 13%),
+    rgb(62 42 20 / 3%) 1.6rem,
+    rgb(62 42 20 / 0) 3.6rem
+  );
   box-shadow:
     0 1px 2px rgb(62 42 20 / 20%),
     0 14px 34px rgb(62 42 20 / 14%);
 }
 
-/* The binding: stitching down the inside edge. */
+/* The binding: thread, not a dashed border. Short stitches with paper between
+   them, which is what the dashed line was trying and failing to suggest. */
 .app::before {
   content: "";
   position: absolute;
-  inset: 0.7rem auto 0.7rem 0.85rem;
-  border-left: 2px dashed rgb(168 68 58 / 22%);
+  inset: 1rem auto 1rem 1.15rem;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(168 68 58 / 55%) 0 9px,
+    rgb(168 68 58 / 0) 9px 19px
+  );
+}
+
+/* One piece of tape, straddling the top edge so it holds the page to the
+   ground rather than floating above it. The ends are torn, and enough of the
+   paper shows through to read as tape rather than as a beige rectangle. */
+.app::after {
+  content: "";
+  position: absolute;
+  top: -0.65rem;
+  left: 50%;
+  width: 8.5rem;
+  height: 1.7rem;
+  transform: translateX(-50%) rotate(-2deg);
+  background:
+    linear-gradient(158deg, rgb(255 255 255 / 34%), rgb(255 255 255 / 0) 58%),
+    var(--tape);
+  box-shadow: 0 1px 2px rgb(62 42 20 / 18%);
+  clip-path: polygon(
+    2% 0%, 98% 0%, 100% 20%, 97% 42%, 100% 62%, 96% 82%, 99% 100%,
+    3% 100%, 0% 80%, 4% 60%, 0% 40%, 3% 20%
+  );
 }
 
 .app__header {
@@ -73,27 +108,14 @@ body {
   margin-bottom: 2rem;
 }
 
-/* One piece of tape, holding the label to the cover. Once, not everywhere. */
-.app__header::before {
-  content: "";
-  position: absolute;
-  top: -2.75rem;
-  left: 42%;
-  width: 8rem;
-  height: 1.55rem;
-  transform: translateX(-50%) rotate(-2.5deg);
-  background: var(--tape);
-  box-shadow: 0 1px 1px rgb(62 42 20 / 14%);
-}
-
 .app__title {
   margin: 0;
   color: var(--ink);
   font-family: var(--hand);
-  font-size: 2.3rem;
+  font-size: 2.9rem;
   font-weight: 400;
   letter-spacing: 0;
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .app__tagline {
@@ -339,7 +361,13 @@ body {
   box-shadow: 0 1px 2px rgb(62 42 20 / 12%);
 }
 
-.recipe + .recipe { margin-top: 0.55rem; }
+.recipe + .recipe { margin-top: 0.5rem; }
+
+.recipe--open {
+  box-shadow:
+    0 1px 2px rgb(62 42 20 / 14%),
+    0 6px 16px rgb(62 42 20 / 12%);
+}
 
 .recipe__row {
   display: flex;
@@ -395,7 +423,27 @@ body {
 }
 
 /* No confirmation on delete — tidying is meant to be repeatable, not a chore —
-   so the control stays quiet until it is aimed at. */
+   so the control stays quiet until it is aimed at. Quiet is literal here: a
+   filled-in recipe carries eight of these down its right-hand side, and at full
+   strength they read as an app sitting on top of a recipe card.
+
+   Opacity only, and no transition: this reveals a control, it does not move
+   one. See specs/features/look/spec.md. */
+.recipe__delete,
+.ingredient__delete,
+.step__delete {
+  opacity: 0.4;
+}
+
+.recipe__row:hover .recipe__delete,
+.ingredient:hover .ingredient__delete,
+.step:hover .step__delete,
+.recipe__delete:focus-visible,
+.ingredient__delete:focus-visible,
+.step__delete:focus-visible {
+  opacity: 1;
+}
+
 .recipe__delete:hover,
 .ingredient__delete:hover,
 .step__delete:hover {

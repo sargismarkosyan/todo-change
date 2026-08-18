@@ -8,14 +8,26 @@ is not allowed to cost.
 
 - **A paper ground**, warm and grained. The grain is an inline SVG in the
   stylesheet, so nothing is fetched: see `../../setup/constraints.md`.
-- **A page** laid on that ground, lighter than it, with the binding stitched
-  down its inside edge.
-- **One piece of tape** holding the label to the cover. Once, at the top. Tape
-  everywhere is a theme; tape once is a book.
+- **A page** laid on that ground, lighter than it, with the crease the binding
+  pulls into the paper and the stitching itself down the inside edge: short
+  thread with paper between the stitches, not a dashed border.
+- **One piece of tape**, straddling the top edge of the page with torn ends and
+  enough translucency to show the paper through. Once, at the top: tape
+  everywhere is a theme; tape once is a book. Flat, square-ended and floating
+  clear of the edge — which is what 0005 shipped — is a beige rectangle.
 - **Index cards.** Every recipe is one — a red margin rule down its left edge, a
   hairline under every ingredient and every step, square corners rather than
   rounded ones.
 - **A numbered method**, because a step's position is part of what it says.
+- **A cover that says what this is.** The masthead reads *Recipes*. The
+  repository is called `todo-change` and says so where it is the repository
+  being named — the URL, the README, the storage key — but not on the cover,
+  where it contradicted every other thing on the page.
+- **Furniture that waits to be reached for.** A filled-in recipe carries eight
+  delete crosses down its right-hand side; at full strength they read as an app
+  sitting on top of a card. They stay faint until the pointer is on their line
+  or they take keyboard focus. Opacity only — this reveals a control, it does
+  not move one.
 - **Two faces.** A book face for everything read, and a second, more written
   face for the things that only label: the title, the book's name, and the two
   group headings.

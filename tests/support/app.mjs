@@ -119,6 +119,9 @@ function open(seed) {
     /** What the box currently holds. */
     box: () => doc.getElementById('new-recipe').value,
 
+    /** What the cover says. */
+    masthead: () => doc.querySelector('.app__title').textContent,
+
     /** The recipe names in the open book, top to bottom. */
     contents,
 

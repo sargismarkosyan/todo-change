@@ -70,6 +70,23 @@ rule('ink-reads-on-paper', () => {
   });
 });
 
+rule('the-masthead-names-the-book', () => {
+  test('the cover', () => {
+    const app = openApp();
+    assert.equal(app.masthead(), 'Recipes');
+  });
+
+  test('it does not say what the repository is called', () => {
+    // The repository is still todo-change, and still says so where it is the
+    // repository being named. The cover is not one of those places.
+    const app = openApp();
+    assert.ok(
+      !app.masthead().includes('todo-change'),
+      'the masthead names the book, not the repo it lives in',
+    );
+  });
+});
+
 rule('handwriting-labels-but-is-not-read', () => {
   /** One recipe, open, with something in both of its groups. */
   function open() {
