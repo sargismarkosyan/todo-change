@@ -7,7 +7,7 @@ Feature: Adding a todo
   Background:
     Given the app is open
 
-  @rule:add-goes-to-top @planned
+  @rule:add-goes-to-top
   Rule: A new todo goes to the top of the list
 
     Example: adding to an empty list
@@ -23,14 +23,14 @@ Feature: Adding a todo
         | Buy milk      |
         | Call the bank |
 
-  @rule:add-clears-the-box @planned
+  @rule:add-clears-the-box
   Rule: The box is emptied once the todo is added
 
     Example: the box is ready for the next one
       When I add "Buy milk"
       Then the box is empty
 
-  @rule:add-rejects-blank @planned
+  @rule:add-rejects-blank
   Rule: Blank text does not become a todo
 
     Example: pressing Enter on an empty box

@@ -46,6 +46,8 @@ working here.**
 - **Rule ids are permanent.** Reword a `Rule:` line freely; changing its
   `@rule:<id>` orphans every test pointing at it.
 - **Never touch `src/` from a skill.** Both skills stop at the spec.
+- **`main` is protected.** Branch, then land it by pull request — direct pushes
+  are rejected for everyone. The `Verify` check must be green to merge.
 
 ## Commands
 

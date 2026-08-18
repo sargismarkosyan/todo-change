@@ -4,6 +4,7 @@
   --border: #e3e3df;
   --text: #1c1c1a;
   --muted: #6f6f68;
+  --accent: #2f6f4f;
   --radius: 10px;
 }
 
@@ -37,21 +38,118 @@ body {
   color: var(--muted);
 }
 
-.placeholder {
-  padding: 1.5rem;
+/* The box. Capture is the workflow that matters most, so it sits above the
+   list, is focused on load, and needs no mouse. */
+.composer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.composer__box {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  color: inherit;
+  font: inherit;
+}
+
+.composer__box::placeholder { color: var(--muted); }
+
+.composer__box:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.composer__add {
+  padding: 0.7rem 1.1rem;
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.composer__add:hover { filter: brightness(1.08); }
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.todo + .todo { margin-top: 0.4rem; }
+
+.todo__check {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.todo__text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+/* Done reads as a line through the text *and* muted. The line is what carries
+   the meaning at a glance; the muting is what stops a list of finished todos
+   shouting as loudly as the two that are left. See specs/features/todo/spec.md. */
+.todo--done .todo__text {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
   color: var(--muted);
 }
 
-.placeholder p { margin: 0 0 0.5rem; }
-.placeholder p:last-child { margin-bottom: 0; }
+.todo__delete {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
 
-code {
-  padding: 0.1em 0.35em;
+/* No confirmation on delete — pruning is meant to be repeatable, not a chore —
+   so the control stays quiet until it is aimed at. */
+.todo__delete:hover {
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.9em;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* An empty list says it is empty. A blank panel reads as "broken", not "done". */
+.empty {
+  margin: 0;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-align: center;
 }

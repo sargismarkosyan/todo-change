@@ -40,10 +40,29 @@ testable; if a statement *is* testable it belongs in a `.feature` file.
 [Gherkin](https://cucumber.io/docs/gherkin/). This is the contract the tests are
 checked against, and the only layer the pipeline enforces.
 
-Folders group by area and may nest. **Keep files small — one component or
-behaviour per file.** A file describing "todos" is too big; `adding.feature`,
-`completing.feature`, and `deleting.feature` are right. Soft limits, warned
-about by `npm run trace`: 120 lines and 6 rules per file.
+Folders group by area and may nest. **Keep files small — one behaviour per file,
+never one component.** A file describing "todos" is too big; `adding.feature`,
+`completing.feature`, and `deleting.feature` are right, because they are the
+things Rowan does.
+
+Splitting by UI part instead — `list-item.feature`, `checkbox.feature` — looks
+tidier and is a trap. "A todo row renders a checkbox" is an implementation
+detail in spec costume, and since tests bind to rule ids, component rules breed
+component tests wearing behaviour badges. That is the coverage filler
+[setup/pipeline.md](setup/pipeline.md) exists to reject, and neither gate can
+tell the difference — only this naming rule can. Reusable components are a
+`src/` concern; the contract should not know the UI has parts.
+
+When a file does outgrow itself, split by sub-behaviour: `adding.feature` into
+`adding.feature` and `adding-multiline.feature`.
+
+Soft limits, warned about by `npm run trace`: 120 lines and 6 rules per file.
+The truer signal comes earlier — a `Background:` that individual rules keep
+overriding means the shared setup has stopped fitting the rules under it.
+
+Watch also for the same truth asserted in two areas under two ids. Both will
+have tests, both will pass, and they can drift apart silently; no gate catches
+it.
 
 Required tags — traceability is built on them:
 
@@ -75,6 +94,14 @@ Feature: Adding a todo
 One numbered markdown file per version, from `changes/TEMPLATE.md`. This is the
 increment: what is being added *now*, what is deliberately out of scope, and how
 to check it by hand. Once shipped it is history and is not edited.
+
+**Read them on demand, never in bulk.** Nothing indexes this folder — neither
+gate reads it, and neither skill reads it for background. Open the current one
+to implement it, or an old one when the question is specifically "why is it like
+this." Reading the series to get oriented is the one thing it is not for: what
+is true *now* is in `features/`, and why the product is shaped this way is in
+the prose specs. This folder only grows, and it is the one part of `specs/` that
+is safe to leave unread.
 
 The template opens with four sections — who it is for, the job behind the
 request, why now, and the end value — before it gets anywhere near what changes.

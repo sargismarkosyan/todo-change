@@ -45,7 +45,13 @@ solution is one answer to that job, and often not the best one.
 6. **Shrinks it** to the smallest version that delivers the value, and records
    the dropped alternatives so they are not relitigated later.
 7. **Writes** the Gherkin rules (`@planned`) and the numbered change spec, checks
-   `npm run trace`, commits the spec on its own, and stops for approval.
+   `npm run trace`, and commits the spec on its own.
+8. **Hands back a link, not a summary.** Clickable `path:line` references to the
+   spec and the feature files, above them only what the file cannot say — the
+   job found, what was assumed, what was dropped. Approval is asked for in one
+   plain line, never as a multiple-choice question: the spec is there to be
+   read, and restating it in option text just gives two versions to reconcile.
+   Then it stops.
 
 **What it never does.** Touch `src/`. Implement anything. Remove a `@planned`
 tag — that happens in the implementing change.

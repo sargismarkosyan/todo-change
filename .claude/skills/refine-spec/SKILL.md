@@ -79,6 +79,11 @@ proof of a day's work, and hiding them takes the reward away."
 
 Bad: "What color should the button be?"
 
+These are asked **before** the spec is written, while a different answer would
+still change what gets written. Once it is written, there is nothing left to
+choose between — so never fold "do you approve?" into this round, and never ask
+it as a multiple choice of its own. See the hand-back.
+
 ## 5. Shrink it
 
 The step must be small enough to be one screenshot's worth of change.
@@ -125,14 +130,37 @@ Must stay green — new `@planned` rules are exempt from needing tests, so a
 failure here means a real mistake: a duplicate id, a rule with no example, or a
 `@planned` tag you forgot.
 
-Then commit the spec on its own (`spec 0004: <title>` — specs commit separately
-from implementations) and report back:
+Then commit the spec on its own — `spec 0004: <title>`, specs commit separately
+from implementations.
+
+### Hand back a link, not a summary
+
+The spec is the artefact, and it was just written to be read. End with clickable
+paths: Claude Code turns `path:line` into a link, so give the change spec first
+and every feature file touched beneath it.
+
+```
+specs/changes/0004-clear-done-todos.md:1
+specs/features/todo/clearing.feature:12
+```
+
+Above the links, keep it to a short paragraph of what the **file will not tell
+them**:
 
 - the job you found, and how it differed from what was asked;
-- which persona and workflow it serves;
-- the end value and how we would know it worked;
-- what you deliberately left out;
-- anything you assumed because it was not worth blocking on.
+- anything you assumed rather than blocked on;
+- anything you dropped that they would expect to find.
+
+Persona, workflow, end value and scope are all *in* the spec under their own
+headings. Repeating them in chat gives the reader two versions to reconcile, and
+the one in the terminal is the one that goes stale.
+
+### Ask for approval in one plain line
+
+**Never as a multiple-choice question.** Approval is not a fork that needs
+options drawn for it, and writing the spec's contents into option descriptions
+duplicates the very file it is asking them to open. One sentence — "Approve and
+I'll build it" — then nothing.
 
 **Then stop.** The spec needs approval before it is built. Implementing without
 it breaks the rule this whole repo exists to demonstrate.

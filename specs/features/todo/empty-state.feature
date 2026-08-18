@@ -7,14 +7,14 @@ Feature: The empty list
   Background:
     Given the app is open
 
-  @rule:empty-state-on-first-visit @planned
+  @rule:empty-state-on-first-visit
   Rule: A list with nothing in it explains itself
 
     Example: opening the app for the first time
       Given the list is empty
       Then I see the message "Nothing to do yet."
 
-  @rule:empty-state-returns @planned
+  @rule:empty-state-returns
   Rule: The message comes back when the last todo goes
 
     Example: deleting the only todo

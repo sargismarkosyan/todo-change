@@ -94,7 +94,7 @@ correctly reports 50%.
 `.github/workflows/ci.yml`, on every push to `main` and every pull request.
 
 **`verify`** — checkout, Node 24 with npm cache, `npm ci`, `npm run trace`,
-`npm test`.
+`npm test`, then the report below.
 
 **`deploy`** — only on `main`, only after `verify` passes. Publishes the repo
 root to GitHub Pages at <https://sargismarkosyan.github.io/todo-change/>. Pages
@@ -104,6 +104,28 @@ a half-finished deploy is worse than a slow one.
 
 The site serves the repo root, so `specs/` and `tests/` are published alongside
 the app. They are public anyway, and it keeps the deploy step to one line.
+
+## The report
+
+`tools/report.mjs`, on pull requests only. It writes to the run summary and to a
+single pull request comment that is rewritten in place on every push, so the
+thread does not fill with near-identical reports.
+
+It shows spec health — live rules, `@planned` rules, feature and test file
+counts — next to the same numbers from the base branch, plus the coverage table
+and a list of everything still specced but not built.
+
+**It is not a gate and cannot fail a build.** It runs after both gates have
+passed, so it only ever describes a green run. It also recomputes nothing: it
+does not re-derive traceability, because `npm run trace` having passed is
+already the proof that every live rule has a test. That is the reason there is
+no second copy of the gate's logic to drift out of sync.
+
+The base-branch column comes from a throwaway `git worktree` and a shallow
+fetch. `gherkin.mjs` is dependency-free, so reading another commit's specs costs
+no install and no second test run — which is also why the comparison covers spec
+health and not coverage. If the base cannot be reached, the column degrades to
+`–` and the report still posts.
 
 ## Both gates are verified to fire
 

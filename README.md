@@ -32,7 +32,9 @@ researched issues.
 npm run serve      # http://localhost:8000
 ```
 
-Or just open `index.html`.
+It needs the server. The app is ES modules, and a module's `import` is a fetch
+that `file://` blocks — opening `index.html` from disk gives you the page with
+nothing wired up.
 
 ## Check it
 

@@ -5,14 +5,15 @@
 - **GitHub:** <https://github.com/sargismarkosyan/todo-change> (public)
 - **Live app:** <https://sargismarkosyan.github.io/todo-change/>, deployed from
   green `main` by GitHub Actions
-- **Default branch:** `main`. Work commits directly to it — there is one author
-  and every commit is gated by CI.
+- **Default branch:** `main`, and it is protected. Nothing lands on it except
+  through a pull request — direct pushes are rejected for everyone, the author
+  included. See [Branches and pull requests](#branches-and-pull-requests).
 
 ## Layout
 
 ```
 index.html               the app — the only page
-src/                     app modules and styles (empty until version 1)
+src/                     app modules and styles
 
 specs/
   spec.md                product-level prose: why, vocabulary, storage contract
@@ -56,6 +57,38 @@ docs/feedback/           screenshots attached to issues
 | Who the app is for | [`../persona.md`](../persona.md) |
 | What "done" means for a workflow | [`../workflows.md`](../workflows.md) |
 
+## Branches and pull requests
+
+`main` is protected. Work happens on a branch and arrives by pull request:
+
+```sh
+git switch -c spec-0004-clear-done
+# ... commits ...
+git push -u origin spec-0004-clear-done
+gh pr create --fill
+```
+
+What the protection enforces:
+
+| Setting | Effect |
+|---|---|
+| Pull request required | No direct push to `main`, ever |
+| Required check: `Verify` | The CI job — traceability, tests, 95% coverage |
+| Strict | The branch must be up to date with `main` before merging |
+| Applies to admins | The repository owner has no bypass |
+| No force pushes, no deletion | `main`'s history cannot be rewritten or removed |
+| Conversation resolution required | Review threads get answered, not merged past |
+
+**Approvals are set to zero.** There is one author, and GitHub does not let
+anyone approve their own pull request — requiring one would lock the repository
+against its only contributor. Zero still forces every change through a PR and
+through `Verify`; it only drops the second pair of human eyes, which does not
+exist here anyway.
+
+The protection is the same gate as `npm run verify`, moved somewhere it cannot
+be skipped in a hurry. If it ever needs lifting, that is a settings change and a
+deliberate one — not a `--force`.
+
 ## Commits
 
 One change spec, one commit. Message format:
@@ -74,7 +107,8 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 - Spec commits use the same prefix and land before their implementation.
 - Setup and tooling commits do not have a spec number; describe them plainly
   (`add refine-spec skill, persona and workflows`).
-- Never commit a state that fails `npm run verify`.
+- Never commit a state that fails `npm run verify`. `Verify` will catch it on the
+  pull request, but finding out locally is cheaper.
 
 ## Issues
 
