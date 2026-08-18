@@ -19,6 +19,9 @@ is not allowed to cost.
   hairline under every ingredient and every step, square corners rather than
   rounded ones.
 - **A numbered method**, because a step's position is part of what it says.
+  Since 0010 the number is also what the step is taken hold of by, with the grip
+  just left of it: the thing that most obviously belongs to a step's position is
+  the thing that moves it. The number itself never fades — only the grip does.
 - **A cover that says what this is.** The masthead reads *Recipes*. The
   repository is called `todo-change` and says so where it is the repository
   being named — the URL, the README, the storage key — but not on the cover,

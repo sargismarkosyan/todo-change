@@ -48,9 +48,15 @@ wrong because fixing it cost more than living with it.
 
 ## What changes
 
-- **Every ingredient and every step gets a handle.** Faint until reached for,
-  the rule [`features/look/spec.md`](../features/look/spec.md) already sets for
-  the delete crosses.
+- **Every ingredient and every step gets a handle**, furthest left on the line.
+  The grip is faint until reached for, the rule
+  [`features/look/spec.md`](../features/look/spec.md) already sets for the
+  delete crosses.
+- **On a step, the number is part of the handle.** Grabbing "2." moves the line
+  just as grabbing the grip does — the thing that most obviously belongs to a
+  step's position is the thing that moves it. The number does not fade with the
+  grip: the method stays numbered whether or not anybody is reaching for it,
+  which is what `features/look/spec.md` requires.
 - **Dragging a line by its handle drops it elsewhere in its group.**
 - **The same handle takes keyboard focus**, and the arrow keys move the line it
   belongs to. One control, two ways to use it — rather than a set of arrows
