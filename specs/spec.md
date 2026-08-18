@@ -30,8 +30,27 @@ out of scope, and a spec proposing one is proposing a different product.
 first:
 
 ```json
-[{ "id": "1739827200000-9f2c41ab7e0d5c83", "text": "Buy milk", "done": false }]
+[
+  { "id": "1739827200000-9f2c41ab7e0d5c83", "text": "Buy milk", "done": false },
+  {
+    "id": "1739827100000-4b8e02fa19d7c6a1",
+    "text": "Sort out car insurance",
+    "done": false,
+    "subTodos": [
+      { "id": "1739827110000-77c3e5b0d9124fae", "text": "Call current insurer", "done": true }
+    ]
+  }
+]
 ```
+
+`subTodos` is optional and holds at most one level — a sub-todo never carries a
+`subTodos` of its own. An entry without the key is a todo with no sub-todos,
+which is what every todo written before this key existed reads as. There is no
+migration and nothing to rewrite.
+
+A parent that has sub-todos is done exactly when all of them are done. Stored
+data can disagree, because stored data is untrusted; the invariant is restored
+on read rather than believed.
 
 `localStorage` is not a database. It is a string that anyone with devtools can
 edit, that a second tab can overwrite, and that the browser may clear without
@@ -46,5 +65,8 @@ Used consistently in specs, code, and UI copy:
 - **todo** — one item. Not "task", not "item", not "entry".
 - **done / unfinished** — the two states of a todo. Not "complete", not
   "checked", not "archived".
+- **sub-todo** — a todo nested under another one. Not "subtask", not "step" in
+  UI copy, though prose may call them steps when explaining why they exist.
+- **parent** — a todo that has sub-todos. A todo with none is just a todo.
 - **the list** — the ordered set of todos on screen.
 - **the box** — the text input a todo is typed into.

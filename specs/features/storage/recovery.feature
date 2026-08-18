@@ -33,3 +33,28 @@ Feature: Surviving bad stored data
       When I open the app
       Then the list reads:
         | Buy milk |
+
+  @planned
+  @rule:recover-from-bad-sub-todos
+  Rule: Broken nesting still opens a usable list
+
+    Example: subTodos holds something that is not a list
+      Given "todo-change.todos" holds a list of:
+        | {"id": "a", "text": "Buy milk", "done": false, "subTodos": "nope"} |
+      When I open the app
+      Then the list reads:
+        | Buy milk |
+      And "Buy milk" has no sub-todos
+
+    Example: one sub-todo entry is not a todo
+      Given "todo-change.todos" holds a list of:
+        | {"id": "a", "text": "Sort out car insurance", "done": false, "subTodos": [{"id": "b", "text": "Call current insurer", "done": false}, {"nonsense": true}]} |
+      When I open the app
+      Then "Sort out car insurance" has the sub-todos:
+        | Call current insurer |
+
+    Example: a parent stored as done over an unfinished sub-todo
+      Given "todo-change.todos" holds a list of:
+        | {"id": "a", "text": "Sort out car insurance", "done": true, "subTodos": [{"id": "b", "text": "Call current insurer", "done": false}]} |
+      When I open the app
+      Then "Sort out car insurance" is shown as unfinished

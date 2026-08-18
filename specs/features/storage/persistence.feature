@@ -27,3 +27,21 @@ Feature: Todos survive a reload
       When I delete "Buy milk"
       And I reload the page
       Then the list is empty
+
+  @planned
+  @rule:persist-sub-todos
+  Rule: Sub-todos come back with their parent, in order and state
+
+    Example: nesting survives a reload
+      Given the list reads:
+        | Sort out car insurance |
+      And "Sort out car insurance" has the sub-todos:
+        | Call current insurer |
+        | Compare two quotes   |
+      And I tick "Call current insurer"
+      When I reload the page
+      Then "Sort out car insurance" has the sub-todos:
+        | Call current insurer |
+        | Compare two quotes   |
+      And "Call current insurer" is shown as done
+      And "Sort out car insurance" is shown as unfinished
