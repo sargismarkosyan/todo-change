@@ -40,12 +40,20 @@ needs its own spec if it ever becomes real.
 
 ## The app ships zero dependencies
 
-Plain HTML, CSS, and ES modules, opened directly in a browser. No bundler, no
+Plain HTML, CSS, and ES modules, served as static files. No bundler, no
 framework, no transpiler, no build step. `index.html` is the whole app.
 
 **Why.** Diffs stay readable, which matters when the deliverable is a series of
 screenshots with commits between them. There is no build output to explain, and
-`index.html` opened from disk behaves the same as the deployed page.
+what the browser runs is byte for byte what is in the repo.
+
+**It does need a server** — `npm run serve`, or the deployed Pages URL. A
+module's `import` is a fetch, and over `file://` the origin is opaque, so the
+import is blocked and nothing mounts; the page renders its empty shell and looks
+deceptively fine. That is the price of `src/` holding real modules rather than
+one inline script, and it was paid in version 1. Before then this file claimed
+opening from disk behaved the same as the deployed page, which stopped being
+true the moment there was a module to import.
 
 **Dev tooling is a different thing.** `jsdom` is a devDependency, used by tests
 only. Node's own test runner and coverage provide the rest, so there is no test

@@ -6,7 +6,7 @@ Feature: Deleting a todo
   Background:
     Given the app is open
 
-  @rule:delete-removes-only-that-one @planned
+  @rule:delete-removes-only-that-one
   Rule: Deleting removes exactly the todo asked for
 
     Example: deleting the middle of three
@@ -19,7 +19,7 @@ Feature: Deleting a todo
         | Call the bank |
         | Water plants  |
 
-  @rule:delete-works-on-done-todos @planned
+  @rule:delete-works-on-done-todos
   Rule: A done todo can be deleted like any other
 
     Example: clearing something finished

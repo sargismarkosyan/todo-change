@@ -4,7 +4,7 @@ Feature: Todos survive a reload
   There is no server. localStorage is the only copy of the data, so anything the
   screen shows must still be there after a refresh.
 
-  @rule:persist-across-reload @planned
+  @rule:persist-across-reload
   Rule: The list is restored exactly as it was left
 
     Example: text, order and done state all come back
@@ -18,7 +18,7 @@ Feature: Todos survive a reload
         | Buy milk      |
       And "Buy milk" is shown as done
 
-  @rule:persist-deletions @planned
+  @rule:persist-deletions
   Rule: A deleted todo stays deleted
 
     Example: deleting then reloading

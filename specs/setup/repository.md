@@ -12,7 +12,7 @@
 
 ```
 index.html               the app — the only page
-src/                     app modules and styles (empty until version 1)
+src/                     app modules and styles
 
 specs/
   spec.md                product-level prose: why, vocabulary, storage contract

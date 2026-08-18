@@ -13,11 +13,20 @@
       <p class="app__tagline">A todo app built one spec at a time.</p>
     </header>
 
-    <section class="placeholder">
-      <p>No features have shipped yet.</p>
-      <p>This is version 0 &mdash; the process scaffold. The first spec is
-         waiting in <code>specs/</code>.</p>
-    </section>
+    <form class="composer" id="composer">
+      <input class="composer__box" id="new-todo" type="text"
+             placeholder="What needs doing?" aria-label="New todo"
+             autocomplete="off" autofocus>
+      <button class="composer__add" type="submit">Add</button>
+    </form>
+
+    <ul class="list" id="list"></ul>
+    <p class="empty" id="empty">Nothing to do yet.</p>
   </main>
+
+  <script type="module">
+    import { mountApp } from './src/app.mjs';
+    mountApp(document, localStorage);
+  </script>
 </body>
 </html>

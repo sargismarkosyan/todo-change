@@ -10,7 +10,7 @@ Feature: Completing a todo
     And the list reads:
       | Buy milk |
 
-  @rule:complete-marks-done @planned
+  @rule:complete-marks-done
   Rule: Ticking a todo marks it done, with a line through the text
 
     Example: ticking the checkbox
@@ -18,7 +18,7 @@ Feature: Completing a todo
       Then "Buy milk" is shown as done
       And "Buy milk" has a line through it
 
-  @rule:complete-is-reversible @planned
+  @rule:complete-is-reversible
   Rule: Unticking a todo makes it unfinished again
 
     Example: changing my mind
@@ -27,7 +27,7 @@ Feature: Completing a todo
       Then "Buy milk" is shown as unfinished
       And "Buy milk" has no line through it
 
-  @rule:complete-keeps-position @planned
+  @rule:complete-keeps-position
   Rule: Completing a todo does not move it
 
     Example: a done todo stays where it was
