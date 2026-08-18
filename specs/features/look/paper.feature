@@ -13,7 +13,6 @@ Feature: Paper, ink, and a second voice
   Background:
     Given the app is open
 
-  @planned
   @rule:paper-under-everything
   Rule: The whole page is warm paper, lightest where the reading happens
 
@@ -21,7 +20,6 @@ Feature: Paper, ink, and a second voice
       Then the ground, the page and the card are all warm
       And each one is lighter than the one it sits on
 
-  @planned
   @rule:ink-reads-on-paper
   Rule: Every colour a recipe is read in clears 4.5 to 1 against what it sits on
 
@@ -34,7 +32,6 @@ Feature: Paper, ink, and a second voice
       And the red on the page clears 4.5 to 1
       And the label on the Add button clears 4.5 to 1
 
-  @planned
   @rule:handwriting-labels-but-is-not-read
   Rule: The second face labels the book; a recipe is set in the reading face
 
