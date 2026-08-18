@@ -28,7 +28,7 @@ Feature: The AI drafting a recipe
       | Apple pie |
     And I open the recipe "Apple pie"
 
-  @planned @rule:draft-proposes-both-groups
+  @rule:draft-proposes-both-groups
   Rule: One press proposes what it takes and how it is made, and writes down neither
 
     Example: a bare name, filled in
@@ -52,7 +52,7 @@ Feature: The AI drafting a recipe
       And I reload
       Then "Apple pie" shows no ingredients
 
-  @planned @rule:draft-accepted-line-by-line
+  @rule:draft-accepted-line-by-line
   Rule: A proposal becomes a line only when it is taken, one at a time
 
     Example: taking one of two
@@ -85,7 +85,7 @@ Feature: The AI drafting a recipe
       And I delete the ingredient "3 apples"
       Then "Apple pie" shows no ingredients
 
-  @planned @rule:draft-does-not-touch-what-is-there
+  @rule:draft-does-not-touch-what-is-there
   Rule: A draft is added to a recipe, never written over it
 
     Example: a recipe already half typed

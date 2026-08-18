@@ -27,7 +27,7 @@ Feature: Turning the AI on and off
     And the contents reads:
       | Apple pie |
 
-  @planned @rule:ai-settings-is-a-popover
+  @rule:ai-settings-is-a-popover
   Rule: The settings are a popover over the one page, and shut like one
 
     Example: it does not take the contents away
@@ -44,7 +44,7 @@ Feature: Turning the AI on and off
       And the AI is on
       Then the AI settings hold 2 lines
 
-  @planned @rule:ai-turned-on-from-settings
+  @rule:ai-turned-on-from-settings
   Rule: A dismissed offer can still be taken up later
 
     Example: changing my mind a week later
@@ -61,7 +61,7 @@ Feature: Turning the AI on and off
       Then there is no indicator
       And there is a way to open the AI settings
 
-  @planned @rule:ai-turned-off-from-settings
+  @rule:ai-turned-off-from-settings
   Rule: Turning it off takes the AI off the page, downloaded or not
 
     Example: switching it off once it is there
@@ -82,7 +82,7 @@ Feature: Turning the AI on and off
       Then "Apple pie" shows the ingredients:
         | 3 apples |
 
-  @planned @rule:ai-choice-is-remembered
+  @rule:ai-choice-is-remembered
   Rule: The answer is kept, because being asked twice is being asked once too often
 
     Example: off stays off

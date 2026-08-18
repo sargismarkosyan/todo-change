@@ -18,7 +18,7 @@ Feature: Not taking the draft
       | Apple pie |
     And I open the recipe "Apple pie"
 
-  @planned @rule:draft-dismissed-changes-nothing
+  @rule:draft-dismissed-changes-nothing
   Rule: Turning the whole draft down leaves the recipe as it was
 
     Example: none of it was any good
@@ -43,7 +43,7 @@ Feature: Not taking the draft
       Then "Apple pie" shows the ingredients:
         | 3 apples |
 
-  @planned @rule:draft-can-fail
+  @rule:draft-can-fail
   Rule: A model that answers with nothing usable says so, and changes nothing
 
     Example: nothing came back
@@ -68,7 +68,7 @@ Feature: Not taking the draft
       Then "Apple pie" shows the ingredients:
         | 3 apples |
 
-  @planned @rule:draft-needs-the-ai-on
+  @rule:draft-needs-the-ai-on
   Rule: With no model, or with the AI off, there is nothing to press
 
     Example: a browser that will never have one

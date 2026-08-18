@@ -12,6 +12,7 @@
       <div class="app__heading">
         <h1 class="app__title">Recipes</h1>
         <p class="app__tagline">A recipe book built one spec at a time.</p>
+        <p class="app__ai" id="ai-status" hidden></p>
       </div>
 
       <div class="books" id="books">
@@ -28,6 +29,16 @@
       <button class="composer__add" type="submit">Add</button>
     </form>
 
+    <div class="offer" id="offer" hidden>
+      <p class="offer__question">Let the AI draft your recipes?</p>
+      <p class="offer__note">It writes the ingredients and the method for a
+        recipe you have named, and you take the lines you want. It runs on this
+        machine — nothing leaves it. The first use downloads the model, which is
+        large.</p>
+      <button class="offer__yes" id="offer-yes" type="button">Yes, fetch it</button>
+      <button class="offer__no" id="offer-no" type="button">No thanks</button>
+    </div>
+
     <div class="finder">
       <input class="finder__box" id="find-recipe" type="search"
              placeholder="Find a recipe in any book"
@@ -37,11 +48,31 @@
     <ul class="contents" id="contents"></ul>
     <ul class="results" id="results" hidden></ul>
     <p class="empty" id="empty">No recipes in this book yet.</p>
+
+    <div class="colophon" id="settings" hidden>
+      <button class="colophon__open" id="settings-open" type="button"
+              aria-haspopup="true" aria-expanded="false">
+        <svg class="colophon__gear" viewBox="0 0 16 16" aria-hidden="true"
+             focusable="false" fill="none" stroke="currentColor"
+             stroke-width="1.25" stroke-linecap="round">
+          <circle cx="8" cy="8" r="2.5"/>
+          <circle cx="8" cy="8" r="5.4"/>
+          <path d="M8 .9v1.7M8 13.4v1.7M15.1 8h-1.7M2.6 8H.9
+                   M13.02 2.98l-1.2 1.2M4.18 11.82l-1.2 1.2
+                   M13.02 13.02l-1.2-1.2M4.18 4.18l-1.2-1.2"/>
+        </svg>
+        <span class="colophon__label">AI settings</span>
+      </button>
+      <div class="colophon__menu" id="settings-menu" hidden></div>
+    </div>
   </main>
 
   <script type="module">
     import { mountApp } from './src/app.mjs';
-    mountApp(document, localStorage);
+    import { createModel } from './src/suggesting.mjs';
+    // The model is handed in like the document and the storage, and is null in
+    // every browser that has not got one — which is most of them.
+    mountApp(document, localStorage, createModel(window));
   </script>
 </body>
 </html>

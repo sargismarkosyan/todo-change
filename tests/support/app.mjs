@@ -21,11 +21,17 @@ const PAGE = HTML.replace(
   `<style>${CSS}</style>`,
 ).replace(/<script type="module">[\s\S]*?<\/script>/, '');
 
-/** A fresh browser with a fresh store, holding nothing at all. */
-export const openApp = () => open({});
+/**
+ * A fresh browser with a fresh store, holding nothing at all.
+ *
+ * `model` stands in for the browser's own, and is null by default because that
+ * is what most browsers have. jsdom has none of any kind, and no rule asserts
+ * what a model says — see specs/features/suggesting/spec.md.
+ */
+export const openApp = (model = null) => open({}, model);
 
 /** The same, with the current key already holding `books`. */
-export const openStore = (books) => open({ [STORAGE_KEY]: books });
+export const openStore = (books, model = null) => open({ [STORAGE_KEY]: books }, model);
 
 /** The same, seeded with the key version 0003 wrote. */
 export const openNotepads = (notepads) => open({ [NOTEPADS_KEY]: notepads });
@@ -36,7 +42,7 @@ export const openLegacy = (todos) => open({ [LEGACY_KEY]: todos });
 /** For the cases that care about more than one key being there at once. */
 export const openWith = (seed) => open(seed);
 
-function open(seed) {
+function open(seed, model = null) {
   const dom = new JSDOM(PAGE, { url: 'http://localhost/' });
   const { window } = dom;
   const doc = window.document;
@@ -44,7 +50,7 @@ function open(seed) {
   for (const [key, value] of Object.entries(seed)) {
     if (value !== undefined && value !== null) window.localStorage.setItem(key, value);
   }
-  mountApp(doc, window.localStorage);
+  mountApp(doc, window.localStorage, model);
 
   const recipeEls = () => [...doc.querySelectorAll('.recipe')];
   const nameEl = (el) => el.querySelector(':scope > .recipe__row > .recipe__name');
@@ -243,6 +249,99 @@ function open(seed) {
     /** Whether the contents is the thing on screen, or the results are. */
     contentsIsShowing: () => !doc.getElementById('contents').hidden,
 
+    // ---- turning the AI on, and where it stands --------------------------
+
+    /** Whether the one question is on screen. */
+    offeredAi: () => !doc.getElementById('offer').hidden,
+
+    /** Say yes. This press is also the activation the fetch needs. */
+    acceptOffer() {
+      if (!this.offeredAi()) throw new Error('nothing is offering the AI');
+      doc.getElementById('offer-yes').click();
+    },
+
+    /** Say no. */
+    dismissOffer() {
+      if (!this.offeredAi()) throw new Error('nothing is offering the AI');
+      doc.getElementById('offer-no').click();
+    },
+
+    /** The answer that was kept, as it is stored. */
+    aiIs: () => JSON.parse(window.localStorage.getItem(STORAGE_KEY)).suggestions,
+
+    /** The readout in the masthead, or null when there is nothing to say. */
+    indicator: () =>
+      doc.getElementById('ai-status').hidden
+        ? null
+        : doc.getElementById('ai-status').textContent,
+
+    /** Whether the colophon is on the page — it is not, with no model. */
+    hasAiControl: () => !doc.getElementById('settings').hidden,
+
+    openAiSettings() {
+      if (!this.hasAiControl()) throw new Error('there is no AI settings control');
+      if (doc.getElementById('settings-menu').hidden) {
+        doc.getElementById('settings-open').click();
+      }
+    },
+
+    aiSettingsAreShut: () => doc.getElementById('settings-menu').hidden,
+
+    /** The one switch in there. */
+    toggleAi() {
+      this.openAiSettings();
+      doc.querySelector('.colophon__toggle').click();
+    },
+
+    /** How many lines the popover holds — the check that keeps it a popover. */
+    aiSettingsLines() {
+      this.openAiSettings();
+      return doc.getElementById('settings-menu').querySelectorAll('button, p').length;
+    },
+
+    /** Whether anything on screen mentions a model at all. */
+    mentionsModel: () =>
+      doc.querySelector(
+        '.drafting, .colophon:not([hidden]), .app__ai:not([hidden])',
+      ) !== null,
+
+    // ---- the draft -------------------------------------------------------
+
+    /** Whether an open recipe offers to be drafted. */
+    offersDraft: (name) => recipe(name).querySelector('.drafting__ask') !== null,
+
+    /** Press for one. The answer arrives later, so `settle()` follows. */
+    askForDraft(name) {
+      this.openRecipe(name);
+      const control = recipe(name).querySelector('.drafting__ask');
+      if (!control) throw new Error(`"${name}" offers no way to ask for a draft`);
+      control.click();
+    },
+
+    /** What is on offer for a group — not one line of it written down. */
+    proposed: (group) =>
+      [...doc.querySelectorAll(`.proposals--${group} .proposal__take`)].map(
+        (el) => el.textContent,
+      ),
+
+    /** Take one line. */
+    acceptProposal(text) {
+      const found = [...doc.querySelectorAll('.proposal__take')].find(
+        (el) => el.textContent === text,
+      );
+      if (!found) throw new Error(`nothing proposed reads "${text}"`);
+      found.click();
+    },
+
+    /** Turn the whole draft down. */
+    dismissDraft: () => doc.querySelector('.drafting__dismiss').click(),
+
+    /** The one line under the control, or null when there is nothing to say. */
+    note: () => doc.querySelector('.drafting__note')?.textContent ?? null,
+
+    /** Let anything the model was asked come back. */
+    settle: () => new Promise((resolve) => setTimeout(resolve, 0)),
+
     // ---- what is stored --------------------------------------------------
 
     /** The raw stored string, exactly as a devtools panel would show it. */
@@ -250,8 +349,11 @@ function open(seed) {
     storedNotepads: () => window.localStorage.getItem(NOTEPADS_KEY),
     storedLegacy: () => window.localStorage.getItem(LEGACY_KEY),
 
-    /** Close the tab and open it again. A new window, the same stored string. */
-    reload: () => openStore(window.localStorage.getItem(STORAGE_KEY)),
+    /**
+     * Close the tab and open it again. A new window, the same stored string —
+     * and the same browser, so the model is handed in again.
+     */
+    reload: (model = null) => openStore(window.localStorage.getItem(STORAGE_KEY), model),
 
     // ---- books -----------------------------------------------------------
     //
@@ -333,3 +435,42 @@ export const storedNotepads = (notepads, openId) => JSON.stringify({ notepads, o
 
 /** The stored form of the current key. */
 export const storedBooks = (books, openId) => JSON.stringify({ books, openId });
+
+/**
+ * A stand-in for the browser's model.
+ *
+ * Never a real one: the pipeline runs in jsdom, which has none, and asserting
+ * what an LLM says is not the app's promise to keep. What the rules check is
+ * what the app does with an answer. See specs/features/suggesting/spec.md.
+ */
+export function fakeModel({
+  state = 'available',
+  drafts = { ingredients: [], steps: [] },
+  fails = false,
+  cannotSay = false,
+  silent = false,
+  fetchFails = false,
+} = {}) {
+  const never = () => new Promise(() => {});
+  const gaveUp = () => Promise.reject(new Error('the model gave up'));
+
+  // A fetch the test drives: `reaches` reports progress, `arrives` finishes it.
+  let report = null;
+  let finish = null;
+
+  return {
+    availability: () => (cannotSay ? gaveUp() : Promise.resolve(state)),
+    prepare(onProgress) {
+      report = onProgress;
+      if (fetchFails) return gaveUp();
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    },
+    draft: () => (fails ? gaveUp() : silent ? never() : Promise.resolve(drafts)),
+
+    /** Drive the download from the test. */
+    reaches: (loaded) => report?.(loaded),
+    arrives: () => finish?.(),
+  };
+}

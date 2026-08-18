@@ -22,7 +22,7 @@ Feature: Where the AI stands
     And the contents reads:
       | Apple pie |
 
-  @planned @rule:ai-indicator-says-where-it-stands
+  @rule:ai-indicator-says-where-it-stands
   Rule: The indicator says it is coming, how far along, and then that it is ready
 
     Example: watching it arrive
@@ -44,7 +44,7 @@ Feature: Where the AI stands
       When I accept the offer
       Then the indicator reads "AI unavailable"
 
-  @planned @rule:ai-indicator-only-when-on
+  @rule:ai-indicator-only-when-on
   Rule: Nothing is reported about an AI that is off or absent
 
     Example: no model at all
@@ -60,7 +60,7 @@ Feature: Where the AI stands
       Given a model that is ready
       Then there is no indicator
 
-  @planned @rule:ai-indicator-is-not-a-loading-screen
+  @rule:ai-indicator-is-not-a-loading-screen
   Rule: Nothing on the page waits for the AI, ever
 
     Example: the app is the app while the model is coming

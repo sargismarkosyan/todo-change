@@ -12,9 +12,11 @@ import {
   openRecipes,
   removeBook,
   renameBook,
+  setSuggestions,
   switchTo,
   withOpenRecipes,
 } from './books.mjs';
+import { isEmptyDraft, usableDraft } from './suggesting.mjs';
 import { readStore, writeStore } from './storage.mjs';
 
 /** The two groups inside a recipe, in the order they are read. */
@@ -34,12 +36,25 @@ const NO_RECIPES = 'No recipes in this book yet.';
 const NO_MATCHES = 'No recipe matches that.';
 
 /**
+ * What the line in the masthead can say. It answers one question — *would
+ * waiting change this?* — and says nothing at all when the answer is no,
+ * because there is no model or because the AI is off.
+ */
+const AI_DOWNLOADING = 'Downloading AI';
+const AI_READY = 'AI ready';
+const AI_UNAVAILABLE = 'AI unavailable';
+
+/** The two ways a draft comes to nothing. Neither changes the recipe. */
+const NOTHING_DRAFTED = 'Nothing drafted.';
+const DRAFT_FAILED = 'The draft could not be written.';
+
+/**
  * Wire the markup in `doc` to the books in `storage`, and render what is there.
  *
  * Both are arguments rather than globals reached for, so a test can mount a
  * fresh document against a fresh store without either leaking into the next one.
  */
-export function mountApp(doc, storage) {
+export function mountApp(doc, storage, model = null) {
   const form = doc.getElementById('composer');
   const box = doc.getElementById('new-recipe');
   const contentsEl = doc.getElementById('contents');
@@ -49,6 +64,13 @@ export function mountApp(doc, storage) {
   const booksEl = doc.getElementById('books');
   const openEl = doc.getElementById('book-open');
   const menuEl = doc.getElementById('book-menu');
+  const statusEl = doc.getElementById('ai-status');
+  const settingsEl = doc.getElementById('settings');
+  const settingsOpenEl = doc.getElementById('settings-open');
+  const settingsMenuEl = doc.getElementById('settings-menu');
+  const askEl = doc.getElementById('offer');
+  const askYesEl = doc.getElementById('offer-yes');
+  const askNoEl = doc.getElementById('offer-no');
 
   let store = readStore(storage);
 
@@ -74,6 +96,27 @@ export function mountApp(doc, storage) {
     finding = '';
     findEl.value = '';
   };
+
+  // What the browser can do, once it has said, and whether it has been told to.
+  // Two different things: a machine that could run a model is not the same as
+  // one that has been asked. See specs/features/suggesting/spec.md.
+  let modelState = 'unavailable';
+  const couldRunAi = () => model !== null && modelState !== 'unavailable';
+  const aiIsOn = () => couldRunAi() && store.suggestions === 'on';
+
+  // Where a fetch has got to. Screen state: the model belongs to the browser,
+  // so none of this is worth writing down.
+  let aiStatus = null;
+  let progress = null;
+
+  // The settings popover, in the colophon at the foot of the page.
+  let aiMenu = false;
+
+  // What the model proposed for one recipe, and the one line under the control.
+  // **Not one word of a draft is stored** — it is on screen and nowhere else,
+  // exactly like which recipe is open.
+  let drafted = null;
+  let note = null;
 
   // The book menu: shut, listing the books, taking a new name, or asking about
   // a delete. Screen state too — none of it is worth storing.
@@ -157,6 +200,46 @@ export function mountApp(doc, storage) {
     return composer;
   }
 
+  /**
+   * One proposed line. Dashed all through, because it is not a line yet — a
+   * wrong quantity is not a wrong word, and there is no undo anywhere here.
+   */
+  function proposalRow(recipe, group, text) {
+    const item = doc.createElement('li');
+    item.className = 'proposal';
+
+    const take = doc.createElement('button');
+    take.type = 'button';
+    take.className = 'proposal__take';
+    take.textContent = text;
+    take.setAttribute('aria-label', `Add ${text} to ${recipe.name}`);
+    take.addEventListener('click', () => {
+      // Taken out of the draft first, so the same line cannot be added twice
+      // by a second click before the repaint lands.
+      drafted = {
+        ...drafted,
+        [group]: drafted[group].filter((each) => each !== text),
+      };
+      typingIn = null;
+      commitRecipes(ADD_LINE[group](recipes(), recipe.id, text));
+    });
+
+    item.append(take);
+    return item;
+  }
+
+  /** The proposals for one group, or nothing when there are none. */
+  function proposals(recipe, spec) {
+    if (drafted === null || drafted.recipeId !== recipe.id) return null;
+    const lines = drafted[spec.key];
+    if (lines.length === 0) return null;
+
+    const list = doc.createElement('ul');
+    list.className = `proposals proposals--${spec.key}`;
+    list.append(...lines.map((text) => proposalRow(recipe, spec.key, text)));
+    return list;
+  }
+
   function group(recipe, spec) {
     const section = doc.createElement('div');
     section.className = `recipe__group recipe__${spec.key}`;
@@ -169,8 +252,80 @@ export function mountApp(doc, storage) {
     lines.className = `recipe__${spec.key}-lines`;
     lines.append(...linesOf(recipe, spec.key).map((line) => lineRow(line, spec.block)));
 
-    section.append(heading, lines, lineComposer(recipe, spec));
+    section.append(heading, lines);
+    const proposed = proposals(recipe, spec);
+    if (proposed !== null) section.append(proposed);
+    section.append(lineComposer(recipe, spec));
     return section;
+  }
+
+  // ---- the draft -----------------------------------------------------------
+  //
+  // One press proposes the whole card — what it takes and how it is made — and
+  // writes down neither. See specs/features/suggesting/spec.md.
+
+  function drafting(recipe) {
+    const bar = doc.createElement('div');
+    bar.className = 'drafting';
+
+    const ask = doc.createElement('button');
+    ask.type = 'button';
+    ask.className = 'drafting__ask';
+    ask.textContent = 'Draft this recipe';
+    ask.addEventListener('click', () => askForDraft(recipe.id));
+    bar.append(ask);
+
+    if (drafted !== null && drafted.recipeId === recipe.id) {
+      const drop = doc.createElement('button');
+      drop.type = 'button';
+      drop.className = 'drafting__dismiss';
+      drop.textContent = 'No thanks';
+      drop.addEventListener('click', () => {
+        drafted = null;
+        render();
+      });
+      bar.append(drop);
+    }
+
+    if (note !== null) {
+      const line = doc.createElement('p');
+      line.className = 'drafting__note';
+      line.textContent = note;
+      bar.append(line);
+    }
+
+    return bar;
+  }
+
+  /**
+   * Ask the model for a draft, and put what comes back on offer.
+   *
+   * Nothing on the page waits on it: the repaint happens before the question is
+   * asked, and the recipe stays writable by hand while it is out.
+   */
+  async function askForDraft(recipeId) {
+    drafted = null;
+    note = null;
+    render();
+
+    let proposed;
+    try {
+      proposed = await model.draft(recipes().find((recipe) => recipe.id === recipeId));
+    } catch {
+      note = DRAFT_FAILED;
+      render();
+      return;
+    }
+
+    // Re-read: the recipe may have been typed into while the model was out.
+    const current = recipes().find((recipe) => recipe.id === recipeId);
+    if (!current) return;
+
+    const draft = usableDraft(proposed, current);
+    drafted = isEmptyDraft(draft) ? null : { recipeId, ...draft };
+    note = isEmptyDraft(draft) ? NOTHING_DRAFTED : null;
+    modelState = 'available';
+    render();
   }
 
   // ---- the contents --------------------------------------------------------
@@ -194,6 +349,9 @@ export function mountApp(doc, storage) {
     name.addEventListener('click', () => {
       readingId = reading ? null : recipe.id;
       typingIn = null;
+      // What was drafted was drafted for the recipe being left.
+      drafted = null;
+      note = null;
       render();
     });
 
@@ -203,6 +361,9 @@ export function mountApp(doc, storage) {
     if (reading) {
       const body = doc.createElement('div');
       body.className = 'recipe__body';
+      // Drawn only where there is a model and it has been turned on. A disabled
+      // control advertising an absence is worse than nothing.
+      if (aiIsOn()) body.append(drafting(recipe));
       body.append(...GROUPS.map((spec) => group(recipe, spec)));
       item.append(body);
     }
@@ -441,8 +602,123 @@ export function mountApp(doc, storage) {
     );
   }
 
+  // ---- the AI: where it stands, and whether it is wanted -------------------
+
+  /** The indicator's words, or null when there is nothing worth saying. */
+  function statusText() {
+    if (!aiIsOn() || aiStatus === null) return null;
+    if (aiStatus === 'ready') return AI_READY;
+    if (aiStatus === 'unavailable') return AI_UNAVAILABLE;
+    return progress === null
+      ? AI_DOWNLOADING
+      : `${AI_DOWNLOADING} ${Math.round(progress * 100)}%`;
+  }
+
+  /**
+   * Fetch the model, reporting how far along it is.
+   *
+   * Only ever from a press — `create()` needs recent user activation when a
+   * download is involved, which is why the offer is the mechanism rather than
+   * the manners.
+   */
+  async function fetchAi() {
+    if (modelState === 'available') {
+      aiStatus = 'ready';
+      render();
+      return;
+    }
+    aiStatus = 'downloading';
+    progress = null;
+    render();
+    try {
+      await model.prepare((loaded) => {
+        progress = loaded;
+        render();
+      });
+      modelState = 'available';
+      aiStatus = 'ready';
+      progress = null;
+    } catch {
+      // A fetch that fails and says nothing is the thing this removes.
+      aiStatus = 'unavailable';
+    }
+    render();
+  }
+
+  /** Turning it on is a press, so it is also the activation the fetch needs. */
+  function turnAiOn() {
+    aiMenu = false;
+    commit(setSuggestions(store, 'on'));
+    fetchAi();
+  }
+
+  function turnAiOff() {
+    aiMenu = false;
+    aiStatus = null;
+    progress = null;
+    drafted = null;
+    note = null;
+    commit(setSuggestions(store, 'off'));
+  }
+
+  function aiSettings() {
+    const panel = doc.createElement('div');
+    panel.className = 'colophon__panel';
+
+    const on = store.suggestions === 'on';
+    panel.append(
+      menuButton('colophon__toggle', on ? 'Turn the AI off' : 'Turn the AI on', () =>
+        on ? turnAiOff() : turnAiOn(),
+      ),
+    );
+
+    // Two lines. A third means this has become the settings screen persona.md
+    // rules out, and the argument in spec 0009 was wrong.
+    const line = doc.createElement('p');
+    line.className = 'colophon__note';
+    line.textContent = 'It runs on this machine. Nothing leaves it.';
+    panel.append(line);
+
+    return panel;
+  }
+
+  /**
+   * Where the AI stands, and the switch for it — two things, drawn apart.
+   *
+   * The status is a readout and sits in the masthead: read at a glance, never
+   * pressed. The switch is a control and sits in the colophon at the foot:
+   * pressed twice ever, never read. Position follows how often a thing is used,
+   * which is why the header corner is the book's alone.
+   */
+  function renderAi() {
+    const status = statusText();
+    statusEl.hidden = status === null;
+    statusEl.textContent = status ?? '';
+
+    settingsEl.hidden = !couldRunAi();
+    if (!couldRunAi()) {
+      settingsMenuEl.replaceChildren();
+      settingsMenuEl.hidden = true;
+      return;
+    }
+
+    settingsOpenEl.setAttribute('aria-expanded', String(aiMenu));
+    settingsMenuEl.hidden = !aiMenu;
+    settingsMenuEl.replaceChildren(...(aiMenu ? [aiSettings()] : []));
+  }
+
+  /**
+   * The one question, asked once, and only where there is a recipe to fill in.
+   * Offering to draft before there is anything to draft is a question with no
+   * reason behind it yet.
+   */
+  const offering = () =>
+    couldRunAi() && store.suggestions === 'unasked' && recipes().length > 0;
+
   function render() {
     renderMenu();
+    renderAi();
+    askEl.hidden = !offering();
 
     const found = searching() ? findRecipes(store.books, finding) : [];
     contentsEl.hidden = searching();
@@ -473,9 +749,24 @@ export function mountApp(doc, storage) {
   });
 
   openEl.addEventListener('click', () => {
+    // Two popovers now, and never both at once.
+    aiMenu = false;
     menu = menu.open ? { open: false, mode: 'list' } : { open: true, mode: 'list' };
     render();
   });
+
+  settingsOpenEl.addEventListener('click', () => {
+    shutMenu();
+    aiMenu = !aiMenu;
+    render();
+  });
+
+  // Accepting is the press the fetch needs, not a formality: a download cannot
+  // begin without recent user activation.
+  askYesEl.addEventListener('click', turnAiOn);
+
+  // Off, and off the page: no indicator, no control on a recipe.
+  askNoEl.addEventListener('click', () => commit(setSuggestions(store, 'off')));
 
   // A popover, so anything else being clicked shuts it — including a recipe's
   // name, which is the click most likely to follow "show me the other book".
@@ -488,9 +779,14 @@ export function mountApp(doc, storage) {
   doc.addEventListener(
     'click',
     (event) => {
-      if (!menu.open || booksEl.contains(event.target)) return;
-      shutMenu();
-      renderMenu();
+      if (menu.open && !booksEl.contains(event.target)) {
+        shutMenu();
+        renderMenu();
+      }
+      if (aiMenu && !settingsEl.contains(event.target)) {
+        aiMenu = false;
+        renderAi();
+      }
     },
     true,
   );
@@ -506,6 +802,25 @@ export function mountApp(doc, storage) {
     box.value = '';
     commitRecipes(next);
   });
+
+  // What the browser can do is asked once, and the answer only ever adds a
+  // control. Anything going wrong leaves the app exactly as it is in a browser
+  // with no model at all, which is the app most people open.
+  if (model !== null) {
+    model
+      .availability()
+      .then((state) => {
+        modelState = state;
+        // A choice already made is reflected, never acted on: starting a fetch
+        // needs a press, and there has not been one yet this visit.
+        if (store.suggestions === 'on') {
+          if (state === 'available') aiStatus = 'ready';
+          else if (state === 'downloading') aiStatus = 'downloading';
+        }
+        render();
+      })
+      .catch(() => {});
+  }
 
   render();
 }

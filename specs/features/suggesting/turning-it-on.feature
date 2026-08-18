@@ -22,7 +22,7 @@ Feature: Being offered the AI, once
     And the contents reads:
       | Apple pie |
 
-  @planned @rule:ai-offered-once
+  @rule:ai-offered-once
   Rule: A machine that could run the AI offers it, once, and takes an answer
 
     Example: the first visit with something to fill in
@@ -43,7 +43,7 @@ Feature: Being offered the AI, once
       When I write down "Apple pie"
       Then I am offered the AI
 
-  @planned @rule:ai-offer-accepted
+  @rule:ai-offer-accepted
   Rule: Accepting fetches it, and the fetching happens behind the page
 
     Example: saying yes
@@ -61,7 +61,7 @@ Feature: Being offered the AI, once
         | Bakewell tart |
         | Apple pie     |
 
-  @planned @rule:ai-offer-dismissed
+  @rule:ai-offer-dismissed
   Rule: Dismissing turns it off and leaves no trace on the page
 
     Example: saying no
@@ -78,7 +78,7 @@ Feature: Being offered the AI, once
       Then "Apple pie" shows the ingredients:
         | 3 apples |
 
-  @planned @rule:ai-not-offered-without-a-model
+  @rule:ai-not-offered-without-a-model
   Rule: A browser that cannot run one is never asked about it
 
     Example: nothing to offer

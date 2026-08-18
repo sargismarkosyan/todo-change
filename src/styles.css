@@ -594,6 +594,239 @@ body {
   color: var(--ink);
 }
 
+/* Where the AI stands: a line under the tagline, small and quiet.
+   It is a readout, never a control — read at a glance and never pressed, which
+   is why it is set as type rather than dressed as a button. The switch for it
+   is in the colophon at the foot. See specs/features/suggesting/spec.md. */
+.app__ai {
+  margin: 0.35rem 0 0;
+  color: var(--faded);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.app__ai[hidden] {
+  display: none;
+}
+
+/* The one question this version asks — the app's second ever, the other being
+   how many recipes go with a book being deleted. Written as a note left on the
+   page rather than a dialog thrown over it, and below the box, never above:
+   the top of the page is the three-second capture workflows.md protects. */
+.offer {
+  margin-bottom: 1.4rem;
+  padding: 0.8rem 1rem;
+  border: 1px dashed var(--red);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.offer[hidden] {
+  display: none;
+}
+
+.offer__question {
+  margin: 0;
+  color: var(--red);
+  font-family: var(--hand);
+  font-size: 1.35rem;
+}
+
+.offer__note {
+  margin: 0.2rem 0 0.6rem;
+  color: var(--faded);
+  font-size: 0.85rem;
+}
+
+.offer__yes,
+.offer__no {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.offer__yes {
+  border-color: var(--red);
+  background: var(--red);
+  color: var(--page);
+}
+
+.offer__yes:hover { filter: brightness(1.1); }
+.offer__no:hover { border-color: var(--red); }
+
+/* Asking for a draft. Sits above the two groups, because it fills in both. */
+.drafting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+/* Dashed, like everything the model touches, and set in the hand because it is
+   an aside on the card rather than part of the recipe. */
+.drafting__ask {
+  padding: 0.3rem 0.7rem;
+  border: 1px dashed var(--rule);
+  border-radius: 2px;
+  background: var(--card);
+  color: var(--red);
+  font: inherit;
+  font-family: var(--hand);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.drafting__ask:hover {
+  border-color: var(--red);
+  background: var(--page);
+}
+
+.drafting__dismiss {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faded);
+  font: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.drafting__note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--faded);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* What was proposed. Dashed all through, because not one line of it is written
+   down — a wrong quantity is not a wrong word, and there is no undo here. */
+.proposals {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proposal + .proposal { margin-top: 0.25rem; }
+
+.proposal__take {
+  display: block;
+  width: 100%;
+  padding: 0.2rem 0.45rem;
+  border: 1px dashed var(--red);
+  border-radius: 2px;
+  background: none;
+  color: var(--red);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.proposal__take::before { content: "+ "; }
+.proposal__take:hover { background: var(--page); }
+
+/* The colophon: what a book puts at the back — the machinery, small and last.
+   The switch is pressed twice ever, so it gets the least prominent place on the
+   page and the header corner stays the book's. Absent entirely on a machine
+   that cannot run a model, which is most of them. */
+.colophon {
+  position: relative;
+  margin-top: 2rem;
+  /* The same hairline that runs under every ingredient on a card, rather than
+     a divider invented for this one line. */
+  border-top: 1px solid var(--rule);
+  padding-top: 0.6rem;
+}
+
+.colophon[hidden] {
+  display: none;
+}
+
+/* Waits to be reached for, the way the delete crosses do — see
+   specs/features/look/spec.md. */
+.colophon__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.35rem;
+  margin-left: -0.35rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--faded);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.colophon__open:hover,
+.colophon__open:focus-visible {
+  border-color: var(--rule);
+  color: var(--ink);
+}
+
+/* No rotation on hover, here or anywhere: features/look/spec.md says nothing
+   moves, and a spinning gear is the first thing this would otherwise grow. */
+.colophon__gear {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+}
+
+/* Opens upward, because there is nothing below it to open into. Two lines. A
+   third means it has become the settings screen persona.md rules out. */
+.colophon__menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 2;
+  min-width: 13rem;
+  margin-bottom: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 -4px 16px rgb(62 42 20 / 18%);
+}
+
+.colophon__menu[hidden] {
+  display: none;
+}
+
+.colophon__toggle {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.colophon__toggle:hover { border-color: var(--red); }
+
+.colophon__note {
+  margin: 0.4rem 0 0;
+  color: var(--faded);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
 /* The search box. Below the composer rather than beside it: the top of the page
    is the three-second capture, and two boxes side by side is how a recipe name
    ends up typed into the wrong one. Quieter than the composer too — no button,

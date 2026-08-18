@@ -1,6 +1,6 @@
 # Spec 0009: a first draft
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** none — direct request, replacing a version that was built and
   closed unmerged. See *What happened to the tags* below.
 
