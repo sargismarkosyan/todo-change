@@ -24,9 +24,10 @@ improved. Including — especially — small-sounding asks: "just add a button",
 it also…". Also when picking up a GitHub issue.
 
 **The premise.** A request is not a spec. Someone hands over a *solution* — "add
-a clear-all button" — with the *job* buried underneath — "the list gets cluttered
-and clearing one at a time is tedious enough that I stop bothering." The proposed
-solution is one answer to that job, and often not the best one.
+a search box" — with the *job* buried underneath — "I know the recipe is in
+here somewhere and reading down four books to find it is slow enough that I go
+back to the drawer." The proposed solution is one answer to that job, and often
+not the best one.
 
 **What it does.**
 
@@ -36,8 +37,8 @@ solution is one answer to that job, and often not the best one.
    solution, the trigger moment, and what the person does today instead. If the
    job cannot be written without naming a UI element, it has not been found yet.
 3. **Places it on the map.** Which persona, which workflow step, does it make
-   Capture or Complete shorter or longer, does it collide with a product
-   boundary.
+   writing a recipe down or browsing shorter or longer, does it collide with a
+   product boundary.
 4. **Works out the end value** — and how we would know it worked. Something
    observable: a workflow that got shorter, a mistake that stopped happening. If
    that cannot be named, the change is decoration and it says so.
@@ -99,7 +100,7 @@ noticed should be lost between their chat message and the tracker.
 
 **Remember who is reporting.** The human testing this repo is not the persona —
 see [`../persona.md`](../persona.md). What they *find* is real: a crash is a
-crash. What they *want* has to be checked against Rowan before it becomes a spec.
+crash. What they *want* has to be checked against Nell before it becomes a spec.
 
 ---
 

@@ -5,56 +5,66 @@
 // input and every change is written immediately. See
 // specs/features/storage/spec.md.
 
-import { migrateList, sanitizeStore } from './notepads.mjs';
+import { migrateList, migrateNotepads, sanitizeStore } from './books.mjs';
 
-export const STORAGE_KEY = 'todo-change.notepads';
+export const STORAGE_KEY = 'todo-change.books';
 
 /**
- * The key every version before notepads wrote: a bare array of todos.
- *
- * It is read only when `STORAGE_KEY` is absent, and removed once it has been
- * read, so the two never both hold real data and there is no question of which
- * one wins.
+ * The key version 0003 wrote: notepads of todos. Read only when `STORAGE_KEY`
+ * is absent, and removed once it has been read.
+ */
+export const NOTEPADS_KEY = 'todo-change.notepads';
+
+/**
+ * The key every version before notepads wrote: a bare array of todos. Anyone
+ * who has opened version 3 no longer has it; anyone whose last visit was
+ * version 2 still does, and dropping the hop would lose their list in silence.
  */
 export const LEGACY_KEY = 'todo-change.todos';
 
+/** JSON, or null when someone has been editing it in devtools. */
+function parse(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 /**
- * The stored notepads, or one empty notepad when what is there cannot be read.
+ * The stored books, or one empty book when what is there cannot be read.
  *
  * This never throws. A read that throws takes the whole page down with it,
  * because there is nothing else to render — and a blank screen here costs more
- * than any missing feature.
+ * than any missing feature. What is behind it is no longer a list of today's
+ * errands.
  *
- * It is also the one place in the app that writes without anything having
- * happened on screen: finding a list left by an older version moves it into a
- * notepad called "My list" and clears the old key. That happens once, on the
- * first open after upgrading.
+ * It is also the only place in the app that writes without anything having
+ * happened on screen: finding either older key converts it, writes the new one,
+ * and removes the old. That happens once, on the first open after upgrading, so
+ * no two of these keys ever hold real data at the same time.
  */
 export function readStore(storage) {
   const raw = storage.getItem(STORAGE_KEY);
-  if (raw !== null) {
-    try {
-      return sanitizeStore(JSON.parse(raw));
-    } catch {
-      return sanitizeStore(null);
-    }
-  }
+  if (raw !== null) return sanitizeStore(parse(raw));
+
+  const notepads = storage.getItem(NOTEPADS_KEY);
+  if (notepads !== null) return moved(storage, NOTEPADS_KEY, migrateNotepads(parse(notepads)));
 
   const legacy = storage.getItem(LEGACY_KEY);
-  if (legacy === null) return sanitizeStore(null);
+  if (legacy !== null) return moved(storage, LEGACY_KEY, migrateList(parse(legacy)));
 
-  let store;
-  try {
-    store = migrateList(JSON.parse(legacy));
-  } catch {
-    store = migrateList(null);
-  }
+  return sanitizeStore(null);
+}
+
+/** Write what an older key held under the new one, and take the old one away. */
+function moved(storage, key, store) {
   writeStore(storage, store);
-  storage.removeItem(LEGACY_KEY);
+  storage.removeItem(key);
   return store;
 }
 
-/** Write the notepads. No save button and no debounce — a pending write is data a closed tab loses. */
+/** Write the books. No save button and no debounce — a pending write is data a closed tab loses. */
 export function writeStore(storage, store) {
   storage.setItem(STORAGE_KEY, JSON.stringify(store));
 }

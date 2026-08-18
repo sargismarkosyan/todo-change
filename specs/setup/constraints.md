@@ -19,8 +19,10 @@ A request for one of those is a request for a different product.
 
 ## All data lives in `localStorage`
 
-One key, `todo-change.todos`, holding a JSON array ordered newest first. The
-shape is documented in [`../spec.md`](../spec.md).
+One key, `todo-change.books`, holding the books and which one is open. The shape
+is documented in [`../spec.md`](../spec.md). Two older keys —
+`todo-change.notepads` and `todo-change.todos` — are read once and removed; see
+[`../features/storage/spec.md`](../features/storage/spec.md).
 
 **It is treated as untrusted input on every read.** `localStorage` is a string
 that anyone with devtools can edit, that a second tab can overwrite, and that the
@@ -35,8 +37,8 @@ workflow 5 in [`../workflows.md`](../workflows.md).
 
 **Known gaps**, documented rather than solved: two tabs will overwrite each other
 (nothing listens for the `storage` event), and a full quota will throw on write.
-Both are real; neither is reachable at the size of list this app is for. Each
-needs its own spec if it ever becomes real.
+Both are real; neither is reachable at the size of book this app is for, which is
+text only. Each needs its own spec if it ever becomes real.
 
 ## The app ships zero dependencies
 
@@ -55,6 +57,12 @@ one inline script, and it was paid in version 1. Before then this file claimed
 opening from disk behaved the same as the deployed page, which stopped being
 true the moment there was a module to import.
 
+**A static asset is not a dependency.** `src/fonts/` holds one self-hosted
+typeface, under a licence that travels with it. It adds no build step, no
+runtime fetch to anyone else's machine, and nothing to keep current — which is
+what this constraint is actually protecting. A `<link>` to a font host would
+fail all three and is ruled out; see `../features/look/spec.md`.
+
 **Dev tooling is a different thing.** `jsdom` is a devDependency, used by tests
 only. Node's own test runner and coverage provide the rest, so there is no test
 framework, no assertion library, and no coverage tool to keep current. Adding a
@@ -68,7 +76,7 @@ implies one.
 
 ## Logic stays out of the DOM where it can
 
-Anything expressible without touching the DOM — the todo model, storage
+Anything expressible without touching the DOM — the recipe model, storage
 serialisation, validation — belongs in a module that does not import from the
 document. The DOM layer stays thin and does rendering and events only.
 
@@ -80,8 +88,13 @@ event handlers is not.
 ## Vocabulary
 
 Fixed across specs, code, and UI copy. Defined in [`../spec.md`](../spec.md):
-**todo** (not task, item, or entry), **done / unfinished** (not complete,
-checked, or archived), **the list**, **the box**.
+**recipe** (not dish, card, or entry), **book** (not list, folder, or category),
+**the contents**, **ingredient**, **the method** and its **steps**, **the box**.
+
+Version 0004 replaced the whole of it — the app used to be a todo list, and
+**todo**, **sub-todo**, **done / unfinished**, **the list** and **notepad** are
+retired words that must not come back. That change is exactly why this is a
+constraint: a half-renamed vocabulary is worse than either name.
 
 **Why it is a constraint and not a style preference.** Gherkin rules are read by
 a human as English and by tests as ids. When the same thing has three names, the

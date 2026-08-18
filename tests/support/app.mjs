@@ -1,15 +1,15 @@
 // Opens the real app in jsdom and reads it back in the vocabulary the Gherkin
-// uses: the list, the box, done, unfinished.
+// uses: the contents, a recipe, its ingredients, its method, the open book.
 //
 // Tests drive this rather than the modules directly, so that a rule about what
-// Rowan sees is checked against what is actually on screen. index.html and
-// styles.css are the real files — a test asking whether a todo has a line
-// through it is asking the same stylesheet the browser gets.
+// Nell sees is checked against what is actually on screen. index.html and
+// styles.css are the real files — a test asking whether anything on screen
+// offers a tick box is asking the same page the browser gets.
 
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { mountApp } from '../../src/app.mjs';
-import { LEGACY_KEY, STORAGE_KEY } from '../../src/storage.mjs';
+import { LEGACY_KEY, NOTEPADS_KEY, STORAGE_KEY } from '../../src/storage.mjs';
 
 const HTML = readFileSync('index.html', 'utf8');
 const CSS = readFileSync('src/styles.css', 'utf8');
@@ -21,220 +21,243 @@ const PAGE = HTML.replace(
   `<style>${CSS}</style>`,
 ).replace(/<script type="module">[\s\S]*?<\/script>/, '');
 
-/**
- * A fresh browser with a fresh store, with `stored` already under one key.
- *
- * `openApp` seeds the **old** key — a bare array of todos, which is what every
- * version before notepads wrote — so a test that hands it a list is opening a
- * browser that last used the previous version. `openStore` seeds the notepads
- * key instead. Pass nothing to either for a browser that has never opened the
- * app at all.
- */
-export function openApp(stored) {
-  return open(LEGACY_KEY, stored);
-}
+/** A fresh browser with a fresh store, holding nothing at all. */
+export const openApp = () => open({});
 
-/** `legacy` seeds the old key alongside it, for the case where both are there. */
-export function openStore(stored, legacy) {
-  return open(STORAGE_KEY, stored, legacy);
-}
+/** The same, with the current key already holding `books`. */
+export const openStore = (books) => open({ [STORAGE_KEY]: books });
 
-function open(key, stored, legacy) {
+/** The same, seeded with the key version 0003 wrote. */
+export const openNotepads = (notepads) => open({ [NOTEPADS_KEY]: notepads });
+
+/** The same, seeded with the bare array every version before that wrote. */
+export const openLegacy = (todos) => open({ [LEGACY_KEY]: todos });
+
+/** For the cases that care about more than one key being there at once. */
+export const openWith = (seed) => open(seed);
+
+function open(seed) {
   const dom = new JSDOM(PAGE, { url: 'http://localhost/' });
   const { window } = dom;
   const doc = window.document;
 
-  if (stored !== undefined && stored !== null) {
-    window.localStorage.setItem(key, stored);
+  for (const [key, value] of Object.entries(seed)) {
+    if (value !== undefined && value !== null) window.localStorage.setItem(key, value);
   }
-  if (legacy !== undefined) window.localStorage.setItem(LEGACY_KEY, legacy);
   mountApp(doc, window.localStorage);
 
-  // A parent keeps its text one level down, inside the row; a sub-todo wears it
-  // directly. Either way it is the row's own text and never a descendant's.
-  const textOf = (el, kind) =>
-    el.querySelector(`:scope > .${kind}__row > .${kind}__text`) ??
-    el.querySelector(`:scope > .${kind}__text`);
+  const recipeEls = () => [...doc.querySelectorAll('.recipe')];
+  const nameEl = (el) => el.querySelector(':scope > .recipe__row > .recipe__name');
+  const contents = () => recipeEls().map((el) => nameEl(el).textContent);
 
-  const rows = () => [...doc.querySelectorAll('.todo')];
-  const list = () => rows().map((el) => textOf(el, 'todo').textContent);
-
-  // Every row on screen, parents and sub-todos alike, paired with the block
-  // name its controls carry. Ticking and deleting read the same in the Gherkin
-  // whichever level they land on, so they resolve the same way here.
-  const everyRow = () => [
-    ...rows().map((el) => ({ el, kind: 'todo' })),
-    ...[...doc.querySelectorAll('.sub-todo')].map((el) => ({ el, kind: 'sub-todo' })),
-  ];
-
-  const find = (text) => {
-    const found = everyRow().find(({ el, kind }) => textOf(el, kind).textContent === text);
+  const recipe = (name) => {
+    const found = recipeEls().find((el) => nameEl(el).textContent === name);
     if (!found) {
       throw new Error(
-        `no todo reading "${text}" — the list reads: ${list().join(', ')}`,
+        `no recipe called "${name}" — the contents reads: ${contents().join(', ')}`,
       );
     }
     return found;
   };
-  const control = (text, suffix) => {
-    const { el, kind } = find(text);
-    return el.querySelector(`.${kind}__${suffix}`);
+
+  const isOpen = (name) => recipe(name).classList.contains('recipe--open');
+  const groupEl = (name, group) => recipe(name).querySelector(`.recipe__${group}-lines`);
+  const lines = (name, group) =>
+    groupEl(name, group) === null
+      ? []
+      : [...groupEl(name, group).children].map(
+          (el) => el.querySelector('[class$="__text"]').textContent,
+        );
+
+  /** Every ingredient and step on screen, for the ones addressed by their text. */
+  const lineEls = () => [...doc.querySelectorAll('.ingredient, .step')];
+  const line = (text) => {
+    const found = lineEls().find(
+      (el) => el.querySelector('[class$="__text"]').textContent === text,
+    );
+    if (!found) throw new Error(`nothing on screen reads "${text}"`);
+    return found;
   };
 
-  const menu = () => doc.getElementById('notepad-menu');
+  const composer = (name, block) =>
+    recipe(name).querySelector(`.${block}-composer`);
+
+  const menu = () => doc.getElementById('book-menu');
   const openMenu = () => {
-    if (menu().hidden) doc.getElementById('notepad-open').click();
+    if (menu().hidden) doc.getElementById('book-open').click();
   };
   const switchControl = (name) => {
-    const found = [...menu().querySelectorAll('.notepads__switch')].find(
+    const found = [...menu().querySelectorAll('.books__switch')].find(
       (el) => el.textContent === name,
     );
     if (!found) {
       throw new Error(
-        `no notepad called "${name}" — the menu reads: ` +
-          [...menu().querySelectorAll('.notepads__switch')].map((el) => el.textContent).join(', '),
+        `no book called "${name}" — the menu reads: ` +
+          [...menu().querySelectorAll('.books__switch')].map((el) => el.textContent).join(', '),
       );
     }
     return found;
-  };
-
-  /** The row of the parent reading `text`, for reaching into its group. */
-  const parentRow = (text) => {
-    const { el, kind } = find(text);
-    if (kind !== 'todo') throw new Error(`"${text}" is a sub-todo, so it has no group`);
-    return el;
   };
 
   return {
     window,
     document: doc,
 
-    /** Type into the box and press Enter — the whole of Capture. */
-    add(text) {
-      this.type(text);
+    // ---- writing a recipe down ------------------------------------------
+
+    /** Type a name into the box and press Enter — the whole of workflow 1. */
+    writeDown(name) {
+      this.type(name);
       this.submit();
     },
-    type(text) {
-      doc.getElementById('new-todo').value = text;
+    type(name) {
+      doc.getElementById('new-recipe').value = name;
     },
     submit() {
       doc.getElementById('composer').requestSubmit();
     },
     /** What the box currently holds. */
-    box: () => doc.getElementById('new-todo').value,
+    box: () => doc.getElementById('new-recipe').value,
 
-    /** The todos on screen, top to bottom. Sub-todos are not in the list. */
-    list,
+    /** What the cover says. */
+    masthead: () => doc.querySelector('.app__title').textContent,
 
-    /**
-     * Open the sub-todo box on a row, type, and press Enter — the whole of
-     * capturing a step. The box stays open, so a run of them is one call each.
-     */
-    addSub(parentText, text) {
-      this.submitSub(parentText, text);
+    /** The recipe names in the open book, top to bottom. */
+    contents,
+
+    // ---- reading one -----------------------------------------------------
+
+    /** Click a recipe's name, unless it is already open. */
+    openRecipe(name) {
+      if (!isOpen(name)) nameEl(recipe(name)).click();
     },
-    /** The same, kept separate for the rule about text that is not a sub-todo. */
-    submitSub(parentText, text) {
-      const row = parentRow(parentText);
-      if (!row.querySelector('.sub-composer')) {
-        row.querySelector('.todo__add-sub').click();
-      }
-      parentRow(parentText).querySelector('.sub-composer__box').value = text;
-      parentRow(parentText).querySelector('.sub-composer').requestSubmit();
+    /** The same click, the other way. */
+    closeRecipe(name) {
+      if (isOpen(name)) nameEl(recipe(name)).click();
     },
+    isOpen,
 
-    /** The sub-todos under a parent, top to bottom. */
-    subTodos: (parentText) =>
-      [...parentRow(parentText).querySelectorAll('.sub-todo')].map(
-        (el) => el.querySelector('.sub-todo__text').textContent,
-      ),
+    /** What an open recipe shows. A closed one shows neither group. */
+    ingredients: (name) => lines(name, 'ingredients'),
+    method: (name) => lines(name, 'steps'),
 
-    /** Whether a row offers any way to add a sub-todo under it. */
-    offersSubTodos: (text) => find(text).el.querySelector('.todo__add-sub') !== null,
-
-    tick: (text) => control(text, 'check').click(),
-    untick: (text) => control(text, 'check').click(),
-    deleteTodo: (text) => control(text, 'delete').click(),
-
-    isDone: (text) => control(text, 'check').checked,
-    hasLineThrough(text) {
-      const { el, kind } = find(text);
+    /** Whether the ingredients are drawn above the method, which is the point. */
+    ingredientsComeFirst(name) {
+      const groups = [...recipe(name).querySelectorAll('.recipe__group')];
       return (
-        window.getComputedStyle(textOf(el, kind)).textDecorationLine === 'line-through'
+        groups.length === 2 &&
+        groups[0].classList.contains('recipe__ingredients') &&
+        groups[1].classList.contains('recipe__steps')
       );
     },
 
-    /** The empty-list message if it is on screen, otherwise null. */
+    /** Whether anything at all on the page can be ticked. Nothing should be. */
+    offersTickBox: () => doc.querySelector('input[type="checkbox"]') !== null,
+
+    /** Whether a step or ingredient offers anything to type under it. */
+    offersAnythingUnder(text) {
+      const el = line(text);
+      return el.querySelector('form') !== null || el.querySelector('input') !== null;
+    },
+
+    // ---- filling one in --------------------------------------------------
+
+    addIngredient(name, text) {
+      this.submitLine(name, 'ingredient', text);
+    },
+    addStep(name, text) {
+      this.submitLine(name, 'step', text);
+    },
+    /** Kept separate for the rules about text that is not a line. */
+    submitLine(name, block, text) {
+      this.openRecipe(name);
+      composer(name, block).querySelector(`.${block}-composer__box`).value = text;
+      composer(name, block).requestSubmit();
+    },
+
+    /** Setup: a recipe that already holds these, left closed as it was found. */
+    give(name, block, texts) {
+      const wasOpen = isOpen(name);
+      for (const text of texts) this.submitLine(name, block, text);
+      if (!wasOpen) this.closeRecipe(name);
+    },
+
+    // ---- throwing things out ---------------------------------------------
+
+    deleteRecipe: (name) => recipe(name).querySelector('.recipe__delete').click(),
+    deleteLine: (text) => line(text).querySelector('[class$="__delete"]').click(),
+
+    /** The empty-book message if it is on screen, otherwise null. */
     message() {
       const el = doc.getElementById('empty');
       return window.getComputedStyle(el).display === 'none' ? null : el.textContent;
     },
 
+    // ---- what is stored --------------------------------------------------
+
     /** The raw stored string, exactly as a devtools panel would show it. */
     stored: () => window.localStorage.getItem(STORAGE_KEY),
-
-    /** The same for the key the previous version wrote, which should be gone. */
+    storedNotepads: () => window.localStorage.getItem(NOTEPADS_KEY),
     storedLegacy: () => window.localStorage.getItem(LEGACY_KEY),
 
     /** Close the tab and open it again. A new window, the same stored string. */
     reload: () => openStore(window.localStorage.getItem(STORAGE_KEY)),
 
-    // ---- notepads --------------------------------------------------------
+    // ---- books -----------------------------------------------------------
     //
-    // Everything below reaches through the menu, because that is where Rowan
-    // reaches. Reading what notepads exist opens it, the way looking at them
-    // does.
+    // Everything below reaches through the menu, because that is where Nell
+    // reaches. Reading what books exist opens it, the way looking at them does.
 
-    /** The name of the notepad on screen, as the header shows it. */
-    openNotepad: () => doc.getElementById('notepad-open').textContent,
+    /** The name of the book on screen, as the header shows it. */
+    openBook: () => doc.getElementById('book-open').textContent,
 
-    /** The notepads in the menu, top to bottom. */
-    notepads() {
+    /** The books in the menu, top to bottom. */
+    books() {
       openMenu();
-      return [...menu().querySelectorAll('.notepads__switch')].map((el) => el.textContent);
+      return [...menu().querySelectorAll('.books__switch')].map((el) => el.textContent);
     },
 
-    /** Switch to another notepad — one click, once the menu is open. */
-    openNotepadNamed(name) {
+    /** Switch to another book — one click, once the menu is open. */
+    openBookNamed(name) {
       openMenu();
       switchControl(name).click();
     },
 
-    /** Name a new notepad and press Enter. */
-    makeNotepad(name) {
+    /** Name a new book and press Enter. */
+    makeBook(name) {
       openMenu();
-      doc.getElementById('new-notepad').value = name;
-      menu().querySelector('.notepads__new').requestSubmit();
+      doc.getElementById('new-book').value = name;
+      menu().querySelector('.books__new').requestSubmit();
     },
 
-    /** Rename the notepad on screen. */
-    renameNotepad(name) {
+    /** Rename the book on screen. */
+    renameBook(name) {
       openMenu();
-      menu().querySelector('.notepads__rename-open').click();
-      doc.getElementById('rename-notepad').value = name;
-      menu().querySelector('.notepads__rename').requestSubmit();
+      menu().querySelector('.books__rename-open').click();
+      doc.getElementById('rename-book').value = name;
+      menu().querySelector('.books__rename').requestSubmit();
     },
 
-    /** Ask to delete the notepad on screen. */
-    deleteNotepad() {
+    /** Ask to delete the book on screen. */
+    deleteBook() {
       openMenu();
-      const control = menu().querySelector('.notepads__delete');
-      if (!control) throw new Error('the menu offers no way to delete this notepad');
+      const control = menu().querySelector('.books__delete');
+      if (!control) throw new Error('the menu offers no way to delete this book');
       control.click();
     },
 
     /** Whether the menu offers a delete at all. */
-    offersNotepadDelete() {
+    offersBookDelete() {
       openMenu();
-      return menu().querySelector('.notepads__delete') !== null;
+      return menu().querySelector('.books__delete') !== null;
     },
 
     /** The delete question if it is on screen, otherwise null. */
-    askedAbout: () => menu().querySelector('.notepads__question')?.textContent ?? null,
+    askedAbout: () => menu().querySelector('.books__question')?.textContent ?? null,
 
     /** Answer it. */
-    agree: () => menu().querySelector('.notepads__confirm-yes').click(),
-    decline: () => menu().querySelector('.notepads__confirm-no').click(),
+    agree: () => menu().querySelector('.books__confirm-yes').click(),
+    decline: () => menu().querySelector('.books__confirm-no').click(),
 
     /** Whether the menu is on screen. */
     menuIsOpen: () => !menu().hidden,
@@ -242,18 +265,21 @@ function open(key, stored, legacy) {
 }
 
 /**
- * An app whose list already reads exactly these todos, top to bottom — the
- * mirror of Gherkin's `Given the list reads:`. Built through the box, so the
- * setup is the same path Rowan takes; newest-first means adding in reverse.
+ * An app whose contents already reads exactly these recipes, top to bottom —
+ * the mirror of Gherkin's `Given the contents reads:`. Built through the box, so
+ * the setup is the same path Nell takes; newest-first means writing in reverse.
  */
-export function openAppWithList(...texts) {
+export function openAppWithContents(...names) {
   const app = openApp();
-  for (const text of [...texts].reverse()) app.add(text);
+  for (const name of [...names].reverse()) app.writeDown(name);
   return app;
 }
 
 /** The stored form of an old bare list, for tests that seed localStorage directly. */
 export const storedList = (...todos) => JSON.stringify(todos);
 
-/** The stored form of the notepads key. */
+/** The stored form of the 0003 notepads key. */
 export const storedNotepads = (notepads, openId) => JSON.stringify({ notepads, openId });
+
+/** The stored form of the current key. */
+export const storedBooks = (books, openId) => JSON.stringify({ books, openId });

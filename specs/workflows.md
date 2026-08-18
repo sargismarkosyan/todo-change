@@ -1,143 +1,158 @@
 # Workflows
 
-The five things Rowan actually does. Specs are written against these, and a
+The five things Nell actually does. Specs are written against these, and a
 change that does not make one of them shorter, safer, or clearer needs a good
 argument.
 
-See [persona.md](persona.md) for who Rowan is.
+See [persona.md](persona.md) for who Nell is. These five replace the five
+written for Rowan; what happened to each of the old ones is at the bottom.
 
 ---
 
-## 1. Capture — get it out of my head
+## 1. Write it down — before it is gone
 
-**Trigger.** A thought arrives, usually while doing something else.
+**Trigger.** A recipe arrives. Someone is reading it out, or the thing in the
+oven turned out well enough to want again.
 
-**Steps.** Focus the box → type one line → press Enter → back to what they were
-doing.
+**Steps.** Focus the box → type the name → press Enter → the recipe exists.
+Then, with it open, the ingredients and the method, one line each.
 
-**Done well.** Under three seconds, no mouse, no decisions. The new todo is
-visibly *there* — at the top, where the eye already is.
+**Done well.** The name lands in under three seconds, with no mouse and no
+decisions, so the rest can be typed at the speed it is being dictated. The new
+recipe is visibly *there* — at the top of the contents, where the eye already
+is.
 
-**The notepad it lands in** is whichever one is open, and the box never asks.
-That is the load-bearing part of notepads: the choice happens rarely, when
-switching, and never here.
+**The book it lands in** is whichever one is open, and the box never asks. That
+is load-bearing: the choice happens rarely, when switching books, and never
+here.
 
 **Where it breaks.** Anything that adds a step: a field that must be clicked, a
-category to pick, a notepad to choose, a save button. Silent failure is worse —
-if a todo does not appear, Rowan does not find out until the thing is
-forgotten.
+book to pick, a quantity split into a number and a unit, a save button. Silent
+failure is worse — a recipe that does not appear is one nobody finds out about
+until they go looking for it a month later.
 
-**The steps case.** Sometimes the thought that arrives is one thing with a few
-steps in it. Those go in as sub-todos, typed on the parent's own row — the box
-at the top of the list never asks which todo you meant, so plain Capture keeps
-its three seconds.
-
-**Specs.** `features/todo/adding.feature`, `features/todo/sub-todos.feature`,
-`features/notepads/switching.feature`
+**Specs.** `features/recipes/writing.feature`,
+`features/recipes/ingredients.feature`, `features/recipes/method.feature`,
+`features/books/switching.feature`
 
 ---
 
-## 2. Review — what is left?
+## 2. Browse — what is in this book?
 
-**Trigger.** Glancing at the tab between other work, a dozen times a day.
+**Trigger.** Standing at the fridge, deciding what to make.
 
-**Steps.** Look. That is the whole workflow.
+**Steps.** Open a book. Read the names. Open one.
 
-**Switching notepads sits here**, and nowhere else. It is the rare, deliberate
-version of the glance: not "file this correctly", but "show me the other list".
-The name of the open notepad is on screen throughout, because that is what says
-which list is being looked at.
+**Done well.** The contents is a page of names that can be read down in one
+pass, and opening one is a single click. The name of the open book is on screen
+throughout, because that is what says which book is being looked at.
 
-**Done well.** Unfinished items are legible in one glance without reading
-carefully. Done items are visibly out of the way without having moved.
+**Switching books lives here**, and nowhere else. It is the deliberate version
+of browsing: "show me the other book".
 
-**Where it breaks.** A list that reorders itself, so what was second is now
-fifth. Done and unfinished looking too similar to separate at a glance — or too
-different, so the list becomes noisy. An empty list showing a blank panel, which
-reads as "broken", not "finished".
+**Where it breaks.** Every recipe open at once, so there is nothing to read down
+— a wall of text is not a contents page. A book that rearranges itself, so what
+was second is now fifth. A book that opens onto whatever was left open a
+fortnight ago instead of onto its contents.
 
-**Specs.** `features/todo/completing.feature`, `features/todo/empty-state.feature`,
-`features/notepads/switching.feature`, `features/notepads/creating.feature`
-
----
-
-## 3. Complete — tick it off
-
-**Trigger.** Finishing something.
-
-**Steps.** Click the checkbox. Done.
-
-**Done well.** One click, instant, and the row stays where it was so the next
-click lands where expected. This is the workflow with the reward in it — it
-should feel good.
-
-**Where it breaks.** A row that jumps on being ticked, taking the next row with
-it and causing a mis-click. Any lag, which the app has no excuse for. And, once
-todos have steps under them: a parent struck through while a step below it is
-still open, which makes the list lie to the glance in workflow 2.
-
-**Sub-todos.** Ticking the last step ticks the thing itself, so finishing a
-multi-step todo needs no extra click to close it out. Ticking the parent instead
-ticks every step under it, for when it turns out the whole thing is done.
-
-**Specs.** `features/todo/completing.feature`,
-`features/todo/sub-todos-completing.feature`
+**Specs.** `features/recipes/reading.feature`,
+`features/books/switching.feature`, `features/books/creating.feature`,
+`features/recipes/empty-state.feature`
 
 ---
 
-## 4. Prune — clear out what is done or dead
+## 3. Cook from it — read it with your hands full
 
-**Trigger.** The list has grown noisy, usually end of day.
+**Trigger.** The pan is out.
 
-**Steps.** Delete finished or irrelevant todos, one at a time.
+**Steps.** The recipe is already open. Look at it. Keep looking at it.
 
-**Done well.** Fast and repeatable. The list gets shorter and the remaining
-items are all real.
+**Done well.** Ingredients first, method under them, in the order they happen.
+Legible from a step back, without clicking anything, because clicking is what
+you cannot do right now.
 
-**Where it breaks.** A confirmation on every delete, which turns pruning into a
-chore. And the opposite failure: deleting the wrong row, which has no undo. Rows
-are addressed by id precisely so that a deletion during pruning hits what was
-aimed at.
+**Where it breaks.** Anything that needs a hand: a step that must be expanded, a
+tick that must be made to see the next line, a screen that has decided you are
+finished. Anything that moves while being read.
 
-Deleting a todo that has steps under it takes them with it — the group is the
-unit, and leaving orphaned steps behind would be worse than either outcome.
+**This is the workflow the old product had nothing of**, and it is why the
+change was worth making. It is also the one with no clicks in it at all, which
+makes it the easiest to break without noticing.
 
-**A whole notepad can go too**, which is the largest thing this app can destroy.
-An empty one goes like a todo does, immediately; one with todos still in it asks
-once and says how many are about to go. That is the only question this app asks
-before deleting anything, and it is asked because the number is information
-rather than ceremony.
+**Specs.** `features/recipes/reading.feature`
 
-**Specs.** `features/todo/deleting.feature`, `features/notepads/deleting.feature`
+---
+
+## 4. Tidy — throw out what did not work
+
+**Trigger.** A recipe turned out badly, or a book is called the wrong thing.
+
+**Steps.** Delete the recipe. Rename the book. Rarely, delete a whole book.
+
+**Done well.** Rare, deliberate, and out of the way. This is maintenance, not
+hygiene: nothing accumulates here that has to be cleared, because nothing is
+finished.
+
+**Where it breaks.** Deleting the wrong thing, which has no undo — and the stakes
+are higher than they were, because a recipe may be the only copy of something
+somebody dictated once. Deleting a recipe takes its ingredients and its method
+with it; the recipe is the unit.
+
+**A whole book can go too**, which is the largest thing this app can destroy. An
+empty one goes immediately; one with recipes in it asks once and says how many
+are about to go. That is the only question this app asks before deleting
+anything, and it is asked because the number is information rather than
+ceremony.
+
+**Specs.** `features/recipes/deleting.feature`, `features/books/deleting.feature`,
+`features/books/renaming.feature`
 
 ---
 
 ## 5. Return — come back and find it intact
 
-**Trigger.** Reopening the tab. Next morning, after a restart, after a crash.
+**Trigger.** Reopening the tab. Tomorrow, next month, after a restart, after a
+crash.
 
 **Steps.** Open the app. Look.
 
-**Done well.** Everything is exactly as it was left — same items, same order,
-same ticks, and the same notepad open. Nothing to restore, nothing to confirm.
-A list saved before notepads existed opens as one, called "My list", with
-nothing else different about it.
+**Done well.** Everything is exactly as it was left — same recipes, same order,
+same ingredients, same method, and the same book open. Nothing to restore,
+nothing to confirm. Recipes saved as todos by an earlier version open as
+recipes.
 
-**Where it breaks.** This is the workflow that carries the most risk and the
-least visible surface. There is no server: `localStorage` is the only copy, it
-can be edited in devtools, overwritten by a second tab, or cleared by the
-browser. A bad read must still open a usable list — a blank screen here costs
-more than any missing feature, because it ends trust in the tool.
+**The gap between visits is now months, not hours**, which makes this the
+workflow that carries the most risk in the product. There is no server:
+`localStorage` is the only copy, it can be edited in devtools, overwritten by a
+second tab, or cleared by the browser. A bad read must still open a usable book
+— a blank screen here costs more than any missing feature, because what is lost
+is not a list of today's errands.
 
-**Specs.** `features/storage/persistence.feature`, `features/storage/recovery.feature`,
-`features/storage/notepads-migration.feature`
+**Specs.** `features/storage/persistence.feature`,
+`features/storage/recovery.feature`,
+`features/storage/books-migration.feature`
+
+---
+
+## What happened to the old five
+
+| Rowan's workflow | Nell's | |
+|---|---|---|
+| 1. Capture | 1. Write it down | Same shape, same three seconds. The thing written is bigger, so the box that starts it matters more, not less. |
+| 2. Review | 2. Browse | Was a dozen glances a day at what is left. Is now a deliberate read of a contents page. |
+| 3. Complete | — | **Gone.** Nothing is finished, so nothing is ticked. This is the change. |
+| 4. Prune | 4. Tidy | Was daily hygiene against accumulation. Is now rare correction; nothing accumulates. |
+| 5. Return | 5. Return | Unchanged in shape and more important, because the gap is months. |
+| — | 3. Cook from it | **New.** Reading something while doing something else. The old product never did this. |
 
 ---
 
 ## Reading this as a map
 
-Capture and Complete are where the value is. Review is what makes them worth
-doing. Prune is maintenance. Return is the floor everything else stands on.
+Write it down and Browse are where the value is. Cook from it is what the
+writing was for. Tidy is maintenance. Return is the floor everything else stands
+on.
 
-Most good changes make Capture or Complete shorter. Most bad ones add a step to
-Capture to serve something Rowan does once a month.
+Most good changes make writing a recipe down shorter, or make the contents
+easier to read down. Most bad ones add a field to the writing to serve something
+that happens once a year.

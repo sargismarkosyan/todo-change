@@ -50,7 +50,7 @@ A screenshot is evidence; get it into the issue if you can.
   describe it precisely in the issue and note that no file was attached.
 
 Either way, **write down what the screenshot shows**. Exact wording of visible
-text, what is misaligned and by roughly how much, what state the list is in,
+text, what is misaligned and by roughly how much, what state the contents is in,
 anything visibly wrong that the user did not call out.
 
 ## 3. Investigate before filing
@@ -66,7 +66,7 @@ complaint — go find out what is actually happening.
   A wrong guess stated as a guess is useful; a wrong guess stated as fact is not.
 - Reproduce it if you reasonably can. Serve the app
   (`python3 -m http.server 8000`) and drive it with Playwright. Read the stored
-  state with `localStorage.getItem('todo-change.todos')` and paste it into the
+  state with `localStorage.getItem('todo-change.books')` and paste it into the
   issue — a malformed or surprising stored value is very often the answer.
 - Check whether it is really about persistence, since everything here is
   `localStorage`: does it survive reload, does it break on a second tab, does it
@@ -93,7 +93,7 @@ Write the body to a scratch file and pass `--body-file` — bodies have newlines
 and backticks and will not survive being inlined.
 
 **Titles** describe the symptom from the user's side, specifically enough to be
-recognised in a list: "Deleting the last todo leaves the empty state hidden",
+recognised in a list: "Deleting the last recipe leaves the empty state hidden",
 not "delete bug".
 
 **Labels:** `from-feedback` always. Then `bug`, `enhancement`, `ux`,
@@ -133,7 +133,7 @@ build.
 - **Where:** `src/app.js:42` — `renderList()`
 - **Introduced by:** spec 0001
 - **Spec conformance:** violates spec / matches spec (the spec is wrong) / unspecced
-- **Stored state:** `todo-change.todos` = `<value at time of report>`
+- **Stored state:** `todo-change.books` = `<value at time of report>`
 - **Suspected cause:** <hypothesis, with confidence>
 
 ## What a fix would need to cover

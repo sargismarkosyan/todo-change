@@ -11,15 +11,15 @@ watches a long one, and it lives in git forever.
 
 ## What to record
 
-Capture → Complete → Prune, in that order and nothing else. Those are the three
-workflows carrying the value; see `specs/workflows.md`.
+Write it down → Browse → Cook from it, in that order and nothing else. Those are
+the three workflows carrying the value; see `specs/workflows.md`.
 
-1. The empty list, message showing.
-2. Add three todos, one at a time — a frame after each.
-3. Tick one. The line landing on the text is the moment worth holding.
-4. Delete one, so the list shortening is visible.
+1. The empty book, message showing.
+2. Write three recipes down, one at a time — a frame after each.
+3. Open one. The recipe unfolding under its name is the moment worth holding.
+4. Type an ingredient and a step into it, so it fills in on screen.
 
-Use the vocabulary's own examples, not lorem ipsum. Real-sounding todos.
+Use the vocabulary's own examples, not lorem ipsum. Real-sounding recipes.
 
 ## How
 
@@ -27,8 +27,8 @@ Use the vocabulary's own examples, not lorem ipsum. Real-sounding todos.
    and does nothing over `file://`.
 2. Drive it with the Playwright browser tools at **900×760**. After every step,
    screenshot to `docs/screenshots/.frames/NN.png` — zero-padded so they sort.
-3. Hold on a moment by writing the same frame twice. Worth holding: the strike
-   landing, and the empty state returning.
+3. Hold on a moment by writing the same frame twice. Worth holding: the recipe
+   opening, and the finished recipe with its ingredients above its method.
 4. Stitch, then clean up:
    ```sh
    python3 tools/clip.py docs/screenshots/.frames docs/screenshots/vNNN-<slug>.gif

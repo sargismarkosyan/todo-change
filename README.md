@@ -1,7 +1,10 @@
 # todo-change
 
-A browser-based todo app with no backend, built entirely by AI, one spec at a
-time. Data lives in `localStorage`.
+A browser-based recipe book with no backend, built entirely by AI, one spec at
+a time. Data lives in `localStorage`.
+
+It was a todo app for its first three versions. What it is now, and why it
+stopped being one, is [spec 0004](specs/changes/0004-recipe-book.md).
 
 This repo is a demonstration of spec-driven development: each version of the app
 is one written spec, one implementation step, one commit, one screenshot.

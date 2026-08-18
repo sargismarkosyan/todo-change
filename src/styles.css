@@ -1,29 +1,116 @@
+/* The look: a granny's recipe book — paper, ink, index cards, tape.
+   The reasoning is in specs/features/look/spec.md; the guarantees this must not
+   break are in specs/features/look/paper.feature. */
+
+/* One of this app's own files, not a font host: a <link> to one is a request on
+   every load and a second origin to depend on. See src/fonts/README.md. */
+@font-face {
+  font-family: "Caveat";
+  src: url("fonts/caveat-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --border: #e3e3df;
-  --text: #1c1c1a;
-  --muted: #6f6f68;
-  --accent: #2f6f4f;
-  --radius: 10px;
+  /* Paper darkens outward: the ground, the page, then the card on it. */
+  --paper: #e4d8bd;
+  --page: #fbf5e7;
+  --card: #fffdf6;
+
+  --rule: #d6c9ad;
+  --ink: #2e2417;
+  --faded: #756547;
+  --red: #a8443a;
+  --tape: rgb(228 209 148 / 62%);
+
+  /* Cards are cut, not rounded. */
+  --radius: 3px;
+
+  /* System stacks only — a webfont would be a request on every load, against
+     the no-backend constraint. See specs/setup/constraints.md.
+
+     Caveat leads the hand stack and is shipped with the app, so the rest of
+     that stack only matters if the file fails to load. It still ends in a serif
+     rather than the `cursive` generic: `cursive` always matches something, and
+     where no handwriting is installed that something is the default sans, which
+     lands next to a serif body looking like a mistake rather than a choice. */
+  --reading: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+    Georgia, "Times New Roman", serif;
+  --hand: "Caveat", "Segoe Print", "Segoe Script", "Bradley Hand",
+    "Snell Roundhand", "Apple Chancery", "Palatino Linotype", Palatino, Georgia,
+    serif;
 }
 
 * { box-sizing: border-box; }
 
+/* The grain is an inline SVG, so nothing is fetched. It is deliberately faint:
+   texture behind text is the fastest way to lose the glance. */
 body {
   margin: 0;
-  padding: 3rem 1rem;
-  background: var(--bg);
-  color: var(--text);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 3rem 1rem 4rem;
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font: 17px/1.6 var(--reading);
 }
 
+/* The page of the book, lying on the paper ground. The gradient is the crease
+   the binding pulls into the paper — it is what makes this a page of something
+   rather than a card floating on a colour. */
 .app {
-  max-width: 34rem;
+  position: relative;
+  max-width: 36rem;
   margin: 0 auto;
+  padding: 3.6rem 2rem 2.6rem;
+  background-color: var(--page);
+  background-image: linear-gradient(
+    to right,
+    rgb(62 42 20 / 13%),
+    rgb(62 42 20 / 3%) 1.6rem,
+    rgb(62 42 20 / 0) 3.6rem
+  );
+  box-shadow:
+    0 1px 2px rgb(62 42 20 / 20%),
+    0 14px 34px rgb(62 42 20 / 14%);
+}
+
+/* The binding: thread, not a dashed border. Short stitches with paper between
+   them, which is what the dashed line was trying and failing to suggest. */
+.app::before {
+  content: "";
+  position: absolute;
+  inset: 1rem auto 1rem 1.15rem;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(168 68 58 / 55%) 0 9px,
+    rgb(168 68 58 / 0) 9px 19px
+  );
+}
+
+/* One piece of tape, straddling the top edge so it holds the page to the
+   ground rather than floating above it. The ends are torn, and enough of the
+   paper shows through to read as tape rather than as a beige rectangle. */
+.app::after {
+  content: "";
+  position: absolute;
+  top: -0.65rem;
+  left: 50%;
+  width: 8.5rem;
+  height: 1.7rem;
+  transform: translateX(-50%) rotate(-2deg);
+  background:
+    linear-gradient(158deg, rgb(255 255 255 / 34%), rgb(255 255 255 / 0) 58%),
+    var(--tape);
+  box-shadow: 0 1px 2px rgb(62 42 20 / 18%);
+  clip-path: polygon(
+    2% 0%, 98% 0%, 100% 20%, 97% 42%, 100% 62%, 96% 82%, 99% 100%,
+    3% 100%, 0% 80%, 4% 60%, 0% 40%, 3% 20%
+  );
 }
 
 .app__header {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -33,418 +120,493 @@ body {
 
 .app__title {
   margin: 0;
-  font-size: 1.75rem;
-  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 3.6rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 0.95;
 }
 
 .app__tagline {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
+  margin: 0.35rem 0 0;
+  color: var(--faded);
+  font-size: 0.95rem;
+  font-style: italic;
 }
 
-/* The box. Capture is the workflow that matters most, so it sits above the
-   list, is focused on load, and needs no mouse. */
-/* The notepad switcher: a name, and a popover behind it. It sits in the header
-   rather than above the list, so nothing moves between the box and the todos. */
-.notepads {
+/* The book switcher: a name on a label, and a popover behind it. It sits in the
+   header rather than above the contents, so nothing moves between the box and
+   the recipes. */
+.books {
   position: relative;
   flex: none;
 }
 
-.notepads__open {
+.books__open {
   max-width: 12rem;
   overflow: hidden;
-  padding: 0.4rem 0.7rem;
-  border: 1px solid var(--border);
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-weight: 600;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgb(62 42 20 / 10%);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 1.3rem;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
 }
 
-.notepads__open::after {
+.books__open::after {
   content: " ▾";
-  color: var(--muted);
-  font-weight: 400;
+  color: var(--faded);
 }
 
-.notepads__open:hover {
-  border-color: var(--muted);
+.books__open:hover {
+  border-color: var(--red);
 }
 
-.notepads__menu {
+.books__menu {
   position: absolute;
   z-index: 1;
   top: calc(100% + 0.4rem);
   right: 0;
   width: 16rem;
   padding: 0.4rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+  background: var(--card);
+  box-shadow: 0 10px 26px rgb(62 42 20 / 22%);
+  font-size: 0.95rem;
 }
 
-.notepads__menu[hidden] {
+.books__menu[hidden] {
   display: none;
 }
 
-.notepads__list {
+.books__list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.notepads__switch {
+.books__switch {
   display: block;
   width: 100%;
-  padding: 0.4rem 0.5rem;
+  padding: 0.35rem 0.5rem;
   border: 0;
-  border-radius: calc(var(--radius) - 4px);
+  border-radius: 2px;
   background: none;
-  color: var(--text);
+  color: var(--ink);
   font: inherit;
+  font-family: var(--reading);
   text-align: left;
   cursor: pointer;
 }
 
-.notepads__switch:hover {
-  background: var(--bg);
+.books__switch:hover {
+  background: var(--page);
 }
 
-/* The open one is marked by weight and a dot, not by colour alone. */
-.notepads__switch[aria-current]::before {
-  content: "• ";
-  color: var(--accent);
+/* The open one is marked by weight and a mark, not by colour alone. */
+.books__switch[aria-current]::before {
+  content: "❧ ";
+  color: var(--red);
 }
 
-.notepads__switch[aria-current] {
-  font-weight: 600;
+.books__switch[aria-current] {
+  font-weight: 700;
 }
 
-.notepads__actions,
-.notepads__confirm {
+.books__actions,
+.books__confirm {
   margin-top: 0.4rem;
   padding-top: 0.4rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--rule);
 }
 
-.notepads__new,
-.notepads__rename {
+.books__new,
+.books__rename {
   display: flex;
   gap: 0.4rem;
   padding: 0.2rem 0.5rem 0.4rem;
 }
 
-.notepads__new-box,
-.notepads__rename-box {
+.books__new-box,
+.books__rename-box {
   min-width: 0;
   flex: 1;
   padding: 0.35rem 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) - 4px);
-  background: var(--bg);
-  color: var(--text);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--ink);
   font: inherit;
+  font-family: var(--reading);
 }
 
-.notepads__new-box::placeholder,
-.notepads__rename-box::placeholder {
-  color: var(--muted);
+.books__new-box::placeholder,
+.books__rename-box::placeholder {
+  color: var(--faded);
 }
 
-.notepads__new-add,
-.notepads__rename-add,
-.notepads__confirm-yes,
-.notepads__confirm-no {
+.books__new-add,
+.books__rename-add,
+.books__confirm-yes,
+.books__confirm-no {
   padding: 0.35rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) - 4px);
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--card);
+  color: var(--ink);
   font: inherit;
+  font-family: var(--reading);
   cursor: pointer;
 }
 
-.notepads__rename-open,
-.notepads__delete {
+.books__rename-open,
+.books__delete {
   display: block;
   width: 100%;
-  padding: 0.4rem 0.5rem;
+  padding: 0.35rem 0.5rem;
   border: 0;
-  border-radius: calc(var(--radius) - 4px);
+  border-radius: 2px;
   background: none;
-  color: var(--muted);
+  color: var(--faded);
   font: inherit;
+  font-family: var(--reading);
   text-align: left;
   cursor: pointer;
 }
 
-.notepads__rename-open:hover,
-.notepads__delete:hover {
-  background: var(--bg);
-  color: var(--text);
+.books__rename-open:hover,
+.books__delete:hover {
+  background: var(--page);
+  color: var(--ink);
 }
 
 /* The one question this app asks. It carries a number, so it is information
-   rather than ceremony — see specs/features/notepads/spec.md. */
-.notepads__question {
+   rather than ceremony — see specs/features/books/spec.md. */
+.books__question {
   margin: 0 0 0.5rem;
   padding: 0 0.5rem;
-  color: var(--text);
+  color: var(--ink);
 }
 
-.notepads__confirm {
+.books__confirm {
   padding-bottom: 0.2rem;
 }
 
-.notepads__confirm-yes,
-.notepads__confirm-no {
+.books__confirm-yes,
+.books__confirm-no {
   margin-left: 0.5rem;
 }
 
-.notepads__confirm-yes {
-  border-color: #b3261e;
-  color: #b3261e;
+.books__confirm-yes {
+  border-color: var(--red);
+  color: var(--red);
 }
 
+/* The box. Writing a recipe down is the workflow with the least room to spare
+   in it, so it sits above the contents, is focused on load, and needs no mouse. */
 .composer {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.4rem;
 }
 
 .composer__box {
   flex: 1;
   min-width: 0;
-  padding: 0.7rem 0.85rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
-  color: inherit;
+  background: var(--card);
+  box-shadow: inset 0 1px 2px rgb(62 42 20 / 6%);
+  color: var(--ink);
   font: inherit;
+  font-family: var(--reading);
 }
 
-.composer__box::placeholder { color: var(--muted); }
+.composer__box::placeholder {
+  color: var(--faded);
+  font-style: italic;
+}
 
 .composer__box:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--red);
   outline-offset: -1px;
 }
 
 .composer__add {
-  padding: 0.7rem 1.1rem;
-  background: var(--accent);
+  padding: 0.65rem 1.1rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
+  background: var(--red);
+  color: #fff8ec;
+  font-family: var(--hand);
+  font-size: 1.3rem;
   cursor: pointer;
 }
 
-.composer__add:hover { filter: brightness(1.08); }
+.composer__add:hover { filter: brightness(1.1); }
 
-.list {
+/* The contents: a page of names to read down. */
+.contents {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* A todo is a card, not a row: it may have a group of sub-todos folded inside
-   it. The row is the card's first line. */
-.todo {
-  background: var(--surface);
-  border: 1px solid var(--border);
+/* A recipe is an index card. Closed it is one line; open it unfolds what it
+   takes and what to do, in place, without leaving the contents. The red rule
+   down the left is the card's margin. */
+.recipe {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--red);
   border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 1px 2px rgb(62 42 20 / 12%);
 }
 
-.todo + .todo { margin-top: 0.4rem; }
+.recipe + .recipe { margin-top: 0.5rem; }
 
-.todo__row {
+.recipe--open {
+  box-shadow:
+    0 1px 2px rgb(62 42 20 / 14%),
+    0 6px 16px rgb(62 42 20 / 12%);
+}
+
+.recipe__row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
+  padding: 0.6rem 0.8rem;
 }
 
-.todo__check {
-  flex: none;
-  width: 1.15rem;
-  height: 1.15rem;
-  margin: 0;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.todo__text {
+/* The name is the whole target: opening a recipe is the click this page is for.
+   It is set in the reading face, not the handwriting — the contents is the page
+   that gets read down, and that is exactly where handwriting costs most. */
+.recipe__name {
   flex: 1;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 1.05rem;
   overflow-wrap: anywhere;
+  text-align: left;
   cursor: pointer;
 }
 
-/* Done reads as a line through the text *and* muted. The line is what carries
-   the meaning at a glance; the muting is what stops a list of finished todos
-   shouting as loudly as the two that are left. See specs/features/todo/spec.md. */
-.todo--done .todo__text {
-  text-decoration-line: line-through;
-  text-decoration-thickness: 1px;
-  color: var(--muted);
+.recipe__name::before {
+  content: "▸ ";
+  color: var(--red);
 }
 
-.todo__delete {
+.recipe--open > .recipe__row > .recipe__name {
+  font-weight: 700;
+}
+
+.recipe--open > .recipe__row > .recipe__name::before {
+  content: "▾ ";
+}
+
+.recipe__delete {
   flex: none;
   width: 1.75rem;
   height: 1.75rem;
   padding: 0;
-  background: none;
   border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--muted);
+  border-radius: 2px;
+  background: none;
+  color: var(--faded);
   font: inherit;
   font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
 }
 
-/* No confirmation on delete — pruning is meant to be repeatable, not a chore —
-   so the control stays quiet until it is aimed at. */
-.todo__delete:hover,
-.todo__add-sub:hover,
-.sub-todo__delete:hover {
-  background: var(--bg);
-  border-color: var(--border);
-  color: var(--text);
+/* No confirmation on delete — tidying is meant to be repeatable, not a chore —
+   so the control stays quiet until it is aimed at. Quiet is literal here: a
+   filled-in recipe carries eight of these down its right-hand side, and at full
+   strength they read as an app sitting on top of a recipe card.
+
+   Opacity only, and no transition: this reveals a control, it does not move
+   one. See specs/features/look/spec.md. */
+.recipe__delete,
+.ingredient__delete,
+.step__delete {
+  opacity: 0.4;
 }
 
-/* Opens the sub-todo box. Same weight as delete: present on every row, loud on
-   none of them, because most todos never grow steps. */
-.todo__add-sub {
-  flex: none;
-  width: 1.75rem;
-  height: 1.75rem;
+.recipe__row:hover .recipe__delete,
+.ingredient:hover .ingredient__delete,
+.step:hover .step__delete,
+.recipe__delete:focus-visible,
+.ingredient__delete:focus-visible,
+.step__delete:focus-visible {
+  opacity: 1;
+}
+
+.recipe__delete:hover,
+.ingredient__delete:hover,
+.step__delete:hover {
+  border-color: var(--rule);
+  background: var(--page);
+  color: var(--red);
+}
+
+.recipe__body {
+  padding: 0 0.8rem 0.6rem;
+}
+
+.recipe__group + .recipe__group {
+  margin-top: 0.9rem;
+}
+
+/* The two headings are the one place the handwriting does real work: they label
+   the card without being read word by word. */
+.recipe__heading {
+  margin: 0 0 0.15rem;
+  color: var(--red);
+  font-family: var(--hand);
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Ruled like a card: a line under every entry, which always lands with the
+   text rather than drifting out of step with it. */
+.recipe__ingredients-lines,
+.recipe__steps-lines {
+  margin: 0;
   padding: 0;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--muted);
-  font: inherit;
-  font-size: 1.15rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-/* The group. Indented to the parent's text, with a rule down the side — the
-   indent alone leaves it ambiguous which todo a step belongs to once two
-   groups sit next to each other. */
-.todo__subs {
-  margin: 0 0 0 2.75rem;
-  padding: 0 0.85rem 0.5rem 0.7rem;
-  border-left: 2px solid var(--border);
   list-style: none;
 }
 
-.sub-todo {
+.ingredient,
+.step {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.2rem 0;
-  font-size: 0.95rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+  font-size: 1rem;
 }
 
-.sub-todo__check {
+.recipe__steps-lines {
+  counter-reset: step;
+}
+
+.step {
+  counter-increment: step;
+}
+
+.step::before {
+  content: counter(step) ".";
   flex: none;
-  width: 1rem;
-  height: 1rem;
-  margin: 0;
-  accent-color: var(--accent);
-  cursor: pointer;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
 }
 
-.sub-todo__text {
+.ingredient__text,
+.step__text {
   flex: 1;
   min-width: 0;
+  color: var(--ink);
+  font-family: var(--reading);
   overflow-wrap: anywhere;
-  cursor: pointer;
 }
 
-/* Same pairing as a done todo, one size down. A parent is only done when all of
-   these are, so a struck-through parent always sits above struck-through steps. */
-.sub-todo--done .sub-todo__text {
-  text-decoration-line: line-through;
-  text-decoration-thickness: 1px;
-  color: var(--muted);
-}
-
-.sub-todo__delete {
+.ingredient__delete,
+.step__delete {
   flex: none;
   width: 1.4rem;
   height: 1.4rem;
   padding: 0;
-  background: none;
   border: 1px solid transparent;
-  border-radius: 5px;
-  color: var(--muted);
+  border-radius: 2px;
+  background: none;
+  color: var(--faded);
   font: inherit;
   line-height: 1;
   cursor: pointer;
 }
 
-/* Opened by the + on a row, and left open afterwards so a run of steps is one
-   uninterrupted stretch of typing. */
-.sub-composer {
+/* One box per group, at the bottom of it, left open the whole time the recipe
+   is — a recipe is typed in one sitting, six ingredients at a time. */
+.ingredient-composer,
+.step-composer {
   display: flex;
   gap: 0.4rem;
-  margin: 0 0.85rem 0.6rem 2.75rem;
+  margin-top: 0.45rem;
 }
 
-.sub-composer__box {
+.ingredient-composer__box,
+.step-composer__box {
   flex: 1;
   min-width: 0;
-  padding: 0.4rem 0.6rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: inherit;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--ink);
   font: inherit;
+  font-family: var(--reading);
   font-size: 0.95rem;
 }
 
-.sub-composer__box::placeholder { color: var(--muted); }
+.ingredient-composer__box::placeholder,
+.step-composer__box::placeholder {
+  color: var(--faded);
+  font-style: italic;
+}
 
-.sub-composer__box:focus-visible {
-  outline: 2px solid var(--accent);
+.ingredient-composer__box:focus-visible,
+.step-composer__box:focus-visible {
+  outline: 2px solid var(--red);
   outline-offset: -1px;
 }
 
-.sub-composer__add {
-  padding: 0.4rem 0.8rem;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--muted);
+.ingredient-composer__add,
+.step-composer__add {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--card);
+  color: var(--faded);
   font: inherit;
+  font-family: var(--reading);
   font-size: 0.95rem;
   cursor: pointer;
 }
 
-.sub-composer__add:hover {
-  background: var(--bg);
-  color: var(--text);
+.ingredient-composer__add:hover,
+.step-composer__add:hover {
+  background: var(--page);
+  color: var(--ink);
 }
 
-/* An empty list says it is empty. A blank panel reads as "broken", not "done". */
+/* An empty book says it is empty. A blank panel reads as "broken", not "new". */
 .empty {
   margin: 0;
-  padding: 1.5rem;
-  background: var(--surface);
-  border: 1px dashed var(--border);
+  padding: 1.6rem;
+  border: 1px dashed var(--rule);
   border-radius: var(--radius);
-  color: var(--muted);
+  background: none;
+  color: var(--faded);
+  font-family: var(--hand);
+  font-size: 1.45rem;
   text-align: center;
+}
+
+.empty[hidden] {
+  display: none;
 }

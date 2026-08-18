@@ -4,84 +4,74 @@ Feature: Surviving bad stored data
   localStorage is editable by anyone with devtools and shared with every other
   tab. The app must open on a usable screen no matter what it finds there.
 
-  The examples naming "todo-change.todos" are the migration read — a list saved
-  before notepads existed is untrusted in exactly the same way as one saved
-  after, and it lands in a notepad called "My list" either way.
+  The examples naming the older keys are the migration reads — a notepad saved
+  by version 0003, or a bare list saved before that, is untrusted in exactly the
+  same way as a book saved after, and it opens as a usable book either way.
 
   @rule:recover-from-missing-key
-  Rule: A browser with nothing stored starts on one empty notepad
+  Rule: A browser with nothing stored starts on one empty book
 
     Example: a browser that has never opened the app
-      Given "todo-change.notepads" is not set
+      Given "todo-change.books" is not set
+      And "todo-change.notepads" is not set
       And "todo-change.todos" is not set
       When I open the app
-      Then the open notepad is named "My list"
-      And the list is empty
-      And I see the message "Nothing to do yet."
+      Then the open book is named "My book"
+      And the contents is empty
+      And I see the message "No recipes in this book yet."
 
   @rule:recover-from-unreadable-data
   Rule: Unreadable stored data does not break the app
 
     Example: the value is not valid JSON
-      Given "todo-change.todos" holds "{not json"
+      Given "todo-change.books" holds "{not json"
       When I open the app
-      Then the list is empty
+      Then the open book is named "My book"
+      And the contents is empty
 
     Example: the value is JSON but the wrong shape
-      Given "todo-change.todos" holds "{\"todos\":\"nope\"}"
+      Given "todo-change.books" holds "{\"books\":\"nope\"}"
       When I open the app
-      Then the list is empty
+      Then the contents is empty
 
-    Example: one entry in the array is not a todo
-      Given "todo-change.todos" holds a list of:
-        | {"id": "a", "text": "Buy milk", "done": false} |
-        | {"nonsense": true}                             |
+    Example: one recipe in a book is not a recipe
+      Given "todo-change.books" holds:
+        | {"books": [{"id": "b1", "name": "Sweets", "recipes": [{"id": "r1", "name": "Apple cake"}, {"nonsense": true}]}], "openId": "b1"} |
       When I open the app
-      Then the list reads:
-        | Buy milk |
+      Then the contents reads:
+        | Apple cake |
 
   @rule:recover-from-bad-sub-todos
-  Rule: Broken nesting still opens a usable list
+  Rule: Broken ingredients or method still open a usable recipe
 
-    Example: subTodos holds something that is not a list
-      Given "todo-change.todos" holds a list of:
-        | {"id": "a", "text": "Buy milk", "done": false, "subTodos": "nope"} |
+    Example: ingredients holds something that is not a list
+      Given "todo-change.books" holds:
+        | {"books": [{"id": "b1", "name": "Sweets", "recipes": [{"id": "r1", "name": "Apple cake", "ingredients": "nope"}]}], "openId": "b1"} |
       When I open the app
-      Then the list reads:
-        | Buy milk |
-      And "Buy milk" has no sub-todos
+      And I open the recipe "Apple cake"
+      Then "Apple cake" shows no ingredients
 
-    Example: one sub-todo entry is not a todo
-      Given "todo-change.todos" holds a list of:
-        | {"id": "a", "text": "Sort out car insurance", "done": false, "subTodos": [{"id": "b", "text": "Call current insurer", "done": false}, {"nonsense": true}]} |
+    Example: one step is not a step, and a stored tick is not carried
+      Given "todo-change.books" holds:
+        | {"books": [{"id": "b1", "name": "Sweets", "recipes": [{"id": "r1", "name": "Apple cake", "steps": [{"id": "s1", "text": "Heat the oven to 180C", "done": true}, {"nonsense": true}]}]}], "openId": "b1"} |
       When I open the app
-      Then "Sort out car insurance" has the sub-todos:
-        | Call current insurer |
-
-    Example: a parent stored as done over an unfinished sub-todo
-      Given "todo-change.todos" holds a list of:
-        | {"id": "a", "text": "Sort out car insurance", "done": true, "subTodos": [{"id": "b", "text": "Call current insurer", "done": false}]} |
-      When I open the app
-      Then "Sort out car insurance" is shown as unfinished
+      And I open the recipe "Apple cake"
+      Then "Apple cake" shows the method:
+        | Heat the oven to 180C |
+      And nothing on screen offers a tick box
 
   @rule:recover-from-bad-notepads
-  Rule: Junk in the notepads key still opens a usable notepad
+  Rule: Junk in the books key still opens a usable book
 
-    Example: the value is not valid JSON
-      Given "todo-change.notepads" holds "{not json"
+    Example: one entry in the books is not a book
+      Given "todo-change.books" holds:
+        | {"books": [{"id": "b1", "name": "Sweets", "recipes": []}, {"nonsense": true}], "openId": "b1"} |
       When I open the app
-      Then the open notepad is named "My list"
-      And the list is empty
+      Then the books are:
+        | Sweets |
 
-    Example: one entry in the notepads is not a notepad
-      Given "todo-change.notepads" holds:
-        | {"notepads": [{"id": "a", "name": "Home", "todos": []}, {"nonsense": true}], "openId": "a"} |
+    Example: the book said to be open is not there
+      Given "todo-change.books" holds:
+        | {"books": [{"id": "b1", "name": "Sweets", "recipes": []}], "openId": "gone"} |
       When I open the app
-      Then the notepads are:
-        | Home |
-
-    Example: the notepad said to be open is not there
-      Given "todo-change.notepads" holds:
-        | {"notepads": [{"id": "a", "name": "Home", "todos": []}], "openId": "gone"} |
-      When I open the app
-      Then the open notepad is named "Home"
+      Then the open book is named "Sweets"

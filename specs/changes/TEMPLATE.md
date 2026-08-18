@@ -8,7 +8,7 @@
 Which persona, and which of *their* situations. Name the workflow from
 [workflows.md](../workflows.md) this sits in, and where in it.
 
-If this does not serve Rowan, say so here and argue for it anyway — that is a
+If this does not serve Nell, say so here and argue for it anyway — that is a
 legitimate move, but it has to be made out loud. See [persona.md](../persona.md).
 
 ## The job behind the request

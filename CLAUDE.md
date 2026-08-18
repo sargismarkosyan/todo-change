@@ -1,9 +1,10 @@
 # CLAUDE.md
 
-`todo-change` is a **test bed for spec-driven development**. The todo app being
-built matters less than the process: every change starts as a written spec, gets
-implemented in one small step, and is captured as one commit. The deliverable is
-a **series of screenshots**, one per version.
+`todo-change` is a **test bed for spec-driven development**. The app being built
+— a recipe book since version 4, a todo list before it — matters less than the
+process: every change starts as a written spec, gets implemented in one small
+step, and is captured as one commit. The deliverable is a **series of
+screenshots**, one per version.
 
 The repo is written **only by AI**. The human uses the app, reports what they
 find, and approves specs.

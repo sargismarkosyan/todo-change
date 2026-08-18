@@ -94,7 +94,7 @@ deliberate one — not a `--force`.
 One change spec, one commit. Message format:
 
 ```
-spec 0003: filter todos by status
+spec 0005: a paper ground and ink on it
 
 <body: what changed and, more usefully, why this shape rather than the
 alternatives — the reasoning that will not survive in the diff>

@@ -7,138 +7,100 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { openApp, openStore, storedList, storedNotepads } from '../support/app.mjs';
+import { openApp, openStore, storedBooks } from '../support/app.mjs';
+
+const MESSAGE = 'No recipes in this book yet.';
 
 rule('recover-from-missing-key', () => {
   test('a browser that has never opened the app', () => {
     const app = openApp();
     assert.equal(app.stored(), null, 'nothing should have been stored yet');
-    assert.deepEqual(app.list(), []);
-    assert.equal(app.message(), 'Nothing to do yet.');
+    assert.equal(app.openBook(), 'My book');
+    assert.deepEqual(app.contents(), []);
+    assert.equal(app.message(), MESSAGE);
   });
 });
 
 rule('recover-from-unreadable-data', () => {
   test('the value is not valid JSON', () => {
-    const app = openApp('{not json');
-    assert.deepEqual(app.list(), []);
-    assert.equal(app.message(), 'Nothing to do yet.');
+    const app = openStore('{not json');
+    assert.equal(app.openBook(), 'My book');
+    assert.deepEqual(app.contents(), []);
+    assert.equal(app.message(), MESSAGE);
   });
 
   test('the value is JSON but the wrong shape', () => {
-    const app = openApp('{"todos":"nope"}');
-    assert.deepEqual(app.list(), []);
+    for (const raw of ['{"books":"nope"}', '"nope"', '42', '[]', 'null']) {
+      const app = openStore(raw);
+      assert.deepEqual(app.contents(), [], `for ${raw}`);
+      assert.equal(app.openBook(), 'My book', `for ${raw}`);
+    }
   });
 
-  test('one entry in the array is not a todo', () => {
-    const app = openApp(
-      storedList({ id: 'a', text: 'Buy milk', done: false }, { nonsense: true }),
+  test('one recipe in a book is not a recipe', () => {
+    const app = openStore(
+      storedBooks(
+        [{ id: 'b1', name: 'Sweets', recipes: [{ id: 'r1', name: 'Apple cake' }, { nonsense: true }] }],
+        'b1',
+      ),
     );
-    assert.deepEqual(app.list(), ['Buy milk'], 'the good todo should have survived');
-  });
-
-  test('the app is still usable after a bad read', () => {
-    const app = openApp('{not json');
-    app.add('Buy milk');
-    assert.deepEqual(app.list(), ['Buy milk']);
-    assert.deepEqual(app.reload().list(), ['Buy milk']);
+    assert.deepEqual(app.contents(), ['Apple cake']);
   });
 });
 
 rule('recover-from-bad-sub-todos', () => {
-  test('subTodos holds something that is not a list', () => {
-    const app = openApp(storedList({ id: 'a', text: 'Buy milk', done: false, subTodos: 'nope' }));
-    assert.deepEqual(app.list(), ['Buy milk']);
-    assert.deepEqual(app.subTodos('Buy milk'), []);
-  });
-
-  test('one sub-todo entry is not a todo', () => {
-    const app = openApp(
-      storedList({
-        id: 'a',
-        text: 'Sort out car insurance',
-        done: false,
-        subTodos: [{ id: 'b', text: 'Call current insurer', done: false }, { nonsense: true }],
-      }),
-    );
-    assert.deepEqual(app.subTodos('Sort out car insurance'), ['Call current insurer']);
-  });
-
-  test('a parent stored as done over an unfinished sub-todo', () => {
-    const app = openApp(
-      storedList({
-        id: 'a',
-        text: 'Sort out car insurance',
-        done: true,
-        subTodos: [{ id: 'b', text: 'Call current insurer', done: false }],
-      }),
-    );
-    assert.equal(
-      app.isDone('Sort out car insurance'),
-      false,
-      'the screen must never show a struck-through parent over an open step',
-    );
-    assert.equal(app.hasLineThrough('Sort out car insurance'), false);
-  });
-
-  test('a list saved before sub-todos existed reads exactly as it did', () => {
-    const app = openApp(
-      storedList(
-        { id: 'a', text: 'Buy milk', done: false },
-        { id: 'b', text: 'Call the bank', done: true },
+  test('ingredients holds something that is not a list', () => {
+    const app = openStore(
+      storedBooks(
+        [
+          {
+            id: 'b1',
+            name: 'Sweets',
+            recipes: [{ id: 'r1', name: 'Apple cake', ingredients: 'nope' }],
+          },
+        ],
+        'b1',
       ),
     );
-    assert.deepEqual(app.list(), ['Buy milk', 'Call the bank']);
-    assert.equal(app.isDone('Call the bank'), true);
-    assert.deepEqual(app.subTodos('Buy milk'), []);
+    app.openRecipe('Apple cake');
+    assert.deepEqual(app.ingredients('Apple cake'), []);
+  });
+
+  test('one step is not a step, and a stored tick is not carried', () => {
+    const app = openStore(
+      storedBooks(
+        [
+          {
+            id: 'b1',
+            name: 'Sweets',
+            recipes: [
+              {
+                id: 'r1',
+                name: 'Apple cake',
+                steps: [{ id: 's1', text: 'Heat the oven to 180C', done: true }, { nonsense: true }],
+              },
+            ],
+          },
+        ],
+        'b1',
+      ),
+    );
+    app.openRecipe('Apple cake');
+    assert.deepEqual(app.method('Apple cake'), ['Heat the oven to 180C']);
+    assert.equal(app.offersTickBox(), false, 'a stored tick is not a tick box');
   });
 });
 
 rule('recover-from-bad-notepads', () => {
-  test('the value is not valid JSON', () => {
-    const app = openStore('{not json');
-    assert.equal(app.openNotepad(), 'My list');
-    assert.deepEqual(app.list(), []);
-    assert.equal(app.message(), 'Nothing to do yet.');
-  });
-
-  test('the value is JSON but the wrong shape', () => {
-    const app = openStore('{"notepads":"nope"}');
-    assert.equal(app.openNotepad(), 'My list');
-    assert.deepEqual(app.list(), []);
-  });
-
-  test('one entry in the notepads is not a notepad', () => {
+  test('one entry in the books is not a book', () => {
     const app = openStore(
-      storedNotepads([{ id: 'a', name: 'Home', todos: [] }, { nonsense: true }], 'a'),
+      storedBooks([{ id: 'b1', name: 'Sweets', recipes: [] }, { nonsense: true }], 'b1'),
     );
-    assert.deepEqual(app.notepads(), ['Home']);
+    assert.deepEqual(app.books(), ['Sweets']);
   });
 
-  test('the notepad said to be open is not there', () => {
-    const app = openStore(storedNotepads([{ id: 'a', name: 'Home', todos: [] }], 'gone'));
-    assert.equal(app.openNotepad(), 'Home');
-  });
-
-  test('a junk todo inside a good notepad costs its neighbours nothing', () => {
-    const app = openStore(
-      storedNotepads(
-        [
-          {
-            id: 'a',
-            name: 'Home',
-            todos: [{ id: 't', text: 'Buy milk', done: false }, { nonsense: true }],
-          },
-        ],
-        'a',
-      ),
-    );
-    assert.deepEqual(app.list(), ['Buy milk']);
-  });
-
-  test('the app is still usable after a bad read', () => {
-    const app = openStore('{not json');
-    app.add('Buy milk');
-    assert.deepEqual(app.reload().list(), ['Buy milk']);
+  test('the book said to be open is not there', () => {
+    const app = openStore(storedBooks([{ id: 'b1', name: 'Sweets', recipes: [] }], 'gone'));
+    assert.equal(app.openBook(), 'Sweets');
   });
 });
