@@ -11,7 +11,6 @@ Feature: Sub-todos
   Background:
     Given the app is open
 
-  @planned
   @rule:sub-todo-added-under-parent
   Rule: A sub-todo is typed on its parent's row and appears beneath it
 
@@ -31,7 +30,6 @@ Feature: Sub-todos
         | Water plants           |
         | Sort out car insurance |
 
-  @planned
   @rule:sub-todos-keep-typing-order
   Rule: Sub-todos stay in the order they were typed
 
@@ -46,7 +44,6 @@ Feature: Sub-todos
         | Compare two quotes    |
         | Cancel the old policy |
 
-  @planned
   @rule:sub-todo-rejects-blank
   Rule: Blank text does not become a sub-todo
 
@@ -56,7 +53,6 @@ Feature: Sub-todos
       When I submit "   " under "Sort out car insurance"
       Then "Sort out car insurance" has no sub-todos
 
-  @planned
   @rule:sub-todo-depth-is-one
   Rule: A sub-todo cannot have sub-todos of its own
 

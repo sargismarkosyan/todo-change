@@ -34,7 +34,6 @@ Feature: Surviving bad stored data
       Then the list reads:
         | Buy milk |
 
-  @planned
   @rule:recover-from-bad-sub-todos
   Rule: Broken nesting still opens a usable list
 

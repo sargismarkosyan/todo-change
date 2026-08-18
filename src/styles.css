@@ -83,17 +83,22 @@ body {
   list-style: none;
 }
 
+/* A todo is a card, not a row: it may have a group of sub-todos folded inside
+   it. The row is the card's first line. */
 .todo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
 .todo + .todo { margin-top: 0.4rem; }
+
+.todo__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+}
 
 .todo__check {
   flex: none;
@@ -137,9 +142,127 @@ body {
 
 /* No confirmation on delete — pruning is meant to be repeatable, not a chore —
    so the control stays quiet until it is aimed at. */
-.todo__delete:hover {
+.todo__delete:hover,
+.todo__add-sub:hover,
+.sub-todo__delete:hover {
   background: var(--bg);
   border-color: var(--border);
+  color: var(--text);
+}
+
+/* Opens the sub-todo box. Same weight as delete: present on every row, loud on
+   none of them, because most todos never grow steps. */
+.todo__add-sub {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* The group. Indented to the parent's text, with a rule down the side — the
+   indent alone leaves it ambiguous which todo a step belongs to once two
+   groups sit next to each other. */
+.todo__subs {
+  margin: 0 0 0 2.75rem;
+  padding: 0 0.85rem 0.5rem 0.7rem;
+  border-left: 2px solid var(--border);
+  list-style: none;
+}
+
+.sub-todo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+  font-size: 0.95rem;
+}
+
+.sub-todo__check {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.sub-todo__text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+/* Same pairing as a done todo, one size down. A parent is only done when all of
+   these are, so a struck-through parent always sits above struck-through steps. */
+.sub-todo--done .sub-todo__text {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--muted);
+}
+
+.sub-todo__delete {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--muted);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Opened by the + on a row, and left open afterwards so a run of steps is one
+   uninterrupted stretch of typing. */
+.sub-composer {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0 0.85rem 0.6rem 2.75rem;
+}
+
+.sub-composer__box {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: inherit;
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.sub-composer__box::placeholder { color: var(--muted); }
+
+.sub-composer__box:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.sub-composer__add {
+  padding: 0.4rem 0.8rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.sub-composer__add:hover {
+  background: var(--bg);
   color: var(--text);
 }
 

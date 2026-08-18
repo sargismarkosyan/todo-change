@@ -29,7 +29,6 @@ Feature: Deleting a todo
       When I delete "Buy milk"
       Then the list is empty
 
-  @planned
   @rule:delete-parent-deletes-sub-todos
   Rule: Deleting a parent takes its sub-todos with it
 

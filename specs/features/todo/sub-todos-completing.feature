@@ -16,7 +16,6 @@ Feature: A parent todo and its sub-todos agree
       | Call current insurer |
       | Compare two quotes   |
 
-  @planned
   @rule:parent-done-when-all-sub-todos-done
   Rule: Ticking the last unfinished sub-todo marks the parent done
 
@@ -26,7 +25,6 @@ Feature: A parent todo and its sub-todos agree
       When I tick "Compare two quotes"
       Then "Sort out car insurance" is shown as done
 
-  @planned
   @rule:parent-reopens-when-a-sub-todo-is-unticked
   Rule: Unticking a sub-todo makes the parent unfinished again
 
@@ -36,7 +34,6 @@ Feature: A parent todo and its sub-todos agree
       When I untick "Call current insurer"
       Then "Sort out car insurance" is shown as unfinished
 
-  @planned
   @rule:ticking-parent-ticks-sub-todos
   Rule: Ticking a parent ticks everything under it, and unticking clears them
 
@@ -51,7 +48,6 @@ Feature: A parent todo and its sub-todos agree
       Then "Call current insurer" is shown as unfinished
       And "Compare two quotes" is shown as unfinished
 
-  @planned
   @rule:new-sub-todo-reopens-parent
   Rule: Adding a sub-todo to a done parent makes it unfinished
 
@@ -61,7 +57,6 @@ Feature: A parent todo and its sub-todos agree
       Then "Sort out car insurance" is shown as unfinished
       And "Call current insurer" is shown as done
 
-  @planned
   @rule:deleting-sub-todos-settles-the-parent
   Rule: Deleting sub-todos leaves the parent agreeing with what is left
 

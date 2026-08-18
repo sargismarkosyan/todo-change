@@ -44,3 +44,52 @@ rule('recover-from-unreadable-data', () => {
     assert.deepEqual(app.reload().list(), ['Buy milk']);
   });
 });
+
+rule('recover-from-bad-sub-todos', () => {
+  test('subTodos holds something that is not a list', () => {
+    const app = openApp(storedList({ id: 'a', text: 'Buy milk', done: false, subTodos: 'nope' }));
+    assert.deepEqual(app.list(), ['Buy milk']);
+    assert.deepEqual(app.subTodos('Buy milk'), []);
+  });
+
+  test('one sub-todo entry is not a todo', () => {
+    const app = openApp(
+      storedList({
+        id: 'a',
+        text: 'Sort out car insurance',
+        done: false,
+        subTodos: [{ id: 'b', text: 'Call current insurer', done: false }, { nonsense: true }],
+      }),
+    );
+    assert.deepEqual(app.subTodos('Sort out car insurance'), ['Call current insurer']);
+  });
+
+  test('a parent stored as done over an unfinished sub-todo', () => {
+    const app = openApp(
+      storedList({
+        id: 'a',
+        text: 'Sort out car insurance',
+        done: true,
+        subTodos: [{ id: 'b', text: 'Call current insurer', done: false }],
+      }),
+    );
+    assert.equal(
+      app.isDone('Sort out car insurance'),
+      false,
+      'the screen must never show a struck-through parent over an open step',
+    );
+    assert.equal(app.hasLineThrough('Sort out car insurance'), false);
+  });
+
+  test('a list saved before sub-todos existed reads exactly as it did', () => {
+    const app = openApp(
+      storedList(
+        { id: 'a', text: 'Buy milk', done: false },
+        { id: 'b', text: 'Call the bank', done: true },
+      ),
+    );
+    assert.deepEqual(app.list(), ['Buy milk', 'Call the bank']);
+    assert.equal(app.isDone('Call the bank'), true);
+    assert.deepEqual(app.subTodos('Buy milk'), []);
+  });
+});

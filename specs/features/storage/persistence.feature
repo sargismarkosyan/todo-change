@@ -28,7 +28,6 @@ Feature: Todos survive a reload
       And I reload the page
       Then the list is empty
 
-  @planned
   @rule:persist-sub-todos
   Rule: Sub-todos come back with their parent, in order and state
 

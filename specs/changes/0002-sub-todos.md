@@ -1,6 +1,6 @@
 # Spec 0002: sub-todos
 
-- **Status:** proposed
+- **Status:** approved
 - **Issue:** none — direct request
 
 ## Who this is for
