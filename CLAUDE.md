@@ -21,9 +21,10 @@ problems, and report them. The loop is:
    writing an issue by hand.
 2. **AI** runs the `feedback` skill: it pulls every distinct insight out of what
    the human said, investigates the code, and files researched **GitHub issues**.
-3. **AI** picks up an open issue and writes the spec: Gherkin rules in
-   `specs/features/`, tagged `@planned`, plus a numbered change spec in
-   `specs/changes/`.
+3. **AI** picks up an open issue and runs the `refine-spec` skill: it digs out
+   the job behind the request, checks it against the persona and workflows, and
+   writes the spec — Gherkin rules in `specs/features/` tagged `@planned`, plus
+   a numbered change spec in `specs/changes/`.
 4. **Human** approves the spec (or asks for edits).
 5. **AI** implements it, removes the `@planned` tags, writes the tests that
    reference those rules, and commits once `npm run verify` is green.
@@ -32,7 +33,8 @@ problems, and report them. The loop is:
 Rules that follow from this:
 
 - **One change spec = one step = one version.** Do not bundle unrelated changes.
-- **Spec before code.** No implementation without an approved change spec.
+- **Spec before code.** No implementation without an approved change spec, and
+  no change spec without running `refine-spec` first — a request is not a spec.
 - **Feedback is never fixed on the spot.** It becomes an issue, then a spec,
   then a commit.
 - **No silent scope growth.** Spotted something else broken? File it as its own
@@ -46,10 +48,16 @@ Three layers, described in full in [specs/README.md](specs/README.md):
 
 ```
 specs/spec.md                    product-level prose — why, vocabulary, contracts
+specs/persona.md                 who the app is for, and who it is not for
+specs/workflows.md               the five things they actually do
 specs/features/<area>/spec.md    area-level prose
 specs/features/<area>/*.feature  Gherkin — the enforced contract
 specs/changes/NNNN-*.md          one numbered change spec per version
 ```
+
+`persona.md` and `workflows.md` are what a request gets measured against. Every
+change spec has to name the persona and the workflow step it serves — the
+`refine-spec` skill exists to make that happen before any code does.
 
 Feature files are small — one component or behaviour each — and every Feature
 and Rule carries a stable id tag:
@@ -152,7 +160,7 @@ src/                  app modules and styles
 specs/                see specs/README.md
 tests/                unit and behaviour tests
 tools/                the pipeline: gherkin.mjs, trace.mjs, test.mjs
-.claude/skills/       project skills, including `feedback`
+.claude/skills/       project skills: `refine-spec`, `feedback`
 .github/workflows/    CI/CD
 docs/screenshots/     the screenshot series, one per version
 docs/feedback/        screenshots attached to issues
