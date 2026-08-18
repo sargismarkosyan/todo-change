@@ -139,6 +139,56 @@ export function addStep(recipes, recipeId, text) {
 }
 
 /**
+ * `recipes` with one line moved to sit immediately before or after another, in
+ * its own group, or `recipes` unchanged when the move is not a move.
+ *
+ * A person moves a line; the app never does. That is not a contradiction of
+ * "nothing rearranges itself" — that promise is about the app reordering things
+ * under somebody's eye, and this is the opposite. See
+ * specs/features/recipes/spec.md.
+ *
+ * Only within one group: an ingredient cannot become a step. What a recipe
+ * takes and what you do with it are two different lists that happen to sit near
+ * each other, so a line whose target is in the other group does not move.
+ *
+ * Unchanged is returned as the identical array where nothing happens, so a
+ * no-op move writes nothing and repaints nothing.
+ */
+export function moveLine(recipes, recipeId, group, lineId, targetId, before) {
+  if (lineId === targetId) return recipes;
+
+  return recipes.map((recipe) => {
+    if (recipe.id !== recipeId) return recipe;
+
+    const lines = linesOf(recipe, group);
+    const from = lines.findIndex((line) => line.id === lineId);
+    const onto = lines.findIndex((line) => line.id === targetId);
+    if (from === -1 || onto === -1) return recipe;
+
+    const without = lines.filter((line) => line.id !== lineId);
+    const at = without.findIndex((line) => line.id === targetId) + (before ? 0 : 1);
+    const moved = [...without.slice(0, at), lines[from], ...without.slice(at)];
+
+    // A line dropped where it already was is not a change.
+    if (moved.every((line, index) => line.id === lines[index].id)) return recipe;
+    return { ...recipe, [group]: moved };
+  });
+}
+
+/**
+ * The line one place up or down from `lineId` in its group, or `null` at the
+ * ends. What the arrow keys move against, and what makes the ends hold.
+ */
+export function neighbourOf(recipes, recipeId, group, lineId, step) {
+  const recipe = recipes.find((each) => each.id === recipeId);
+  if (!recipe) return null;
+  const lines = linesOf(recipe, group);
+  const at = lines.findIndex((line) => line.id === lineId);
+  if (at === -1) return null;
+  return lines[at + step] ?? null;
+}
+
+/**
  * `recipes` without whatever carries `id` — a whole recipe, one ingredient, or
  * one step. Rows are addressed by id, never by index.
  *

@@ -4,7 +4,15 @@
 // storage.mjs, none of which knows a document exists. Keeping this layer thin is
 // what makes the rest directly testable. See specs/setup/constraints.md.
 
-import { addIngredient, addRecipe, addStep, linesOf, removeFrom } from './recipes.mjs';
+import {
+  addIngredient,
+  addRecipe,
+  addStep,
+  linesOf,
+  moveLine,
+  neighbourOf,
+  removeFrom,
+} from './recipes.mjs';
 import { findRecipes } from './finding.mjs';
 import {
   addBook,
@@ -126,6 +134,11 @@ export function mountApp(doc, storage, model = null) {
   let drafted = null;
   let note = null;
 
+  // The line being dragged, and which handle to put focus back on after a
+  // repaint. Screen state: where a hand is, not what anybody owns.
+  let dragging = null;
+  let focusedHandle = null;
+
   // Which recipe the model is currently writing for, if any. Screen state, and
   // the reason the control cannot be pressed twice: a second press would be a
   // second session and a second answer nobody asked for.
@@ -169,16 +182,93 @@ export function mountApp(doc, storage, model = null) {
   // answer "can I make this tonight", which is the question asked at the
   // contents, and the method answers "what do I do now".
 
-  function lineRow(line, block) {
+  /** Move a line and put the focus back on the handle that moved it. */
+  const move = (recipe, spec, lineId, targetId, before) => {
+    focusedHandle = lineId;
+    typingIn = null;
+    commitRecipes(moveLine(recipes(), recipe.id, spec.key, lineId, targetId, before));
+  };
+
+  /**
+   * What a line is taken hold of by. One control, two ways to use it: dragged
+   * with a pointer, or focused and moved with the arrow keys. Arrows sitting
+   * beside a drag handle would be two controls doing one job.
+   */
+  function handle(recipe, spec, line) {
+    const grip = doc.createElement('button');
+    grip.type = 'button';
+    grip.className = 'line-handle';
+    grip.draggable = true;
+    grip.dataset.handle = line.id;
+    grip.setAttribute('aria-label', `Move ${line.text}`);
+
+    const dots = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    dots.setAttribute('viewBox', '0 0 10 16');
+    dots.setAttribute('aria-hidden', 'true');
+    dots.setAttribute('focusable', 'false');
+    dots.setAttribute('fill', 'currentColor');
+    for (const [cx, cy] of [[3, 4], [7, 4], [3, 8], [7, 8], [3, 12], [7, 12]]) {
+      const dot = doc.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', String(cx));
+      dot.setAttribute('cy', String(cy));
+      dot.setAttribute('r', '1.1');
+      dots.append(dot);
+    }
+    grip.append(dots);
+
+    grip.addEventListener('dragstart', () => {
+      dragging = { id: line.id, group: spec.key, recipeId: recipe.id };
+    });
+    grip.addEventListener('dragend', () => {
+      dragging = null;
+    });
+
+    grip.addEventListener('keydown', (event) => {
+      const step = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
+      if (step === 0) return;
+      event.preventDefault();
+      const next = neighbourOf(recipes(), recipe.id, spec.key, line.id, step);
+      // The ends hold: nothing above the first, nothing below the last.
+      if (next === null) return;
+      move(recipe, spec, line.id, next.id, step === -1);
+    });
+
+    return grip;
+  }
+
+  function lineRow(recipe, spec, line) {
     const item = doc.createElement('li');
-    item.className = block;
+    item.className = spec.block;
     item.dataset.id = line.id;
 
     const text = doc.createElement('span');
-    text.className = `${block}__text`;
+    text.className = `${spec.block}__text`;
     text.textContent = line.text;
 
-    item.append(text, deleteButton(block, line.id, line.text));
+    /** Which half of the row the pointer is over decides above or below. */
+    const edgeAt = (event) => {
+      const box = item.getBoundingClientRect();
+      return event.clientY < box.top + box.height / 2;
+    };
+
+    // Only a line from this recipe's own same group can land here.
+    const takes = () =>
+      dragging !== null && dragging.group === spec.key && dragging.recipeId === recipe.id;
+
+    item.addEventListener('dragover', (event) => {
+      if (!takes()) return;
+      event.preventDefault();
+    });
+
+    item.addEventListener('drop', (event) => {
+      if (!takes()) return;
+      event.preventDefault();
+      const dropped = dragging;
+      dragging = null;
+      move(recipe, spec, dropped.id, line.id, edgeAt(event));
+    });
+
+    item.append(handle(recipe, spec, line), text, deleteButton(spec.block, line.id, line.text));
     return item;
   }
 
@@ -263,7 +353,7 @@ export function mountApp(doc, storage, model = null) {
 
     const lines = doc.createElement('ul');
     lines.className = `recipe__${spec.key}-lines`;
-    lines.append(...linesOf(recipe, spec.key).map((line) => lineRow(line, spec.block)));
+    lines.append(...linesOf(recipe, spec.key).map((line) => lineRow(recipe, spec, line)));
 
     section.append(heading, lines);
     const proposed = proposals(recipe, spec);
@@ -765,6 +855,12 @@ export function mountApp(doc, storage, model = null) {
     // The repaint threw away the box that had the caret in it. Put it back, so
     // typing out six ingredients costs six lines of typing and nothing else.
     if (typingIn !== null) doc.getElementById(`${typingIn}-box-${readingId}`)?.focus();
+    // The repaint threw away the handle that was moving a line. Put the focus
+    // back on it, so it can be pressed again without being found again.
+    if (focusedHandle !== null) {
+      doc.querySelector(`[data-handle="${focusedHandle}"]`)?.focus();
+      focusedHandle = null;
+    }
     if (menu.mode === 'renaming') doc.getElementById('rename-book')?.focus();
   }
 

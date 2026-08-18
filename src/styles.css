@@ -494,7 +494,7 @@ body {
 .step {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   padding: 0.25rem 0;
   border-bottom: 1px solid var(--rule);
   color: var(--ink);
@@ -538,6 +538,66 @@ body {
   font: inherit;
   line-height: 1;
   cursor: pointer;
+}
+
+/* What a line is taken hold of by. One control, two ways to use it: dragged
+   with a pointer, or focused and moved with the arrow keys.
+
+   Waits to be reached for, like the delete crosses — see
+   specs/features/look/spec.md. At full strength a card would carry a grip and a
+   cross on every line, which is the "app sitting on top of a card" that file
+   warns about. */
+.line-handle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  width: 0.9rem;
+  height: 1.4rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rule);
+  opacity: 0;
+  cursor: grab;
+}
+
+.line-handle svg {
+  width: 100%;
+  height: auto;
+}
+
+.ingredient:hover .line-handle,
+.step:hover .line-handle,
+.line-handle:focus-visible {
+  opacity: 1;
+}
+
+/* Reaching for it firms it up. Focus gets the same treatment as hover, or the
+   keyboard path lands on a control too faint to see it has been reached. */
+.line-handle:hover,
+.line-handle:focus-visible {
+  color: var(--faded);
+}
+
+.line-handle:active {
+  cursor: grabbing;
+}
+
+/* The line being dragged. Faded rather than lifted: features/look/spec.md
+   allows the thing under the finger to move, and nothing else — no shadow
+   growing, no neighbours sliding, no rest of the page reflowing. */
+.ingredient:has(.line-handle:active),
+.step:has(.line-handle:active) {
+  opacity: 0.55;
+}
+
+/* Reduce motion takes the dragging away and leaves the outcome: the line is
+   simply somewhere else, by the same gesture. */
+@media (prefers-reduced-motion: reduce) {
+  .ingredient:has(.line-handle:active),
+  .step:has(.line-handle:active) {
+    opacity: 1;
+  }
 }
 
 /* One box per group, at the bottom of it, left open the whole time the recipe

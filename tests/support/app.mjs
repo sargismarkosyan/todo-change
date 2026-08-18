@@ -202,6 +202,60 @@ function open(seed, model = null) {
       if (!wasOpen) this.closeRecipe(name);
     },
 
+    // ---- putting a line where it belongs ---------------------------------
+    //
+    // jsdom does not implement dragging, so these drive the events the app
+    // actually listens for. That checks the app's handling and not the
+    // browser's gesture — the real-browser pass covers the rest.
+
+    handleOf(text) {
+      const grip = line(text).querySelector('.line-handle');
+      if (!grip) throw new Error(`"${text}" has no handle`);
+      return grip;
+    },
+
+    /**
+     * Drag one line onto another. `before` says which half of the target row it
+     * was dropped on, which is what the app reads out of the pointer position:
+     * every rect is zero-sized in jsdom, so a negative clientY is the top half.
+     */
+    dragOnto(text, targetText, before) {
+      this.handleOf(text).dispatchEvent(new window.Event('dragstart', { bubbles: true }));
+      const target = line(targetText);
+      target.dispatchEvent(new window.MouseEvent('dragover', { bubbles: true, cancelable: true }));
+      target.dispatchEvent(
+        new window.MouseEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          clientY: before ? -1 : 1,
+        }),
+      );
+    },
+
+    dragAbove(text, targetText) {
+      this.dragOnto(text, targetText, true);
+    },
+    dragBelow(text, targetText) {
+      this.dragOnto(text, targetText, false);
+    },
+
+    /** Put focus on a handle, the way tabbing to it does. */
+    focusHandle(text) {
+      this.handleOf(text).focus();
+    },
+
+    /** Press an arrow on whatever handle has focus. */
+    pressArrow(key) {
+      doc.activeElement.dispatchEvent(
+        new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
+    },
+
+    /** Whether the handle for this line currently has focus. */
+    handleHasFocus(text) {
+      return doc.activeElement === line(text).querySelector('.line-handle');
+    },
+
     // ---- throwing things out ---------------------------------------------
 
     deleteRecipe: (name) => recipe(name).querySelector('.recipe__delete').click(),

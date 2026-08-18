@@ -21,7 +21,7 @@ Feature: Moving a line without a mouse
       | Heat the oven to 190C         |
       | Bake for 45 minutes           |
 
-  @planned @rule:line-moved-by-keyboard
+  @rule:line-moved-by-keyboard
   Rule: The arrow keys move the line whose handle has focus
 
     Example: lifting a step by one
@@ -49,7 +49,7 @@ Feature: Moving a line without a mouse
         | Rub the butter into the flour |
         | Heat the oven to 190C         |
 
-  @planned @rule:the-ends-of-the-group-hold
+  @rule:the-ends-of-the-group-hold
   Rule: A line at the end of its group does not move past it
 
     Example: the first one cannot go higher

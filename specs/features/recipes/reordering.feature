@@ -31,7 +31,7 @@ Feature: Putting a line where it belongs
       | Heat the oven to 190C         |
       | Bake for 45 minutes           |
 
-  @planned @rule:line-moved-within-its-group
+  @rule:line-moved-within-its-group
   Rule: A line dropped somewhere else in its group lands there
 
     Example: the step that should have come first
@@ -57,7 +57,7 @@ Feature: Putting a line where it belongs
         | 200g plain flour |
         | 3 apples         |
 
-  @planned @rule:line-moves-only-within-its-group
+  @rule:line-moves-only-within-its-group
   Rule: An ingredient cannot become a step, and a step cannot become an ingredient
 
     Example: dropping a step among the ingredients
@@ -71,7 +71,7 @@ Feature: Putting a line where it belongs
         | Heat the oven to 190C         |
         | Bake for 45 minutes           |
 
-  @planned @rule:moving-changes-nothing-but-the-order
+  @rule:moving-changes-nothing-but-the-order
   Rule: Moving a line changes where it sits and nothing else
 
     Example: the words are the words
@@ -98,7 +98,7 @@ Feature: Putting a line where it belongs
         | Apple pie     |
         | Lemon drizzle |
 
-  @planned @rule:the-new-order-is-kept
+  @rule:the-new-order-is-kept
   Rule: The order it was put in is the order it is found in
 
     Example: coming back to it

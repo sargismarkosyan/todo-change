@@ -1,6 +1,6 @@
 # Spec 0010: out of order
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** none — direct request.
 
 ## Who this is for
