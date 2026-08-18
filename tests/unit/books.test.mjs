@@ -21,7 +21,7 @@ import {
 } from '../../src/books.mjs';
 
 const book = (id, name, recipes = []) => ({ id, name, recipes });
-const recipe = (id, name) => ({ id, name, ingredients: [], steps: [] });
+const recipe = (id, name) => ({ id, name, tags: [], ingredients: [], steps: [] });
 const todo = (id, text, done = false) => ({ id, text, done });
 
 test('a fresh store is one empty book, open', () => {
@@ -91,6 +91,7 @@ test('migrateNotepads turns notepads into books and todos into recipes', () => {
     {
       id: 't1',
       name: 'Roast chicken',
+      tags: [],
       ingredients: [],
       steps: [{ id: 's1', text: 'Heat the oven' }],
     },

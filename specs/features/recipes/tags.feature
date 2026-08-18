@@ -25,7 +25,7 @@ Feature: What a recipe is found by
       | Lemon drizzle |
     And I open the recipe "Apple cake"
 
-  @planned @rule:tag-added-to-recipe
+  @rule:tag-added-to-recipe
   Rule: A tag is typed into the open recipe and appears under its name
 
     Example: the first word to go looking with
@@ -46,7 +46,7 @@ Feature: What a recipe is found by
         | Apple cake    |
         | Lemon drizzle |
 
-  @planned @rule:a-tag-is-a-word-not-a-line
+  @rule:a-tag-is-a-word-not-a-line
   Rule: A tag is trimmed and lower case, and a recipe holds each one once
 
     Example: typed with a capital
@@ -64,7 +64,7 @@ Feature: What a recipe is found by
       When I submit "   " as a tag of "Apple cake"
       Then "Apple cake" has no tags
 
-  @planned @rule:tags-show-on-the-card
+  @rule:tags-show-on-the-card
   Rule: A closed recipe shows its tags, and nothing else of itself
 
     Example: reading the contents without opening anything
@@ -85,7 +85,7 @@ Feature: What a recipe is found by
       Then "Lemon drizzle" is closed
       And "Lemon drizzle" has no tags
 
-  @planned @rule:tag-removed-from-recipe
+  @rule:tag-removed-from-recipe
   Rule: A tag is taken off the open recipe, and only there
 
     Example: the wrong word

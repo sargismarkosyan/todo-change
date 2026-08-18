@@ -40,7 +40,7 @@ Feature: Finding a recipe by what it takes
       | chicken |
       | lemon   |
 
-  @planned @rule:filter-reaches-every-book
+  @rule:filter-reaches-every-book
   Rule: Picking a tag shows every recipe carrying it, in every book
 
     Example: what takes chicken
@@ -59,7 +59,7 @@ Feature: Finding a recipe by what it takes
       When I pick the tag "lemon"
       Then the results do not include "Apple cake"
 
-  @planned @rule:filter-combines-tags
+  @rule:filter-combines-tags
   Rule: Picking a second tag narrows to what carries both
 
     Example: chicken and lemon
@@ -76,7 +76,7 @@ Feature: Finding a recipe by what it takes
         | Roast chicken | Dinner |
         | Lemon chicken | Dinner |
 
-  @planned @rule:filter-finds-nothing
+  @rule:filter-finds-nothing
   Rule: Nothing carrying all of them says so, and keeps the picked tags on screen
 
     Example: two words that never meet
@@ -91,7 +91,7 @@ Feature: Finding a recipe by what it takes
         | apple   |
         | chicken |
 
-  @planned @rule:filter-offers-only-tags-in-use
+  @rule:filter-offers-only-tags-in-use
   Rule: The tag box offers the tags that are in use, and is not there when none are
 
     Example: every tag, from every book, in alphabetical order

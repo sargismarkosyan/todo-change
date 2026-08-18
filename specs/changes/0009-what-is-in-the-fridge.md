@@ -1,6 +1,6 @@
 # Spec 0009: what is in the fridge
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** [#9](https://github.com/sargismarkosyan/todo-change/issues/9) — all
   of it this time. Version 0008 took the reason the issue gave and served it
   with a search box, deliberately leaving the three things it actually asked

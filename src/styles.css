@@ -594,6 +594,180 @@ body {
   color: var(--ink);
 }
 
+/* What a recipe is found by. Small, quiet words under the name — on the card as
+   much as on an open recipe, because being readable without opening anything is
+   the whole of what a tag is for. Quiet is load-bearing: the contents is a page
+   of names that gets read down, and a wall of small words under every one of
+   them is exactly how it stops being one. */
+.recipe__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: -0.25rem 0 0;
+  padding: 0 0.8rem 0.5rem 1.75rem;
+  list-style: none;
+}
+
+.recipe__tagging .recipe__tags {
+  margin: 0;
+  padding: 0;
+}
+
+.recipe__tagging .recipe__tags:empty {
+  display: none;
+}
+
+/* A written-on label, not a pill: a hairline and the page colour under it, so
+   it reads as something added to the card rather than a control on a screen. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--faded);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.tag__text {
+  overflow-wrap: anywhere;
+}
+
+.tag__remove {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faded);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.tag:hover .tag__remove,
+.tag__remove:focus-visible {
+  opacity: 1;
+}
+
+.tag__remove:hover {
+  color: var(--red);
+}
+
+/* The tagging block on an open recipe. Not a `recipe__group`: those two are
+   what a recipe is *read* by, in the order they are read, and this is neither
+   of them — it sits above both, under the name, where the tags are. */
+.recipe__tagging {
+  padding-bottom: 0.2rem;
+}
+
+.recipe__tagging + .recipe__group {
+  margin-top: 0.9rem;
+}
+
+.tag-composer {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+}
+
+.tag-composer__box {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.95rem;
+}
+
+.tag-composer__add,
+.tagging__suggest {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--card);
+  color: var(--faded);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.tag-composer__add:hover,
+.tagging__suggest:hover {
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* The one control in this app that asks something of the machine rather than
+   telling it. Set in the hand, because it is an aside on the card rather than
+   part of the recipe — and drawn at all only where there is a model. */
+.tagging__suggest {
+  margin-top: 0.45rem;
+  border-style: dashed;
+  color: var(--red);
+  font-family: var(--hand);
+  font-size: 1.15rem;
+}
+
+/* What was proposed. Dashed all through, because not one of these is a tag yet
+   — a wrong tag nobody approved makes the filter lie quietly, and there is no
+   undo anywhere in this app. */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
+}
+
+.suggestions__take {
+  padding: 0.05rem 0.4rem;
+  border: 1px dashed var(--red);
+  border-radius: 2px;
+  background: none;
+  color: var(--red);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.suggestions__take::before {
+  content: "+ ";
+}
+
+.suggestions__take:hover {
+  background: var(--page);
+}
+
+.suggestions__dismiss {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faded);
+  font: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The only line in this app that reports on something taking a moment. */
+.tagging__note {
+  margin: 0.4rem 0 0;
+  color: var(--faded);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 /* The search box. Below the composer rather than beside it: the top of the page
    is the three-second capture, and two boxes side by side is how a recipe name
    ends up typed into the wrong one. Quieter than the composer too — no button,
@@ -639,6 +813,121 @@ body {
 .finder__box:focus-visible {
   outline: 0;
   border-bottom-color: var(--red);
+}
+
+/* The tag box: picked from rather than typed into, because at the fridge there
+   is no recipe in mind and so nothing to remember. It sits under the search box
+   and is not on screen at all until something is tagged — a picker with nothing
+   in it is furniture. */
+.tagbox {
+  margin: -0.9rem 0 1.4rem;
+}
+
+.tagbox[hidden] {
+  display: none;
+}
+
+.tagbox__picked,
+.tagbox__offer,
+.tagbox__related-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tagbox__picked:empty {
+  display: none;
+}
+
+.tagbox__picked {
+  margin-bottom: 0.4rem;
+}
+
+.tagbox__box {
+  width: 100%;
+  padding: 0.35rem 0.7rem 0.35rem 0;
+  border: 0;
+  border-bottom: 1px dotted var(--rule);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.95rem;
+}
+
+.tagbox__box::placeholder {
+  color: var(--faded);
+  font-style: italic;
+}
+
+.tagbox__box:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--red);
+}
+
+.tagbox__offer {
+  margin-top: 0.4rem;
+}
+
+/* A tag on offer is a door. A picked one is filled in, so what is narrowing
+   what is on screen can be read at a glance and taken back with one click. */
+.tag-offer,
+.tag-related,
+.tag-picked {
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--page);
+  color: var(--faded);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+.tag-offer:hover,
+.tag-related:hover {
+  border-color: var(--red);
+  color: var(--ink);
+}
+
+.tag-picked {
+  border-color: var(--red);
+  background: var(--red);
+  color: var(--page);
+}
+
+.tag-picked::after {
+  content: " ×";
+}
+
+/* Related words are the model's, so they are kept apart from the ones the
+   letters found and are drawn in its dashed hand: it can only ever point at a
+   tag that already exists, and it must be obvious which is which. */
+.tagbox__related {
+  margin-top: 0.45rem;
+}
+
+.tagbox__related[hidden] {
+  display: none;
+}
+
+.tagbox__related-heading {
+  margin: 0 0 0.25rem;
+  color: var(--red);
+  font-family: var(--hand);
+  font-size: 1.15rem;
+}
+
+.tag-related {
+  border-style: dashed;
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* The results, in place of the contents. Cards like the contents' cards, so the

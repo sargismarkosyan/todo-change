@@ -85,7 +85,7 @@ export function sanitizeStore(value) {
  * see specs/changes/0004-recipe-book.md.
  */
 function migrateTodo({ id, text, subTodos }) {
-  return { id, name: text, ingredients: [], steps: sanitizeLines(subTodos) };
+  return { id, name: text, tags: [], ingredients: [], steps: sanitizeLines(subTodos) };
 }
 
 /** Everything in `value` that was a todo, as recipes. */

@@ -24,7 +24,7 @@ Feature: Leaving a filter
     And "Roast chicken" has the tags:
       | chicken |
 
-  @planned @rule:filter-opens-it-where-it-lives
+  @rule:filter-opens-it-where-it-lives
   Rule: Opening a result opens the book it is in, with the recipe open in it
 
     Example: landing in the other book
@@ -40,7 +40,7 @@ Feature: Leaving a filter
       And the contents reads:
         | Roast chicken |
 
-  @planned @rule:one-way-of-looking-at-a-time
+  @rule:one-way-of-looking-at-a-time
   Rule: A search and a filter replace each other, and neither outlasts what follows it
 
     Example: picking a tag puts the search away

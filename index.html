@@ -34,6 +34,18 @@
              aria-label="Find a recipe in any book" autocomplete="off">
     </div>
 
+    <div class="tagbox" id="tagbox" hidden>
+      <ul class="tagbox__picked" id="picked-tags"></ul>
+      <input class="tagbox__box" id="tag-term" type="text"
+             placeholder="What have you got?"
+             aria-label="Find recipes by what they take" autocomplete="off">
+      <ul class="tagbox__offer" id="tag-offer"></ul>
+      <div class="tagbox__related" id="tag-related" hidden>
+        <p class="tagbox__related-heading">Related</p>
+        <ul class="tagbox__related-list" id="tag-related-list"></ul>
+      </div>
+    </div>
+
     <ul class="contents" id="contents"></ul>
     <ul class="results" id="results" hidden></ul>
     <p class="empty" id="empty">No recipes in this book yet.</p>
@@ -41,7 +53,10 @@
 
   <script type="module">
     import { mountApp } from './src/app.mjs';
-    mountApp(document, localStorage);
+    import { createModel } from './src/suggesting.mjs';
+    // The model is handed in like the document and the storage, and is null in
+    // every browser that has not got one — which is most of them.
+    mountApp(document, localStorage, createModel(window));
   </script>
 </body>
 </html>

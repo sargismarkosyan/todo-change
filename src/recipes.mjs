@@ -67,6 +67,44 @@ export function linesOf(recipe, group) {
 }
 
 /**
+ * The tags of a recipe. Absent and empty mean the same thing, so this is the
+ * only way anything should reach for them.
+ */
+export function tagsOf(recipe) {
+  return recipe.tags ?? [];
+}
+
+/**
+ * One tag as it is stored: trimmed and lower case.
+ *
+ * A tag is an index key rather than something read, which is the whole
+ * difference between it and an ingredient. "Chicken" and "chicken" would
+ * otherwise be two doors, each opening onto half the answer. Anything that is
+ * not a string at all is not a word — untrusted data reaches here too.
+ */
+export function normalizeTag(text) {
+  return typeof text === 'string' ? text.trim().toLowerCase() : '';
+}
+
+/**
+ * Everything in `value` that is a tag: normalised, non-empty, each present
+ * once, in the order found.
+ *
+ * Not an array at all reads as no tags, and the recipe still survives — a
+ * recipe is never discarded over what it is filed under. See
+ * specs/features/recipes/spec.md.
+ */
+export function sanitizeTags(value) {
+  if (!Array.isArray(value)) return [];
+  const tags = [];
+  for (const entry of value) {
+    const tag = normalizeTag(entry);
+    if (tag !== '' && !tags.includes(tag)) tags.push(tag);
+  }
+  return tags;
+}
+
+/**
  * Everything in `value` that is a line, in the order found, stripped of
  * anything else it was carrying. Not an array at all reads as no lines.
  *
@@ -92,6 +130,7 @@ export function sanitizeRecipes(value) {
   return value.filter(isRecipe).map((recipe) => ({
     id: recipe.id,
     name: recipe.name,
+    tags: sanitizeTags(recipe.tags),
     ingredients: sanitizeLines(recipe.ingredients),
     steps: sanitizeLines(recipe.steps),
   }));
@@ -106,7 +145,7 @@ export function sanitizeRecipes(value) {
 export function addRecipe(recipes, name) {
   const trimmed = name.trim();
   if (trimmed === '') return recipes;
-  return [{ id: newId(), name: trimmed, ingredients: [], steps: [] }, ...recipes];
+  return [{ id: newId(), name: trimmed, tags: [], ingredients: [], steps: [] }, ...recipes];
 }
 
 /**
@@ -136,6 +175,34 @@ export function addIngredient(recipes, recipeId, text) {
 /** One more thing to do, at the end of the method. */
 export function addStep(recipes, recipeId, text) {
   return addLine(recipes, recipeId, 'steps', text);
+}
+
+/**
+ * `recipes` with one more word to find a recipe by, or `recipes` unchanged
+ * when there is nothing to add and when it is already there.
+ *
+ * A tag carries no id, unlike an ingredient. Two lines reading "3 apples" on
+ * one recipe are two ingredients; two tags reading "apple" are one tag, and
+ * that sameness is exactly what filtering by one relies on.
+ */
+export function addTag(recipes, recipeId, text) {
+  const tag = normalizeTag(text);
+  if (tag === '') return recipes;
+  return recipes.map((recipe) =>
+    recipe.id === recipeId && !tagsOf(recipe).includes(tag)
+      ? { ...recipe, tags: [...tagsOf(recipe), tag] }
+      : recipe,
+  );
+}
+
+/** `recipes` with one word taken off. Addressed by the word, which is its identity. */
+export function removeTag(recipes, recipeId, text) {
+  const tag = normalizeTag(text);
+  return recipes.map((recipe) =>
+    recipe.id === recipeId
+      ? { ...recipe, tags: tagsOf(recipe).filter((each) => each !== tag) }
+      : recipe,
+  );
 }
 
 /**

@@ -75,7 +75,7 @@ test('sanitizeLines yields an empty list for anything that is not an array', () 
 test('sanitizeRecipes strips properties nobody asked for, done included', () => {
   const stored = { id: 'a', name: 'Apple cake', done: true, rating: 5 };
   assert.deepEqual(sanitizeRecipes([stored]), [
-    { id: 'a', name: 'Apple cake', ingredients: [], steps: [] },
+    { id: 'a', name: 'Apple cake', tags: [], ingredients: [], steps: [] },
   ]);
 });
 

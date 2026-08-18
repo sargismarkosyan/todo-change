@@ -32,7 +32,7 @@ Feature: A model proposing tags for a recipe
       | 3 apples         |
     And I open the recipe "Apple cake"
 
-  @planned @rule:suggestions-are-not-tags-until-accepted
+  @rule:suggestions-are-not-tags-until-accepted
   Rule: A suggestion becomes a tag only when it is accepted
 
     Example: taking one of three
@@ -61,7 +61,7 @@ Feature: A model proposing tags for a recipe
       Then the suggestions read:
         | cake |
 
-  @planned @rule:suggesting-needs-a-model
+  @rule:suggesting-needs-a-model
   Rule: With no model there is nothing to ask, and nothing on screen says otherwise
 
     Example: a browser that will never have one
@@ -75,7 +75,7 @@ Feature: A model proposing tags for a recipe
       Then "Apple cake" has the tags:
         | apple |
 
-  @planned @rule:suggesting-says-when-it-cannot
+  @rule:suggesting-says-when-it-cannot
   Rule: A model answering with nothing usable says so, and changes nothing
 
     Example: nothing came back
@@ -93,7 +93,7 @@ Feature: A model proposing tags for a recipe
         | 200g plain flour |
         | 3 apples         |
 
-  @planned @rule:the-model-is-the-one-slow-thing
+  @rule:the-model-is-the-one-slow-thing
   Rule: A model that has to be fetched first says so, and nothing else waits for it
 
     Example: the first ask on a fresh browser

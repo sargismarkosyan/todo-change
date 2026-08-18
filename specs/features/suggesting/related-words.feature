@@ -27,7 +27,7 @@ Feature: A model relating a typed word to the tags in use
       | pork |
       | slow |
 
-  @planned @rule:related-tags-never-hold-anything-up
+  @rule:related-tags-never-hold-anything-up
   Rule: Tags matching the letters appear first, without waiting for a model
 
     Example: a model that has not answered yet
@@ -44,7 +44,7 @@ Feature: A model relating a typed word to the tags in use
       And the related tags read:
         | pork |
 
-  @planned @rule:related-tags-are-tags-that-exist
+  @rule:related-tags-are-tags-that-exist
   Rule: A related tag is one already in use, never a new word
 
     Example: a word from another book is still a word you wrote
@@ -61,7 +61,7 @@ Feature: A model relating a typed word to the tags in use
       When I type "pig" into the tag box
       Then there are no related tags
 
-  @planned @rule:no-model-no-related-tags
+  @rule:no-model-no-related-tags
   Rule: With no model the tag box is the same box, minus the related ones
 
     Example: typing still narrows the offer

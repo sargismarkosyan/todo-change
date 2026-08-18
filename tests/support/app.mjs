@@ -21,11 +21,17 @@ const PAGE = HTML.replace(
   `<style>${CSS}</style>`,
 ).replace(/<script type="module">[\s\S]*?<\/script>/, '');
 
-/** A fresh browser with a fresh store, holding nothing at all. */
-export const openApp = () => open({});
+/**
+ * A fresh browser with a fresh store, holding nothing at all.
+ *
+ * `model` stands in for the browser's own, and is null by default because that
+ * is what most browsers have. jsdom has none of any kind, and no rule asserts
+ * what a model says — see specs/features/suggesting/spec.md.
+ */
+export const openApp = (model = null) => open({}, model);
 
 /** The same, with the current key already holding `books`. */
-export const openStore = (books) => open({ [STORAGE_KEY]: books });
+export const openStore = (books, model = null) => open({ [STORAGE_KEY]: books }, model);
 
 /** The same, seeded with the key version 0003 wrote. */
 export const openNotepads = (notepads) => open({ [NOTEPADS_KEY]: notepads });
@@ -36,7 +42,7 @@ export const openLegacy = (todos) => open({ [LEGACY_KEY]: todos });
 /** For the cases that care about more than one key being there at once. */
 export const openWith = (seed) => open(seed);
 
-function open(seed) {
+function open(seed, model = null) {
   const dom = new JSDOM(PAGE, { url: 'http://localhost/' });
   const { window } = dom;
   const doc = window.document;
@@ -44,7 +50,7 @@ function open(seed) {
   for (const [key, value] of Object.entries(seed)) {
     if (value !== undefined && value !== null) window.localStorage.setItem(key, value);
   }
-  mountApp(doc, window.localStorage);
+  mountApp(doc, window.localStorage, model);
 
   const recipeEls = () => [...doc.querySelectorAll('.recipe')];
   const nameEl = (el) => el.querySelector(':scope > .recipe__row > .recipe__name');
@@ -81,6 +87,16 @@ function open(seed) {
 
   const composer = (name, block) =>
     recipe(name).querySelector(`.${block}-composer`);
+
+  const tagEls = (name) => [...recipe(name).querySelectorAll('.recipe__tags .tag')];
+  const tagEl = (name, tag) => {
+    const found = tagEls(name).find((el) => el.querySelector('.tag__text').textContent === tag);
+    if (!found) throw new Error(`"${name}" is not tagged "${tag}"`);
+    return found;
+  };
+
+  const boxOf = (className) => [...doc.querySelectorAll(`.${className}`)];
+  const suggestionEls = () => [...doc.querySelectorAll('.suggestions__take')];
 
   const resultEls = () => [...doc.querySelectorAll('.result')];
   const resultEl = (name) => {
@@ -243,6 +259,119 @@ function open(seed) {
     /** Whether the contents is the thing on screen, or the results are. */
     contentsIsShowing: () => !doc.getElementById('contents').hidden,
 
+    // ---- what a recipe is found by ---------------------------------------
+
+    /** The tags under a recipe's name, open or closed. */
+    tags: (name) => tagEls(name).map((el) => el.querySelector('.tag__text').textContent),
+
+    /** Type a word into the open recipe's tag box and press Enter. */
+    addTag(name, text) {
+      this.openRecipe(name);
+      const form = recipe(name).querySelector('.tag-composer');
+      form.querySelector('.tag-composer__box').value = text;
+      form.requestSubmit();
+    },
+
+    /** Take one off, which only an open recipe offers. */
+    removeTag(name, tag) {
+      this.openRecipe(name);
+      tagEl(name, tag).querySelector('.tag__remove').click();
+    },
+
+    /** Whether this recipe offers a way to take a tag off, as it is drawn now. */
+    offersTagRemoval: (name) =>
+      recipe(name).querySelector('.recipe__tags .tag__remove') !== null,
+
+    /** Setup: a recipe that already carries these, left closed as it was found. */
+    giveTags(name, words) {
+      const wasOpen = isOpen(name);
+      for (const word of words) this.addTag(name, word);
+      if (!wasOpen) this.closeRecipe(name);
+    },
+
+    // ---- asking the model ------------------------------------------------
+
+    /** Whether this recipe offers to have its tags suggested. */
+    offersSuggest: (name) => recipe(name).querySelector('.tagging__suggest') !== null,
+
+    /** Press it. The answer arrives later, so `settle()` follows. */
+    askForTags(name) {
+      this.openRecipe(name);
+      const control = recipe(name).querySelector('.tagging__suggest');
+      if (!control) throw new Error(`"${name}" offers no way to ask for tags`);
+      control.click();
+    },
+
+    /** What is on offer, none of which is a tag yet. */
+    suggestions: () => suggestionEls().map((el) => el.textContent),
+
+    /** Take one. */
+    acceptSuggestion(word) {
+      const found = suggestionEls().find((el) => el.textContent === word);
+      if (!found) throw new Error(`nothing suggested reads "${word}"`);
+      found.click();
+    },
+
+    /** Turn them all down. */
+    dismissSuggestions: () => doc.querySelector('.suggestions__dismiss').click(),
+
+    /** The one line under the control, or null when there is nothing to say. */
+    note: () => doc.querySelector('.tagging__note')?.textContent ?? null,
+
+    /** Whether anything on screen mentions a model at all. */
+    mentionsModel: () =>
+      doc.querySelector('.tagging__suggest, .tagging__note') !== null,
+
+    // ---- finding one by what it takes ------------------------------------
+
+    /** Whether the tag box is on screen. It is not, until something is tagged. */
+    hasTagBox: () => !doc.getElementById('tagbox').hidden,
+
+    /** Look at it. Nothing to open — the offer is always under the box. */
+    openTagBox() {
+      if (!this.hasTagBox()) throw new Error('there is no tag box');
+    },
+
+    /** The tags on offer, in the order they are drawn. */
+    tagsOffered: () => boxOf('tag-offer').map((el) => el.textContent),
+
+    /** The ones a model related to what was typed, kept apart from the above. */
+    relatedTags: () => boxOf('tag-related').map((el) => el.textContent),
+
+    /** The ones currently narrowing what is on screen. */
+    pickedTags: () => boxOf('tag-picked').map((el) => el.textContent),
+
+    /** Type into the tag box. Live, like the search box. */
+    typeTag(text) {
+      const el = doc.getElementById('tag-term');
+      el.value = text;
+      el.dispatchEvent(new window.Event('input', { bubbles: true }));
+    },
+
+    /** Pick one, from the offer or from the related ones. */
+    pickTag(tag) {
+      const found = [...boxOf('tag-offer'), ...boxOf('tag-related')].find(
+        (el) => el.textContent === tag,
+      );
+      if (!found) {
+        throw new Error(
+          `"${tag}" is not on offer — the tag box offers: ` +
+            boxOf('tag-offer').map((el) => el.textContent).join(', '),
+        );
+      }
+      found.click();
+    },
+
+    /** Put one back. */
+    unpickTag(tag) {
+      const found = boxOf('tag-picked').find((el) => el.textContent === tag);
+      if (!found) throw new Error(`"${tag}" is not picked`);
+      found.click();
+    },
+
+    /** Let anything the model was asked come back. */
+    settle: () => new Promise((resolve) => setTimeout(resolve, 0)),
+
     // ---- what is stored --------------------------------------------------
 
     /** The raw stored string, exactly as a devtools panel would show it. */
@@ -333,3 +462,29 @@ export const storedNotepads = (notepads, openId) => JSON.stringify({ notepads, o
 
 /** The stored form of the current key. */
 export const storedBooks = (books, openId) => JSON.stringify({ books, openId });
+
+/**
+ * A stand-in for the browser's model.
+ *
+ * Never a real one: the pipeline runs in jsdom, which has none, and asserting
+ * what an LLM says is not the app's promise to keep. What the rules check is
+ * what the app does with an answer. See specs/features/suggesting/spec.md.
+ */
+export function fakeModel({
+  state = 'available',
+  proposes = [],
+  relates = {},
+  fails = false,
+  relateFails = false,
+  cannotSay = false,
+  silent = false,
+} = {}) {
+  const never = () => new Promise(() => {});
+  const gaveUp = () => Promise.reject(new Error('the model gave up'));
+  return {
+    availability: () => (cannotSay ? gaveUp() : Promise.resolve(state)),
+    suggestTags: () => (fails ? gaveUp() : silent ? never() : Promise.resolve(proposes)),
+    relate: (term) =>
+      relateFails ? gaveUp() : silent ? never() : Promise.resolve(relates[term] ?? []),
+  };
+}
