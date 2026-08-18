@@ -32,10 +32,13 @@ would return most of the book for terms that identify nothing. Ingredients are
 different — what a recipe takes is how it is chosen, which is why they sit above
 the method when one is open.
 
-Ingredients also mean the question "what can I make with chicken" is already
-answerable, without a tag, a field, or a model. That was the larger half of
-issue #9, and it is worth noticing how much of it falls out of text that was
-already there.
+Ingredients also mean the question "what can I make with chicken" is roughly
+answerable without a tag, a field, or a model, and it is worth noticing how much
+falls out of text that was already there. Roughly, though, is the limit of it: a
+substring matches letters rather than ingredients, so "ice" answers with every
+rice and every juice, "egg" with the aubergines, and "salt" with the unsalted
+butter. And it takes one term, where a fridge holds several things. That is
+where filtering by tag begins — see below.
 
 ## What a result says
 
@@ -77,7 +80,33 @@ Switching books clears it, because another book is another contents page.
 - **Not an index.** No stored search index, no precomputed tokens. A few books of
   a few dozen recipes is a scan over text already in memory, and anything else
   is a cache that can disagree with the data.
-- **Not tags.** Tagging recipes by ingredient, and filtering by those tags, is
-  the other half of issue #9. It serves browsing by what is in the fridge rather
-  than finding what is already in mind, and it needs its own version — with a
-  stored field, which this has none of.
+## Searching, and filtering by tag
+
+Both live in this folder, both reach every book, and both put the name of the
+book beside what they find. They answer different questions and they are not
+combined — picking a tag puts a search away, and searching puts the picked tags
+away. See `filtering.feature` and `leaving-a-filter.feature`.
+
+| | A search | A filter |
+|---|---|---|
+| The question | Where did I put that recipe? | What can I make with this? |
+| You start with | a word you remember | a fridge |
+| It matches | letters, anywhere in the name or an ingredient | a tag, whole |
+| It costs | nothing — the text is already there | the tags had to be added |
+| It is wrong by | finding too much: rice for "ice" | finding too little: whatever nobody tagged |
+
+The last row is the one to keep in view. A search cannot miss a recipe it should
+have found, because it reads what was typed into the recipe itself. A filter
+misses everything untagged, silently, and looks complete while doing it. Neither
+replaces the other, and the cheap one is still the one that needs no upkeep.
+
+## What this is not
+
+- **Not a home page.** Issue #10, as above.
+- **Not tag management.** No renaming a tag everywhere, no merging two, no list
+  of every tag with counts beside it. The tag box offers what is in use and that
+  is the whole of the vocabulary's existence; a screen for tending tags is
+  filing about filing.
+- **Not a shopping list.** A tag index looks one step away from "everything I
+  need for these three recipes", and `../../persona.md` rules that out by name.
+  Tags find recipes. They do not add up.

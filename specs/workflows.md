@@ -57,16 +57,32 @@ book it is in → open it, and land in that book with it open. That is the same
 workflow arriving from the other end, and it is the one thing in the app that
 reaches past the open book.
 
+**When there is no recipe in mind at all** — the fridge-door version, and the
+one this workflow is actually triggered by — it runs a third way: pick what you
+have from the tags in use, add a second to narrow it, and read what carries all
+of them, across every book. The other two ways start from a recipe and look for
+where it is. This one starts from what is in the house and asks what it adds up
+to.
+
 **Where it breaks.** Every recipe open at once, so there is nothing to read down
 — a wall of text is not a contents page. A book that rearranges itself, so what
 was second is now fifth. A book that opens onto whatever was left open a
 fortnight ago instead of onto its contents. And, since books exist, having to
 open all of them to find one thing — which is what searching is for.
 
+**The quiet failure, since tags exist**, is a filter answering out of a
+half-tagged book. Finding nothing is loud and obvious; finding three of the five
+recipes that take chicken looks like a complete answer and is not. That is the
+cost of a way in that depends on words somebody had to add, and it is why the
+two ways that need no upkeep — reading the contents, and searching text that is
+already there — are not replaced by it.
+
 **Specs.** `features/recipes/reading.feature`,
 `features/books/switching.feature`, `features/books/creating.feature`,
 `features/recipes/empty-state.feature`, `features/finding/searching.feature`,
-`features/finding/leaving-a-search.feature`
+`features/finding/leaving-a-search.feature`,
+`features/finding/filtering.feature`,
+`features/finding/leaving-a-filter.feature`
 
 ---
 
@@ -126,8 +142,8 @@ crash.
 **Steps.** Open the app. Look.
 
 **Done well.** Everything is exactly as it was left — same recipes, same order,
-same ingredients, same method, and the same book open. Nothing to restore,
-nothing to confirm. Recipes saved as todos by an earlier version open as
+same ingredients, same method, same tags, and the same book open. Nothing to
+restore, nothing to confirm. Recipes saved as todos by an earlier version open as
 recipes.
 
 **The gap between visits is now months, not hours**, which makes this the

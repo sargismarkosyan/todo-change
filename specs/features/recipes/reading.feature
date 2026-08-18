@@ -40,7 +40,7 @@ Feature: Opening a recipe to read it
         | Peel and slice the apples |
       And the ingredients come before the method
 
-    Example: a closed recipe is only its name
+    Example: a closed recipe shows nothing of what it takes
       Given "Lemon drizzle" has the ingredients:
         | 2 lemons |
       Then "Lemon drizzle" is closed

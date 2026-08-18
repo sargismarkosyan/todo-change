@@ -19,7 +19,11 @@ sync between machines.
 ## What it must always be
 
 - **Instant.** No loading states, no spinners. Every action lands on the next
-  frame, because nothing leaves the machine.
+  frame, because nothing leaves the machine. **One exception**, added in version
+  0009 and bounded there: asking the browser's own model to suggest tags may
+  wait while that model is fetched. It is the only thing in the app that can,
+  and nothing else ever waits on it — see
+  [features/suggesting/spec.md](features/suggesting/spec.md).
 - **Trustworthy.** Anything on screen has been written to `localStorage`. If it
   is visible, it survives a refresh. Some of what is in here exists nowhere
   else.
@@ -51,6 +55,7 @@ open:
         {
           "id": "1739827200000-9f2c41ab7e0d5c83",
           "name": "Apple cake",
+          "tags": ["apple", "cake"],
           "ingredients": [
             { "id": "1739827210000-77c3e5b0d9124fae", "text": "200g plain flour" },
             { "id": "1739827220000-2ad1f9c40b6e8735", "text": "3 apples" }
@@ -74,6 +79,12 @@ A recipe has a non-empty `id` and a non-empty `name`. `ingredients` and `steps`
 are optional arrays, each ordered oldest first; an entry without the key has
 none. An ingredient and a step have the same shape as each other — a non-empty
 `id` and a non-empty `text` — and neither holds anything of its own.
+
+`tags` is an optional array of plain strings — lower case, trimmed, and each
+present at most once; a recipe without the key has none. A tag has no `id`
+because the word *is* its identity: the same word on two recipes is the same
+tag, which is the only reason filtering by one means anything. Nothing derives a
+tag from an ingredient, and an ingredient line is never rewritten to match one.
 
 **There is no `done` anywhere in this shape.** A recipe is not finished, so
 there is no state to store. A `done` found in stored data is ignored on read and
@@ -124,9 +135,18 @@ Used consistently in specs, code, and UI copy:
 - **the box** — the text input a recipe name is typed into. Only that one.
 - **the search box** — the text input a recipe is looked for in, across every
   book. Never "the box", and never "filter" or "query".
-- **the results** — what a search finds, shown in place of the contents, each
-  one naming the book it is in. Not "hits", not "matches", not "search
-  results".
+- **the results** — what a search or a filter finds, shown in place of the
+  contents, each one naming the book it is in. Not "hits", not "matches", not
+  "search results".
+- **tag** — one lower-case word a recipe can be found by, shown under its name
+  on the card as well as when it is open. Not "label", not "category", not
+  "keyword". A book is not a tag and a tag is not a book.
+- **the tag box** — where a tag is picked to filter by. Never "the box", never
+  "the search box", and never "filter".
+- **the picked tags** — the ones narrowing what is on screen. A recipe answers
+  only when it carries every one of them.
+- **a suggestion** — a word the browser's model proposes as a tag. It is not a
+  tag until it has been accepted, and it is never "generated" or "AI tags".
 
 Retired with version 0004, and not to be reintroduced: **todo**, **sub-todo**,
 **parent**, **done / unfinished**, **the list**, **notepad**.

@@ -66,6 +66,34 @@ shopping list. A card written by hand has none of that and is not worse for it.
 If scaling ever becomes real, it needs the field, and the field needs its own
 spec.
 
+## Tags
+
+A tag is one word a recipe can be found by, and it is the only thing on a recipe
+that exists for the sake of something outside it. An ingredient and a step are
+read; a tag is looked up. That is why it is lower case and why a recipe holds
+each one once — see `../../spec.md`. The word is the identity, so two recipes
+tagged "chicken" carry the same tag rather than two that look alike, which is
+the whole basis of filtering by it.
+
+**Nothing derives a tag from an ingredient.** "2 free-range chicken thighs" does
+not become the tag "chicken" by itself, and it is not rewritten when the tag is
+added. Reading the one out of the other is exactly the parser refused above: it
+wants to know that "free-range" is not the ingredient, that "thighs" is a cut,
+and that "2" is a count — three guesses per line, each wrong silently. What is
+written is written, and what it is filed under is written separately.
+
+That leaves an obvious cost: tagging is typing something already on screen,
+which `../../persona.md` names first among what annoys Nell. Suggestion is the
+answer to that and it ships in the same version — see `../suggesting/spec.md` —
+but it is the browser's model, most browsers do not have one, and by hand is
+therefore how tagging works for most people. **A recipe with no tags is a normal
+recipe**, findable by the contents and by searching exactly as before. Nothing
+in this app treats untagged as unfinished, because nothing here is finished.
+
+Tags sit under the name in both states, on the card as well as on an open
+recipe. They are removed only from an open one: the contents is read down, not
+edited in passing.
+
 ## The method
 
 One line per step, in the order typed. A step is a step of exactly one recipe
@@ -83,6 +111,11 @@ deleted.
 Ids are unique across every book. A book is not a namespace, and nothing
 addresses a recipe by which book it is in.
 
+**A tag has no id**, and that is the one exception. An ingredient needs one
+because two lines reading "3 apples" on the same recipe are two ingredients; a
+tag is the opposite — the word is what makes two of them the same thing, and a
+tag with an identity of its own could not be matched across recipes at all.
+
 ## Text
 
 One line, stored exactly as typed apart from trimming the ends. No markdown, no
@@ -92,8 +125,10 @@ what makes an all-whitespace one impossible.
 ## Deleting
 
 Immediate and permanent, and there is no undo. Deleting a recipe takes its
-ingredients and its method with it — the recipe is the unit, and an orphaned
-step is not a state worth having.
+ingredients, its method and its tags with it — the recipe is the unit, and an
+orphaned step is not a state worth having. A tag that was on nothing else stops
+being offered anywhere, because the tags on offer are only ever the ones in
+use.
 
 The bet the old product made here — that a list this small is cheap to retype —
 is **weaker now and should be watched.** A todo was ninety seconds old. A recipe

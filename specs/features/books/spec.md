@@ -19,6 +19,13 @@ That is the whole of what a book is: a way to look at less. It is not a category
 on a recipe, not a filter, not a tag. A recipe is *in* a book the way a page is
 in a book, and it never had to be told which one.
 
+Tags exist as of version 0009 and this paragraph survives them intact, because
+they are the other axis rather than the same one. A recipe is in exactly one
+book and it never chose; it carries any number of tags and each was added on
+purpose. Sweets is when you are looking; lemon is what it takes. If a book ever
+becomes something a recipe can be in several of, the two ideas have collapsed
+into one and the container has stopped earning its place.
+
 ## The one thing that must not change
 
 **Writing a recipe down does not gain a decision.** The box asks nothing about
