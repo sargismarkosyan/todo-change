@@ -8,6 +8,10 @@ Feature: Switching books
   Switching is rare and deliberate. Writing a recipe down is not: the box at the
   top never asks which book was meant, because whatever is open is the answer.
 
+  Searching is the one thing that reaches past the open book, and it does not
+  contradict this: results are not the contents, and each one says which book it
+  came from. See ../finding/spec.md.
+
   Background:
     Given the app is open
     And the books are:
@@ -16,7 +20,7 @@ Feature: Switching books
     And the open book is named "Sweets"
 
   @rule:switch-shows-only-that-notepad
-  Rule: The open book's recipes are the only ones on screen
+  Rule: The contents is the open book's recipes, and no other book's
 
     Example: two books, one visible at a time
       Given the contents reads:

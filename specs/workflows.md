@@ -50,14 +50,23 @@ throughout, because that is what says which book is being looked at.
 **Switching books lives here**, and nowhere else. It is the deliberate version
 of browsing: "show me the other book".
 
+**When the book is not known**, this runs the other way round. The recipe is
+somewhere and the book is the missing piece, so the steps are: type part of the
+name, or part of something it takes → read the matches, each one saying which
+book it is in → open it, and land in that book with it open. That is the same
+workflow arriving from the other end, and it is the one thing in the app that
+reaches past the open book.
+
 **Where it breaks.** Every recipe open at once, so there is nothing to read down
 — a wall of text is not a contents page. A book that rearranges itself, so what
 was second is now fifth. A book that opens onto whatever was left open a
-fortnight ago instead of onto its contents.
+fortnight ago instead of onto its contents. And, since books exist, having to
+open all of them to find one thing — which is what searching is for.
 
 **Specs.** `features/recipes/reading.feature`,
 `features/books/switching.feature`, `features/books/creating.feature`,
-`features/recipes/empty-state.feature`
+`features/recipes/empty-state.feature`, `features/finding/searching.feature`,
+`features/finding/leaving-a-search.feature`
 
 ---
 
