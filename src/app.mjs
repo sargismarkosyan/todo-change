@@ -5,6 +5,7 @@
 // what makes the rest directly testable. See specs/setup/constraints.md.
 
 import { addIngredient, addRecipe, addStep, linesOf, removeFrom } from './recipes.mjs';
+import { findRecipes } from './finding.mjs';
 import {
   addBook,
   openBook,
@@ -25,6 +26,14 @@ const GROUPS = [
 const ADD_LINE = { ingredients: addIngredient, steps: addStep };
 
 /**
+ * The two things the message under the contents can say. They are one element
+ * apart and one is much worse to misread: a person told "No recipes in this
+ * book yet." during a search thinks the book emptied itself.
+ */
+const NO_RECIPES = 'No recipes in this book yet.';
+const NO_MATCHES = 'No recipe matches that.';
+
+/**
  * Wire the markup in `doc` to the books in `storage`, and render what is there.
  *
  * Both are arguments rather than globals reached for, so a test can mount a
@@ -34,7 +43,9 @@ export function mountApp(doc, storage) {
   const form = doc.getElementById('composer');
   const box = doc.getElementById('new-recipe');
   const contentsEl = doc.getElementById('contents');
+  const resultsEl = doc.getElementById('results');
   const emptyEl = doc.getElementById('empty');
+  const findEl = doc.getElementById('find-recipe');
   const booksEl = doc.getElementById('books');
   const openEl = doc.getElementById('book-open');
   const menuEl = doc.getElementById('book-menu');
@@ -49,6 +60,20 @@ export function mountApp(doc, storage) {
   // Which of the open recipe's two boxes had the caret, so a repaint can put it
   // back. Screen state, like the above.
   let typingIn = null;
+
+  // What is being looked for, across every book. Screen state as well, and the
+  // reason nothing about this version touches storage: a search is a way of
+  // looking, not something anyone owns. See specs/features/finding/spec.md.
+  let finding = '';
+
+  const searching = () => finding.trim() !== '';
+
+  // Everything that follows a search ends it: the contents has to come back, or
+  // it is covered by results while the book underneath changes.
+  const stopFinding = () => {
+    finding = '';
+    findEl.value = '';
+  };
 
   // The book menu: shut, listing the books, taking a new name, or asking about
   // a delete. Screen state too — none of it is worth storing.
@@ -185,6 +210,57 @@ export function mountApp(doc, storage) {
     return item;
   }
 
+  // ---- the results ---------------------------------------------------------
+  //
+  // What a search finds, in place of the contents. A result is a way to get
+  // somewhere: it names the recipe and the book it is in, and offers nothing
+  // else — no delete, nothing to type into. See specs/features/finding/spec.md.
+
+  function resultRow({ recipe, book, line }) {
+    const item = doc.createElement('li');
+    item.className = 'result';
+    item.dataset.id = recipe.id;
+
+    // The whole result is the target, because all of it is one answer.
+    const open = doc.createElement('button');
+    open.type = 'button';
+    open.className = 'result__open';
+
+    const name = doc.createElement('span');
+    name.className = 'result__name';
+    name.textContent = recipe.name;
+
+    // The book is the thing the person searching did not know. Without it,
+    // "regardless of which book" has not actually been answered.
+    const where = doc.createElement('span');
+    where.className = 'result__book';
+    where.textContent = book.name;
+
+    open.append(name, where);
+
+    // Only when the name did not match — otherwise the name already says why
+    // this is here, and repeating a line under it is noise.
+    if (line !== null) {
+      const matched = doc.createElement('span');
+      matched.className = 'result__line';
+      matched.textContent = line;
+      open.append(matched);
+    }
+
+    open.addEventListener('click', () => {
+      // The whole way: the book it lives in opens, and the recipe opens in it.
+      // Anything less leaves a recipe on screen with no book behind it, and the
+      // box at the top writes into whichever book is open.
+      readingId = recipe.id;
+      typingIn = null;
+      stopFinding();
+      commit(switchTo(store, book.id));
+    });
+
+    item.append(open);
+    return item;
+  }
+
   // ---- the book menu -------------------------------------------------------
   //
   // A popover over the one page, not a screen to navigate to: the contents
@@ -207,6 +283,7 @@ export function mountApp(doc, storage) {
       shutMenu();
       // Another book is another contents page, read from the top.
       readingId = null;
+      stopFinding();
       commit(switchTo(store, book.id));
     });
     if (book.id === store.openId) button.setAttribute('aria-current', 'true');
@@ -257,6 +334,7 @@ export function mountApp(doc, storage) {
         if (next === store) return;
         shutMenu();
         readingId = null;
+        stopFinding();
         commit(next);
       },
     });
@@ -293,6 +371,7 @@ export function mountApp(doc, storage) {
     const yes = menuButton('books__confirm-yes', 'Delete', () => {
       shutMenu();
       readingId = null;
+      stopFinding();
       commit(removeBook(store, store.openId));
     });
     const no = menuButton('books__confirm-no', 'Keep it', () => {
@@ -324,6 +403,7 @@ export function mountApp(doc, storage) {
           if (recipes().length === 0) {
             shutMenu();
             readingId = null;
+            stopFinding();
             commit(removeBook(store, store.openId));
             return;
           }
@@ -363,13 +443,34 @@ export function mountApp(doc, storage) {
 
   function render() {
     renderMenu();
+
+    const found = searching() ? findRecipes(store.books, finding) : [];
+    contentsEl.hidden = searching();
+    resultsEl.hidden = !searching();
+
     contentsEl.replaceChildren(...recipes().map(row));
-    emptyEl.hidden = recipes().length > 0;
+    resultsEl.replaceChildren(...found.map(resultRow));
+
+    // One message, two things it can say. A search that found nothing says so
+    // about the search, never about the book — the book is not empty and has
+    // not been touched.
+    emptyEl.textContent = searching() ? NO_MATCHES : NO_RECIPES;
+    emptyEl.hidden = searching() ? found.length > 0 : recipes().length > 0;
+
     // The repaint threw away the box that had the caret in it. Put it back, so
     // typing out six ingredients costs six lines of typing and nothing else.
     if (typingIn !== null) doc.getElementById(`${typingIn}-box-${readingId}`)?.focus();
     if (menu.mode === 'renaming') doc.getElementById('rename-book')?.focus();
   }
+
+  // Live, on every keystroke: nothing is submitted and nothing loads, because
+  // nothing leaves the machine. There is no Add button beside it either — the
+  // one risk this change carries is a recipe name typed in here by mistake, and
+  // a box that can only ever find things is the answer to it.
+  findEl.addEventListener('input', () => {
+    finding = findEl.value;
+    render();
+  });
 
   openEl.addEventListener('click', () => {
     menu = menu.open ? { open: false, mode: 'list' } : { open: true, mode: 'list' };
@@ -397,6 +498,9 @@ export function mountApp(doc, storage) {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const next = addRecipe(recipes(), box.value);
+    // workflows.md promises a new recipe is visibly there, at the top of the
+    // contents — which it cannot be while results are covering the contents.
+    stopFinding();
     // Cleared either way: what did not become a recipe was whitespace, and the
     // box has to be ready for the next one without a decision.
     box.value = '';

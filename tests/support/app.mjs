@@ -82,6 +82,20 @@ function open(seed) {
   const composer = (name, block) =>
     recipe(name).querySelector(`.${block}-composer`);
 
+  const resultEls = () => [...doc.querySelectorAll('.result')];
+  const resultEl = (name) => {
+    const found = resultEls().find(
+      (el) => el.querySelector('.result__name').textContent === name,
+    );
+    if (!found) {
+      throw new Error(
+        `no result called "${name}" — the results read: ` +
+          resultEls().map((el) => el.querySelector('.result__name').textContent).join(', '),
+      );
+    }
+    return found;
+  };
+
   const menu = () => doc.getElementById('book-menu');
   const openMenu = () => {
     if (menu().hidden) doc.getElementById('book-open').click();
@@ -192,6 +206,42 @@ function open(seed) {
       const el = doc.getElementById('empty');
       return window.getComputedStyle(el).display === 'none' ? null : el.textContent;
     },
+
+    // ---- finding one in any book -----------------------------------------
+
+    /** Type into the search box. Live, so there is nothing to submit. */
+    search(term) {
+      const findBox = doc.getElementById('find-recipe');
+      findBox.value = term;
+      findBox.dispatchEvent(new window.Event('input', { bubbles: true }));
+    },
+
+    /** Empty it again, the way the native clear does. */
+    clearSearch() {
+      this.search('');
+    },
+
+    /** What the search box currently holds. */
+    searchBox: () => doc.getElementById('find-recipe').value,
+
+    /**
+     * The results, top to bottom, as the Gherkin tables read them: the recipe
+     * and the book it is in.
+     */
+    results: () =>
+      resultEls().map((el) => [
+        el.querySelector('.result__name').textContent,
+        el.querySelector('.result__book').textContent,
+      ]),
+
+    /** The line a result matched on, or null when it was the name that matched. */
+    resultLine: (name) => resultEl(name).querySelector('.result__line')?.textContent ?? null,
+
+    /** Open one — the book it lives in opens, with the recipe open in it. */
+    openResult: (name) => resultEl(name).querySelector('.result__open').click(),
+
+    /** Whether the contents is the thing on screen, or the results are. */
+    contentsIsShowing: () => !doc.getElementById('contents').hidden,
 
     // ---- what is stored --------------------------------------------------
 

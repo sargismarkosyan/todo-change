@@ -30,7 +30,6 @@ Feature: Finding a recipe in any book
       | Roast chicken |
       | Lemon chicken |
 
-  @planned
   @rule:search-reaches-every-book
   Rule: A search looks in every book, and each result says which one it is in
 
@@ -50,7 +49,6 @@ Feature: Finding a recipe in any book
       Then the results read:
         | Apple cake | Sweets |
 
-  @planned
   @rule:search-matches-what-it-takes
   Rule: A recipe matches on its ingredients too, and the result shows the one that matched
 
@@ -71,7 +69,6 @@ Feature: Finding a recipe in any book
         | Apple cake | Sweets |
       And the result "Apple cake" shows no line
 
-  @planned
   @rule:search-finds-nothing
   Rule: A search matching nothing says so, and says nothing about the book
 

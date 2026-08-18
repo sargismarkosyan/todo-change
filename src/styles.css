@@ -594,6 +594,117 @@ body {
   color: var(--ink);
 }
 
+/* The search box. Below the composer rather than beside it: the top of the page
+   is the three-second capture, and two boxes side by side is how a recipe name
+   ends up typed into the wrong one. Quieter than the composer too — no button,
+   nothing to submit, and a hairline instead of a card, because this one finds
+   and never makes. */
+.finder {
+  margin-bottom: 1.4rem;
+}
+
+.finder__box {
+  width: 100%;
+  padding: 0.45rem 0.7rem 0.45rem 1.6rem;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  /* `transparent`, not `none`: the colour and the image are one shorthand, and
+     two image values in a layer make the whole declaration invalid. */
+  background: transparent
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23756547' stroke-width='1.6'%3E%3Ccircle cx='7' cy='7' r='4.5'/%3E%3Cpath d='M10.5 10.5 14.5 14.5' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat left 0.15rem center;
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+}
+
+/* The browser's own clear control, which is the only way out of a search that
+   is not the keyboard. Chrome's default is a blue ×, which is the one saturated
+   cool colour on a page of paper — this is the same mark in the muted ink. */
+.finder__box::-webkit-search-cancel-button {
+  appearance: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%23756547' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M3 3 11 11M11 3 3 11'/%3E%3C/svg%3E")
+    no-repeat center / contain;
+  cursor: pointer;
+}
+
+.finder__box::placeholder {
+  color: var(--faded);
+  font-style: italic;
+}
+
+.finder__box:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--red);
+}
+
+/* The results, in place of the contents. Cards like the contents' cards, so the
+   page does not change character — but with no margin rule down the left, so
+   the eye can tell at a glance that it is looking at an answer rather than at a
+   book. */
+.results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result + .result { margin-top: 0.5rem; }
+
+.result__open {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.75rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 1px 2px rgb(62 42 20 / 12%);
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--reading);
+  text-align: left;
+  cursor: pointer;
+}
+
+.result__open:hover {
+  border-color: var(--red);
+}
+
+.result__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+/* The book is the thing the person searching did not know, so it is written in
+   the hand that labels the book itself. */
+.result__book {
+  flex: none;
+  color: var(--red);
+  font-family: var(--hand);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* Only there when the name did not match: without it, a result nobody can see
+   the reason for looks like a bug. */
+.result__line {
+  flex-basis: 100%;
+  color: var(--faded);
+  font-size: 0.9rem;
+}
+
+.results[hidden],
+.contents[hidden] {
+  display: none;
+}
+
 /* An empty book says it is empty. A blank panel reads as "broken", not "new". */
 .empty {
   margin: 0;

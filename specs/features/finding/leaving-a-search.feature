@@ -22,7 +22,6 @@ Feature: Leaving a search
       | Roast chicken |
       | Lemon chicken |
 
-  @planned
   @rule:search-opens-it-where-it-lives
   Rule: Opening a result opens the book it is in, with the recipe open in it
 
@@ -40,7 +39,6 @@ Feature: Leaving a search
         | Lemon chicken |
       And the search box is empty
 
-  @planned
   @rule:search-clears-back-to-the-contents
   Rule: Emptying the search puts the open book back, exactly as it was
 
@@ -53,7 +51,6 @@ Feature: Leaving a search
         | Lemon drizzle |
       And "Apple cake" is open
 
-  @planned
   @rule:search-does-not-outlast-what-follows-it
   Rule: Writing a recipe down, or switching books, ends the search
 
