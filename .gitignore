@@ -5,3 +5,7 @@ node_modules/
 .vscode/
 .idea/
 .playwright-mcp/
+
+# tooling
+coverage/
+.trace/

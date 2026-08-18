@@ -1,0 +1,19 @@
+{
+  "name": "todo-change",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A browser todo app built by AI, one spec at a time. The app itself ships zero dependencies; everything here is tooling.",
+  "scripts": {
+    "trace": "node tools/trace.mjs",
+    "test": "node tools/test.mjs",
+    "verify": "npm run trace && npm test",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "jsdom": "^27.0.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
