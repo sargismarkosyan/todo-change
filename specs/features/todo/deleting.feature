@@ -28,3 +28,15 @@ Feature: Deleting a todo
       And I tick "Buy milk"
       When I delete "Buy milk"
       Then the list is empty
+
+  @rule:delete-parent-deletes-sub-todos
+  Rule: Deleting a parent takes its sub-todos with it
+
+    Example: the whole group goes at once
+      Given the list reads:
+        | Sort out car insurance |
+      And "Sort out car insurance" has the sub-todos:
+        | Call current insurer |
+        | Compare two quotes   |
+      When I delete "Sort out car insurance"
+      Then the list is empty

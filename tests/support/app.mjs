@@ -35,13 +35,43 @@ export function openApp(stored) {
   }
   mountApp(doc, window.localStorage);
 
+  // A parent keeps its text one level down, inside the row; a sub-todo wears it
+  // directly. Either way it is the row's own text and never a descendant's.
+  const textOf = (el, kind) =>
+    el.querySelector(`:scope > .${kind}__row > .${kind}__text`) ??
+    el.querySelector(`:scope > .${kind}__text`);
+
   const rows = () => [...doc.querySelectorAll('.todo')];
+  const list = () => rows().map((el) => textOf(el, 'todo').textContent);
+
+  // Every row on screen, parents and sub-todos alike, paired with the block
+  // name its controls carry. Ticking and deleting read the same in the Gherkin
+  // whichever level they land on, so they resolve the same way here.
+  const everyRow = () => [
+    ...rows().map((el) => ({ el, kind: 'todo' })),
+    ...[...doc.querySelectorAll('.sub-todo')].map((el) => ({ el, kind: 'sub-todo' })),
+  ];
+
   const find = (text) => {
-    const row = rows().find((el) => el.querySelector('.todo__text').textContent === text);
-    if (!row) throw new Error(`no todo reading "${text}" — the list reads: ${list().join(', ')}`);
-    return row;
+    const found = everyRow().find(({ el, kind }) => textOf(el, kind).textContent === text);
+    if (!found) {
+      throw new Error(
+        `no todo reading "${text}" — the list reads: ${list().join(', ')}`,
+      );
+    }
+    return found;
   };
-  const list = () => rows().map((el) => el.querySelector('.todo__text').textContent);
+  const control = (text, suffix) => {
+    const { el, kind } = find(text);
+    return el.querySelector(`.${kind}__${suffix}`);
+  };
+
+  /** The row of the parent reading `text`, for reaching into its group. */
+  const parentRow = (text) => {
+    const { el, kind } = find(text);
+    if (kind !== 'todo') throw new Error(`"${text}" is a sub-todo, so it has no group`);
+    return el;
+  };
 
   return {
     window,
@@ -61,16 +91,46 @@ export function openApp(stored) {
     /** What the box currently holds. */
     box: () => doc.getElementById('new-todo').value,
 
-    /** The todos on screen, top to bottom. */
+    /** The todos on screen, top to bottom. Sub-todos are not in the list. */
     list,
-    tick: (text) => find(text).querySelector('.todo__check').click(),
-    untick: (text) => find(text).querySelector('.todo__check').click(),
-    deleteTodo: (text) => find(text).querySelector('.todo__delete').click(),
 
-    isDone: (text) => find(text).querySelector('.todo__check').checked,
-    hasLineThrough: (text) =>
-      window.getComputedStyle(find(text).querySelector('.todo__text')).textDecorationLine ===
-      'line-through',
+    /**
+     * Open the sub-todo box on a row, type, and press Enter — the whole of
+     * capturing a step. The box stays open, so a run of them is one call each.
+     */
+    addSub(parentText, text) {
+      this.submitSub(parentText, text);
+    },
+    /** The same, kept separate for the rule about text that is not a sub-todo. */
+    submitSub(parentText, text) {
+      const row = parentRow(parentText);
+      if (!row.querySelector('.sub-composer')) {
+        row.querySelector('.todo__add-sub').click();
+      }
+      parentRow(parentText).querySelector('.sub-composer__box').value = text;
+      parentRow(parentText).querySelector('.sub-composer').requestSubmit();
+    },
+
+    /** The sub-todos under a parent, top to bottom. */
+    subTodos: (parentText) =>
+      [...parentRow(parentText).querySelectorAll('.sub-todo')].map(
+        (el) => el.querySelector('.sub-todo__text').textContent,
+      ),
+
+    /** Whether a row offers any way to add a sub-todo under it. */
+    offersSubTodos: (text) => find(text).el.querySelector('.todo__add-sub') !== null,
+
+    tick: (text) => control(text, 'check').click(),
+    untick: (text) => control(text, 'check').click(),
+    deleteTodo: (text) => control(text, 'delete').click(),
+
+    isDone: (text) => control(text, 'check').checked,
+    hasLineThrough(text) {
+      const { el, kind } = find(text);
+      return (
+        window.getComputedStyle(textOf(el, kind)).textDecorationLine === 'line-through'
+      );
+    },
 
     /** The empty-list message if it is on screen, otherwise null. */
     message() {

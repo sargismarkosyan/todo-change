@@ -27,3 +27,25 @@ rule('delete-works-on-done-todos', () => {
     assert.deepEqual(app.list(), []);
   });
 });
+
+rule('delete-parent-deletes-sub-todos', () => {
+  test('the whole group goes at once', () => {
+    const app = openAppWithList('Sort out car insurance');
+    app.addSub('Sort out car insurance', 'Call current insurer');
+    app.addSub('Sort out car insurance', 'Compare two quotes');
+
+    app.deleteTodo('Sort out car insurance');
+    assert.deepEqual(app.list(), []);
+    assert.equal(app.message(), 'Nothing to do yet.');
+  });
+
+  test('the neighbouring group is left alone', () => {
+    const app = openAppWithList('Water plants', 'Sort out car insurance');
+    app.addSub('Sort out car insurance', 'Call current insurer');
+    app.addSub('Water plants', 'Fill the can');
+
+    app.deleteTodo('Sort out car insurance');
+    assert.deepEqual(app.list(), ['Water plants']);
+    assert.deepEqual(app.subTodos('Water plants'), ['Fill the can']);
+  });
+});

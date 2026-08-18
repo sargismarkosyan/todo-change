@@ -23,6 +23,12 @@ clicked into. A confirmation dialog for a two-word todo. A list that rearranges
 itself so the thing they were about to click has moved. Losing something they
 typed, ever — that one is not annoyance, it is the end of trust in the tool.
 
+**Sometimes one thought has steps in it.** "Sort out the car insurance" is one
+item on Rowan's list and three things to actually do. Written as a single line
+it looks the same on day one and day three; split into three lines it stops
+reading as one thing. This is still one item of theirs, not a project, and it is
+the whole of the hierarchy this app has.
+
 **What they will never do.** Fill in a due date. Set a priority. Assign a
 category. Archive anything. Read a settings screen. If a feature only pays off
 for someone who does these things, it is not for Rowan.
@@ -35,7 +41,10 @@ bar: faster than a pen, and it survives being closed.
 Stating this plainly, because most feature requests drift here:
 
 - **Teams.** No assigning, sharing, commenting, or seeing anyone else's list.
-- **Project tracking.** No sub-tasks, dependencies, milestones, or estimates.
+- **Project tracking.** No dependencies, milestones, or estimates. A todo may
+  hold one flat level of sub-todos — the steps of a single thing — and a
+  sub-todo may not hold its own. A second level is an outline, and an outline is
+  a project plan.
 - **Archives.** The list is about now. History is not a feature.
 - **Multi-device life.** One machine, one browser. Sync is a different product.
 

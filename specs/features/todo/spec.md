@@ -13,6 +13,27 @@ than the tidiness it buys.
 Moving done todos to the bottom is a real idea, but it is a *different* rule
 that would need its own spec and its own change. It is not the default.
 
+Sub-todos run the other way: **oldest first**, appended to the bottom of their
+parent's group. That is a deliberate divergence, not an oversight. Top-level
+ordering is newest-first so the thing just captured is under the eye, which is
+where the box is. A sub-todo's box sits at the bottom of its group, so the same
+argument puts the newest one there — and steps carry a natural sequence that
+reversing would fight.
+
+## Nesting
+
+A todo may hold one flat level of sub-todos. A sub-todo is a todo in every other
+respect — same shape, same id rules, same text rules, ticked and deleted the
+same way — it simply lives under another one and offers no nesting of its own.
+
+The cap is the feature. Two levels is an outline, an outline is a project plan,
+and `persona.md` says who that is not for. Enforcing depth in the UI rather than
+the data means there is no state to reach that the screen cannot draw.
+
+Sub-todos are typed on their parent's own row. The box at the top of the list is
+untouched by any of this, because Capture is the workflow with the least room to
+spare in it.
+
 ## Identity
 
 Every todo carries an `id` that is generated once and never changes. Rows are
@@ -45,8 +66,25 @@ keeps full weight in a list being skimmed.
 
 The tick box stays checked, so the state is not carried by colour alone.
 
+**A parent is done exactly when all of its sub-todos are done.** This is one
+invariant, not two behaviours, and it holds no matter which end was clicked:
+ticking the last open step closes the parent, ticking the parent closes every
+step, and unticking either end reopens the other. Adding a step to a done parent
+reopens it, since the new step is not done.
+
+Two sources of truth for one fact is where trust goes, so there is only one: the
+screen may never show a struck-through parent above an open step. A todo that
+has *no* sub-todos is untouched by the invariant — it is done when it is ticked,
+and losing its last sub-todo leaves it exactly as it was rather than tidying it
+into done.
+
 ## Deletion
 
 Immediate and permanent. There is no undo and no confirmation in this version.
 That is a deliberate bet that a list this small is cheap to retype — and a bet
 worth revisiting the first time someone reports losing something.
+
+Deleting a parent deletes its sub-todos with it: the group is the unit, and a
+step outliving the thing it was a step of is not a state worth having. It also
+raises the stakes of that bet, since one mis-click can now take four lines
+instead of one.

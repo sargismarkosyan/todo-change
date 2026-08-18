@@ -35,3 +35,32 @@ rule('persist-deletions', () => {
     assert.equal(reopened.message(), 'Nothing to do yet.');
   });
 });
+
+rule('persist-sub-todos', () => {
+  test('nesting survives a reload', () => {
+    const app = openAppWithList('Sort out car insurance');
+    app.addSub('Sort out car insurance', 'Call current insurer');
+    app.addSub('Sort out car insurance', 'Compare two quotes');
+    app.tick('Call current insurer');
+
+    const reopened = app.reload();
+    assert.deepEqual(reopened.list(), ['Sort out car insurance']);
+    assert.deepEqual(reopened.subTodos('Sort out car insurance'), [
+      'Call current insurer',
+      'Compare two quotes',
+    ]);
+    assert.equal(reopened.isDone('Call current insurer'), true);
+    assert.equal(reopened.isDone('Compare two quotes'), false);
+    assert.equal(reopened.isDone('Sort out car insurance'), false);
+  });
+
+  test('a finished group comes back finished', () => {
+    const app = openAppWithList('Sort out car insurance');
+    app.addSub('Sort out car insurance', 'Call current insurer');
+    app.tick('Sort out car insurance');
+
+    const reopened = app.reload();
+    assert.equal(reopened.isDone('Sort out car insurance'), true);
+    assert.equal(reopened.isDone('Call current insurer'), true);
+  });
+});

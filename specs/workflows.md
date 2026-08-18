@@ -22,7 +22,12 @@ visibly *there* — at the top, where the eye already is.
 category to pick, a save button. Silent failure is worse — if a todo does not
 appear, Rowan does not find out until the thing is forgotten.
 
-**Specs.** `features/todo/adding.feature`
+**The steps case.** Sometimes the thought that arrives is one thing with a few
+steps in it. Those go in as sub-todos, typed on the parent's own row — the box
+at the top of the list never asks which todo you meant, so plain Capture keeps
+its three seconds.
+
+**Specs.** `features/todo/adding.feature`, `features/todo/sub-todos.feature`
 
 ---
 
@@ -55,9 +60,16 @@ click lands where expected. This is the workflow with the reward in it — it
 should feel good.
 
 **Where it breaks.** A row that jumps on being ticked, taking the next row with
-it and causing a mis-click. Any lag, which the app has no excuse for.
+it and causing a mis-click. Any lag, which the app has no excuse for. And, once
+todos have steps under them: a parent struck through while a step below it is
+still open, which makes the list lie to the glance in workflow 2.
 
-**Specs.** `features/todo/completing.feature`
+**Sub-todos.** Ticking the last step ticks the thing itself, so finishing a
+multi-step todo needs no extra click to close it out. Ticking the parent instead
+ticks every step under it, for when it turns out the whole thing is done.
+
+**Specs.** `features/todo/completing.feature`,
+`features/todo/sub-todos-completing.feature`
 
 ---
 
@@ -74,6 +86,9 @@ items are all real.
 chore. And the opposite failure: deleting the wrong row, which has no undo. Rows
 are addressed by id precisely so that a deletion during pruning hits what was
 aimed at.
+
+Deleting a todo that has steps under it takes them with it — the group is the
+unit, and leaving orphaned steps behind would be worse than either outcome.
 
 **Specs.** `features/todo/deleting.feature`
 
