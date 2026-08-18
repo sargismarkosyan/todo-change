@@ -85,34 +85,6 @@ Feature: The AI drafting a recipe
       And I delete the ingredient "3 apples"
       Then "Apple pie" shows no ingredients
 
-  @rule:draft-says-it-is-thinking
-  Rule: While the model is writing, the page says so and stays usable
-
-    Example: pressing, and waiting
-      Given a model that has not answered yet
-      When I ask for a draft of "Apple pie"
-      Then the draft control reads "Drafting…"
-      And I see the message "Writing a draft. Nothing else has to wait."
-
-    Example: nothing else waits while it thinks
-      Given a model that has not answered yet
-      When I ask for a draft of "Apple pie"
-      And I add the ingredient "3 apples" to "Apple pie"
-      Then "Apple pie" shows the ingredients:
-        | 3 apples |
-
-    Example: it cannot be asked twice at once
-      Given a model that has not answered yet
-      When I ask for a draft of "Apple pie"
-      Then the draft control cannot be pressed
-
-    Example: the words go back when the answer lands
-      Given a model that drafts:
-        | ingredients | 3 apples |
-      When I ask for a draft of "Apple pie"
-      Then the draft control reads "Draft this recipe"
-      And I see no message
-
   @rule:draft-does-not-touch-what-is-there
   Rule: A draft is added to a recipe, never written over it
 

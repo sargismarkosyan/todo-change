@@ -112,6 +112,13 @@ makes it the easiest to break without noticing.
 hygiene: nothing accumulates here that has to be cleared, because nothing is
 finished.
 
+**Putting a line right lives here too**, since 0010. A recipe is dictated out of
+order — "cream the butter and sugar, oh, and heat the oven first" — and until
+then the only fix was deleting every line after the mistake and typing them
+again. A line is now dragged into place, or moved with the arrow keys. For the
+method that is a correctness fix rather than a tidiness one: the steps are
+numbered because position is part of what a step says.
+
 **Where it breaks.** Deleting the wrong thing, which has no undo — and the stakes
 are higher than they were, because a recipe may be the only copy of something
 somebody dictated once. Deleting a recipe takes its ingredients and its method
@@ -124,7 +131,8 @@ anything, and it is asked because the number is information rather than
 ceremony.
 
 **Specs.** `features/recipes/deleting.feature`, `features/books/deleting.feature`,
-`features/books/renaming.feature`
+`features/books/renaming.feature`, `features/recipes/reordering.feature`,
+`features/recipes/reordering-by-keyboard.feature`
 
 ---
 

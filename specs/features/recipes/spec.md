@@ -54,6 +54,23 @@ Ingredients and the method both run **oldest first**, appended to the bottom of
 their own group. A recipe is read top to bottom and a method is a sequence;
 reversing either would fight the thing itself.
 
+**A person can move a line; the app never does.** Since version 0010 a line is
+taken by its handle and dropped elsewhere in its own group, or moved with the
+arrow keys. That is not a contradiction of "nothing rearranges itself" — that
+promise is about the app reordering things under somebody's eye, and this is the
+opposite: the only thing that ever changes the order is a person doing it on
+purpose.
+
+**Writing a line down is unchanged.** It still goes to the bottom of its group,
+from the one box that group has. Moving it afterwards is how it gets anywhere
+else, which is why there is no second place to type and no insert-here control
+on every row — see `../../changes/0010-out-of-order.md`.
+
+**A line moves only within its group.** An ingredient cannot become a step. What
+a recipe takes and what you do with it are two different lists that happen to
+sit near each other, and a step that has wandered into the ingredients is not a
+tidy-up, it is a recipe that no longer parses.
+
 ## Ingredients
 
 One line each, written the way it is said: `200g plain flour`, `3 apples`, `a

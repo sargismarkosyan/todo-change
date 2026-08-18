@@ -131,6 +131,9 @@ Used consistently in specs, code, and UI copy:
   is being read. Never "done", "unfinished", "complete", or "checked": those
   described a state a thing carried, and nothing here carries one.
 - **the box** — the text input a recipe name is typed into. Only that one.
+- **the handle** — what a line is taken hold of by, to move it within its group.
+  Dragged with a pointer or moved with the arrow keys; the same control either
+  way. Not "the grip", not "the drag handle".
 - **the search box** — the text input a recipe is looked for in, across every
   book. Never "the box", and never "filter" or "query".
 - **the results** — what a search finds, shown in place of the contents, each
