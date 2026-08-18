@@ -22,3 +22,17 @@ Feature: The empty list
         | Buy milk |
       When I delete "Buy milk"
       Then I see the message "Nothing to do yet."
+
+  @planned
+  @rule:empty-state-is-per-notepad
+  Rule: The message is about the notepad you are on, not the app
+
+    Example: one notepad with todos in it, one without
+      Given the notepads are:
+        | My list |
+        | Home    |
+      And the open notepad is named "My list"
+      And the list reads:
+        | Buy milk |
+      When I open the notepad "Home"
+      Then I see the message "Nothing to do yet."

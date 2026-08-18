@@ -3,6 +3,11 @@
 The list is the product. Everything in this folder describes how a todo comes
 into existence, changes state, and leaves.
 
+All of it happens **inside one notepad** — the open one. Nothing here changes
+because there is more than one notepad: a todo is added to, ticked in, and
+deleted from the list on screen, and that list is one notepad's. See
+`../notepads/spec.md` for what a notepad is and why there is more than one.
+
 ## Ordering
 
 Newest first. The list is not sortable and does not reorder itself — a todo
@@ -46,6 +51,9 @@ of `crypto.getRandomValues()` entropy, which is enough that a collision is not a
 scenario worth designing around. An earlier version used four `Math.random()`
 characters and collided in testing — see issue #2.
 
+Ids are unique across every notepad, not merely within one. A notepad is not a
+namespace, and nothing addresses a todo by which notepad it is in.
+
 ## Text
 
 One line, stored exactly as typed apart from trimming the ends. No markdown, no
@@ -80,9 +88,15 @@ into done.
 
 ## Deletion
 
-Immediate and permanent. There is no undo and no confirmation in this version.
-That is a deliberate bet that a list this small is cheap to retype — and a bet
-worth revisiting the first time someone reports losing something.
+Immediate and permanent. There is no undo, and deleting a todo asks nothing,
+however many sub-todos go with it. That is a deliberate bet that a list this
+small is cheap to retype — and a bet worth revisiting the first time someone
+reports losing something.
+
+Deleting a whole *notepad* is the one place this app does ask, and only when
+todos would go with it. The reasoning is in `../notepads/spec.md`; the short
+version is that the question is proportional to what is being destroyed, and one
+line of text is not.
 
 Deleting a parent deletes its sub-todos with it: the group is the unit, and a
 step outliving the thing it was a step of is not a state worth having. It also

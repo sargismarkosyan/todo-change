@@ -18,16 +18,22 @@ doing.
 **Done well.** Under three seconds, no mouse, no decisions. The new todo is
 visibly *there* — at the top, where the eye already is.
 
+**The notepad it lands in** is whichever one is open, and the box never asks.
+That is the load-bearing part of notepads: the choice happens rarely, when
+switching, and never here.
+
 **Where it breaks.** Anything that adds a step: a field that must be clicked, a
-category to pick, a save button. Silent failure is worse — if a todo does not
-appear, Rowan does not find out until the thing is forgotten.
+category to pick, a notepad to choose, a save button. Silent failure is worse —
+if a todo does not appear, Rowan does not find out until the thing is
+forgotten.
 
 **The steps case.** Sometimes the thought that arrives is one thing with a few
 steps in it. Those go in as sub-todos, typed on the parent's own row — the box
 at the top of the list never asks which todo you meant, so plain Capture keeps
 its three seconds.
 
-**Specs.** `features/todo/adding.feature`, `features/todo/sub-todos.feature`
+**Specs.** `features/todo/adding.feature`, `features/todo/sub-todos.feature`,
+`features/notepads/switching.feature`
 
 ---
 
@@ -37,6 +43,11 @@ its three seconds.
 
 **Steps.** Look. That is the whole workflow.
 
+**Switching notepads sits here**, and nowhere else. It is the rare, deliberate
+version of the glance: not "file this correctly", but "show me the other list".
+The name of the open notepad is on screen throughout, because that is what says
+which list is being looked at.
+
 **Done well.** Unfinished items are legible in one glance without reading
 carefully. Done items are visibly out of the way without having moved.
 
@@ -45,7 +56,8 @@ fifth. Done and unfinished looking too similar to separate at a glance — or to
 different, so the list becomes noisy. An empty list showing a blank panel, which
 reads as "broken", not "finished".
 
-**Specs.** `features/todo/completing.feature`, `features/todo/empty-state.feature`
+**Specs.** `features/todo/completing.feature`, `features/todo/empty-state.feature`,
+`features/notepads/switching.feature`, `features/notepads/creating.feature`
 
 ---
 
@@ -90,7 +102,13 @@ aimed at.
 Deleting a todo that has steps under it takes them with it — the group is the
 unit, and leaving orphaned steps behind would be worse than either outcome.
 
-**Specs.** `features/todo/deleting.feature`
+**A whole notepad can go too**, which is the largest thing this app can destroy.
+An empty one goes like a todo does, immediately; one with todos still in it asks
+once and says how many are about to go. That is the only question this app asks
+before deleting anything, and it is asked because the number is information
+rather than ceremony.
+
+**Specs.** `features/todo/deleting.feature`, `features/notepads/deleting.feature`
 
 ---
 
@@ -101,7 +119,9 @@ unit, and leaving orphaned steps behind would be worse than either outcome.
 **Steps.** Open the app. Look.
 
 **Done well.** Everything is exactly as it was left — same items, same order,
-same ticks. Nothing to restore, nothing to confirm.
+same ticks, and the same notepad open. Nothing to restore, nothing to confirm.
+A list saved before notepads existed opens as one, called "My list", with
+nothing else different about it.
 
 **Where it breaks.** This is the workflow that carries the most risk and the
 least visible surface. There is no server: `localStorage` is the only copy, it
@@ -109,7 +129,8 @@ can be edited in devtools, overwritten by a second tab, or cleared by the
 browser. A bad read must still open a usable list — a blank screen here costs
 more than any missing feature, because it ends trust in the tool.
 
-**Specs.** `features/storage/persistence.feature`, `features/storage/recovery.feature`
+**Specs.** `features/storage/persistence.feature`, `features/storage/recovery.feature`,
+`features/storage/notepads-migration.feature`
 
 ---
 

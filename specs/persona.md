@@ -29,9 +29,22 @@ it looks the same on day one and day three; split into three lines it stops
 reading as one thing. This is still one item of theirs, not a project, and it is
 the whole of the hierarchy this app has.
 
+**Sometimes there is more than one list.** Rowan's alternative is a sticky note,
+and nobody keeps only one — there is one on the monitor and one on the fridge.
+The reason is not organisation, it is that looking at the fridge should not show
+you work. A notepad is that second sticky note: a named list, one of them open
+at a time. It is a way to look at less, and it is the whole of what this app
+knows about arranging todos.
+
 **What they will never do.** Fill in a due date. Set a priority. Assign a
 category. Archive anything. Read a settings screen. If a feature only pays off
 for someone who does these things, it is not for Rowan.
+
+Choosing a notepad is not assigning a category. A category is answered on the
+way in, for every todo; a notepad is answered by whatever they were already
+looking at, and changes only when they deliberately switch. If notepads ever
+start asking at the moment of typing, they have become a category and that line
+applies to them.
 
 **Their real alternative** is a paper sticky note, not another app. That is the
 bar: faster than a pen, and it survives being closed.
@@ -45,7 +58,9 @@ Stating this plainly, because most feature requests drift here:
   hold one flat level of sub-todos — the steps of a single thing — and a
   sub-todo may not hold its own. A second level is an outline, and an outline is
   a project plan.
-- **Archives.** The list is about now. History is not a feature.
+- **Archives.** The list is about now. History is not a feature. Notepads are
+  not an exception: every one of them is a live list that is switched to and
+  looked at, not somewhere things are put to stop being visible.
 - **Multi-device life.** One machine, one browser. Sync is a different product.
 
 A request that only makes sense for one of these is not a small feature. It is a
