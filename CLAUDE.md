@@ -49,6 +49,10 @@ working here.**
 - **Never touch `src/` from a skill.** Both skills stop at the spec.
 - **`main` is protected.** Branch, then land it by pull request — direct pushes
   are rejected for everyone. The `Verify` check must be green to merge.
+- **A pull request shows what changed.** If the app looks different, the body
+  carries a still from `docs/screenshots/`, embedded by a raw URL pinned to the
+  commit. The deliverable is pictures; a description of a screen is not one.
+  See [repository.md](specs/setup/repository.md#every-pull-request-carries-a-picture).
 
 ## Commands
 
@@ -70,7 +74,7 @@ tests/                unit/ and behaviour/
 tools/                gherkin.mjs, trace.mjs, test.mjs
 .claude/skills/       refine-spec, feedback
 .github/workflows/    CI and Pages deploy
-docs/screenshots/     the screenshot series
+docs/screenshots/     the series — a still and a clip per version
 ```
 
 Live: <https://sargismarkosyan.github.io/todo-change/> · Issues on

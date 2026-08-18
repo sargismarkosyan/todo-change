@@ -41,6 +41,10 @@ Use the vocabulary's own examples, not lorem ipsum. Real-sounding recipes.
 - **Never commit the frames.** Only the finished GIF. `.frames/` is ignored.
 - **One clip per version**, named for the change spec that shipped it —
   `v001-core-todo-list.gif`.
+- **The still beside it is not this.** `vNNN-<slug>.png` is taken on the branch
+  and goes on the pull request; this is the clip, recorded after the version
+  ships. Recording one does not cover the other — see
+  `specs/setup/repository.md`.
 - **Never touch `src/` or `specs/`.** If the recording shows something broken,
   that is a finding: file it with the `feedback` skill. Do not fix it here, and
   do not re-record around it.
