@@ -45,7 +45,6 @@ Feature: Todos survive a reload
       And "Call current insurer" is shown as done
       And "Sort out car insurance" is shown as unfinished
 
-  @planned
   @rule:persist-notepads
   Rule: Notepads, their names and the one that was open all come back
 

@@ -10,7 +10,6 @@ Feature: Making a new notepad
     And the list reads:
       | Call the bank |
 
-  @planned
   @rule:create-notepad-opens-it-empty
   Rule: A new notepad opens immediately, with nothing in it
 
@@ -26,7 +25,6 @@ Feature: Making a new notepad
       Then the list reads:
         | Call the bank |
 
-  @planned
   @rule:notepad-rejects-blank-name
   Rule: A notepad cannot be made without a name
 

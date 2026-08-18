@@ -1,6 +1,6 @@
 # Spec 0003: notepads
 
-- **Status:** proposed
+- **Status:** approved
 - **Issue:** [#7](https://github.com/sargismarkosyan/todo-change/issues/7)
 
 ## Who this is for

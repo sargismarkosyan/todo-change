@@ -12,7 +12,6 @@ Feature: Renaming a notepad
       | Water plants |
       | Buy milk     |
 
-  @planned
   @rule:rename-keeps-the-todos
   Rule: Renaming changes the name and leaves the todos alone
 
@@ -25,7 +24,6 @@ Feature: Renaming a notepad
         | Buy milk     |
       And "Buy milk" is shown as done
 
-  @planned
   @rule:rename-rejects-blank
   Rule: A blank name is not a rename
 

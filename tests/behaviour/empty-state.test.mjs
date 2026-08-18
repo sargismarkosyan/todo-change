@@ -26,3 +26,14 @@ rule('empty-state-returns', () => {
     assert.equal(app.message(), 'Nothing to do yet.');
   });
 });
+
+rule('empty-state-is-per-notepad', () => {
+  test('one notepad with todos in it, one without', () => {
+    const app = openAppWithList('Buy milk');
+    app.makeNotepad('Home');
+    assert.equal(app.message(), 'Nothing to do yet.');
+
+    app.openNotepadNamed('My list');
+    assert.equal(app.message(), null, 'the notepad on screen is the one being described');
+  });
+});

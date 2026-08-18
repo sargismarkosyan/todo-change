@@ -6,7 +6,6 @@ Feature: A list saved before notepads existed
   it was left. This is the first migration in this app, and workflow 5 (Return)
   is the floor everything else stands on — a bad read here is a blank screen.
 
-  @planned
   @rule:old-list-opens-as-one-notepad
   Rule: An old list opens as a notepad called "My list"
 
@@ -22,7 +21,6 @@ Feature: A list saved before notepads existed
         | Buy milk      |
       And "Buy milk" is shown as done
 
-  @planned
   @rule:migration-happens-once
   Rule: The old list is moved, not copied — the old key is gone afterwards
 

@@ -64,7 +64,6 @@ Feature: Surviving bad stored data
       When I open the app
       Then "Sort out car insurance" is shown as unfinished
 
-  @planned
   @rule:recover-from-bad-notepads
   Rule: Junk in the notepads key still opens a usable notepad
 

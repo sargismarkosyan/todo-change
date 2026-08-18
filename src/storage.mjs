@@ -5,28 +5,56 @@
 // input and every change is written immediately. See
 // specs/features/storage/spec.md.
 
-import { sanitizeTodos } from './todos.mjs';
+import { migrateList, sanitizeStore } from './notepads.mjs';
 
-export const STORAGE_KEY = 'todo-change.todos';
+export const STORAGE_KEY = 'todo-change.notepads';
 
 /**
- * The stored list, or an empty one when what is there cannot be read as todos.
+ * The key every version before notepads wrote: a bare array of todos.
+ *
+ * It is read only when `STORAGE_KEY` is absent, and removed once it has been
+ * read, so the two never both hold real data and there is no question of which
+ * one wins.
+ */
+export const LEGACY_KEY = 'todo-change.todos';
+
+/**
+ * The stored notepads, or one empty notepad when what is there cannot be read.
  *
  * This never throws. A read that throws takes the whole page down with it,
  * because there is nothing else to render — and a blank screen here costs more
  * than any missing feature.
+ *
+ * It is also the one place in the app that writes without anything having
+ * happened on screen: finding a list left by an older version moves it into a
+ * notepad called "My list" and clears the old key. That happens once, on the
+ * first open after upgrading.
  */
-export function readTodos(storage) {
+export function readStore(storage) {
   const raw = storage.getItem(STORAGE_KEY);
-  if (raw === null) return [];
-  try {
-    return sanitizeTodos(JSON.parse(raw));
-  } catch {
-    return [];
+  if (raw !== null) {
+    try {
+      return sanitizeStore(JSON.parse(raw));
+    } catch {
+      return sanitizeStore(null);
+    }
   }
+
+  const legacy = storage.getItem(LEGACY_KEY);
+  if (legacy === null) return sanitizeStore(null);
+
+  let store;
+  try {
+    store = migrateList(JSON.parse(legacy));
+  } catch {
+    store = migrateList(null);
+  }
+  writeStore(storage, store);
+  storage.removeItem(LEGACY_KEY);
+  return store;
 }
 
-/** Write the list. No save button and no debounce — a pending write is data a closed tab loses. */
-export function writeTodos(storage, todos) {
-  storage.setItem(STORAGE_KEY, JSON.stringify(todos));
+/** Write the notepads. No save button and no debounce — a pending write is data a closed tab loses. */
+export function writeStore(storage, store) {
+  storage.setItem(STORAGE_KEY, JSON.stringify(store));
 }

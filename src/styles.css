@@ -24,6 +24,10 @@ body {
 }
 
 .app__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
@@ -40,6 +44,174 @@ body {
 
 /* The box. Capture is the workflow that matters most, so it sits above the
    list, is focused on load, and needs no mouse. */
+/* The notepad switcher: a name, and a popover behind it. It sits in the header
+   rather than above the list, so nothing moves between the box and the todos. */
+.notepads {
+  position: relative;
+  flex: none;
+}
+
+.notepads__open {
+  max-width: 12rem;
+  overflow: hidden;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.notepads__open::after {
+  content: " ▾";
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.notepads__open:hover {
+  border-color: var(--muted);
+}
+
+.notepads__menu {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  width: 16rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+}
+
+.notepads__menu[hidden] {
+  display: none;
+}
+
+.notepads__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notepads__switch {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 0;
+  border-radius: calc(var(--radius) - 4px);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notepads__switch:hover {
+  background: var(--bg);
+}
+
+/* The open one is marked by weight and a dot, not by colour alone. */
+.notepads__switch[aria-current]::before {
+  content: "• ";
+  color: var(--accent);
+}
+
+.notepads__switch[aria-current] {
+  font-weight: 600;
+}
+
+.notepads__actions,
+.notepads__confirm {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+
+.notepads__new,
+.notepads__rename {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.2rem 0.5rem 0.4rem;
+}
+
+.notepads__new-box,
+.notepads__rename-box {
+  min-width: 0;
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.notepads__new-box::placeholder,
+.notepads__rename-box::placeholder {
+  color: var(--muted);
+}
+
+.notepads__new-add,
+.notepads__rename-add,
+.notepads__confirm-yes,
+.notepads__confirm-no {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.notepads__rename-open,
+.notepads__delete {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 0;
+  border-radius: calc(var(--radius) - 4px);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notepads__rename-open:hover,
+.notepads__delete:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* The one question this app asks. It carries a number, so it is information
+   rather than ceremony — see specs/features/notepads/spec.md. */
+.notepads__question {
+  margin: 0 0 0.5rem;
+  padding: 0 0.5rem;
+  color: var(--text);
+}
+
+.notepads__confirm {
+  padding-bottom: 0.2rem;
+}
+
+.notepads__confirm-yes,
+.notepads__confirm-no {
+  margin-left: 0.5rem;
+}
+
+.notepads__confirm-yes {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
 .composer {
   display: flex;
   gap: 0.5rem;

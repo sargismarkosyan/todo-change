@@ -15,7 +15,6 @@ Feature: Switching notepads
       | Home    |
     And the open notepad is named "My list"
 
-  @planned
   @rule:switch-shows-only-that-notepad
   Rule: The open notepad's todos are the only ones on screen
 
@@ -32,7 +31,6 @@ Feature: Switching notepads
         | Call the bank |
       And the open notepad is named "My list"
 
-  @planned
   @rule:capture-goes-to-the-open-notepad
   Rule: A new todo lands in the notepad on screen, without being asked
 

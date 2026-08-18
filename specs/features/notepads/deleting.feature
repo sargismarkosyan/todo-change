@@ -17,7 +17,6 @@ Feature: Throwing a notepad away
       | Home    |
     And the open notepad is named "Home"
 
-  @planned
   @rule:delete-empty-notepad-goes-without-asking
   Rule: An empty notepad goes on the spot, and another one opens
 
@@ -28,7 +27,6 @@ Feature: Throwing a notepad away
         | My list |
       And the open notepad is named "My list"
 
-  @planned
   @rule:delete-notepad-with-todos-asks-first
   Rule: A notepad with todos in it asks first, and says how many
 
@@ -56,7 +54,6 @@ Feature: Throwing a notepad away
       And the list reads:
         | Buy milk |
 
-  @planned
   @rule:last-notepad-cannot-be-deleted
   Rule: The only notepad left offers no way to delete it
 

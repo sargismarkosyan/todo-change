@@ -23,7 +23,6 @@ Feature: The empty list
       When I delete "Buy milk"
       Then I see the message "Nothing to do yet."
 
-  @planned
   @rule:empty-state-is-per-notepad
   Rule: The message is about the notepad you are on, not the app
 
