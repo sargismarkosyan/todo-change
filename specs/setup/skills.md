@@ -1,8 +1,9 @@
 # Project skills
 
-Two skills live in `.claude/skills/`. They are the two halves of the loop that
-happen before any code is written: turning a report into issues, and turning a
-request into a spec.
+Two **process** skills live in `.claude/skills/`. They are the two halves of the
+loop that happen before any code is written: turning a report into issues, and
+turning a request into a spec. A repository may carry other skills of its own;
+these two are the ones the process depends on.
 
 Both are invocable as `/<name>` and both fire on their own when the conversation
 matches. **Neither writes application code.** That is deliberate — the moment a

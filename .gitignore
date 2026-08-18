@@ -10,3 +10,4 @@ node_modules/
 coverage/
 .trace/
 report.md
+docs/screenshots/.frames/
