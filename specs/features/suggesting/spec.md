@@ -71,9 +71,30 @@ considered and dropped. It produces better steps and costs a second press and a
 decision about ordering; it is a version of its own if the drafts turn out
 weak.
 
+**Each line comes back with the place it should take**, and is drawn there
+rather than at the bottom. The model knows that rubbing the butter in belongs
+between heating the oven and baking; an app that piles every proposal at the
+foot of the group throws that away and leaves somebody dragging each accepted
+line into position. So a group reads as one list — your lines and the model's,
+one run of numbers — showing what the method would read like if you took the
+lot. Version 0011; see `placing-a-draft.feature`.
+
+**The place is an index, not a quotation.** Asking the model which line a
+proposal should follow means asking it to quote your text back exactly, and one
+wrong character puts the line nowhere at all. An index cannot be misspelt, and
+one that points past the end lands last instead of vanishing — which matters,
+because a recipe can be typed into while the model is still writing. The index
+is read once, against the group as it stands when the draft arrives; after that
+the proposal sits with its neighbour and travels with it.
+
 **Once accepted, a line is a line.** It carries no mark and no memory of where
 it came from. Nothing in the stored shape changes, and a drafted "3 apples" is
 indistinguishable from a typed one. See *What this costs*.
+
+**Accepting keeps the place.** A line taken out of the middle of a draft is
+written into the middle of the group, not appended — which is the whole reason
+the model was asked where things go. Version 0009 appended, and that was wrong:
+it made the app discard what it had just been told.
 
 ## Which model, and why that is allowed
 

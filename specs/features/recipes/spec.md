@@ -61,8 +61,11 @@ promise is about the app reordering things under somebody's eye, and this is the
 opposite: the only thing that ever changes the order is a person doing it on
 purpose.
 
-**Writing a line down is unchanged.** It still goes to the bottom of its group,
-from the one box that group has. Moving it afterwards is how it gets anywhere
+**Writing a line down is unchanged.** A line *you type* still goes to the bottom
+of its group, from the one box that group has. A line accepted from a draft goes
+where the draft put it — see `../suggesting/placing-a-draft.feature` — which is
+not an exception to the rule above so much as the reason it is worth stating:
+the bottom is where typing lands, not where everything lands. Moving it afterwards is how it gets anywhere
 else, which is why there is no second place to type and no insert-here control
 on every row — see `../../changes/0010-out-of-order.md`.
 

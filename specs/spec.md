@@ -145,7 +145,9 @@ Used consistently in specs, code, and UI copy:
 - **a draft** — what the AI proposes for one recipe: ingredients and steps
   together, none of them written down.
 - **a proposal** — one line of a draft. It is not an ingredient or a step until
-  it has been accepted, and it is never "generated".
+  it has been accepted, and it is never "generated". A proposal sits among the
+  lines of its group rather than below them, and is moved the same way they
+  are.
 - **the offer** — the one question asked about the AI, on the first visit that
   could use it. Asked once and remembered.
 - **the indicator** — the line in the masthead saying where the AI stands. Never
