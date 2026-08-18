@@ -25,6 +25,20 @@ One line, stored exactly as typed apart from trimming the ends. No markdown, no
 links, no formatting. Leading and trailing whitespace is removed on the way in,
 which is what makes an all-whitespace todo impossible.
 
+## Done
+
+Done is a state a todo carries, not a place it goes. A done todo keeps its text,
+its id, and its position; the only thing that changes is how it reads.
+
+It reads as **struck through and muted** — a line through the text, and less
+contrast than an unfinished one. That pairing is deliberate: the line is what
+carries the meaning at a glance, and the muting is what stops a list of finished
+todos shouting as loudly as the two that are left. Neither alone is enough —
+muting on its own is easy to miss on a bright screen, and a line on its own
+keeps full weight in a list being skimmed.
+
+The tick box stays checked, so the state is not carried by colour alone.
+
 ## Deletion
 
 Immediate and permanent. There is no undo and no confirmation in this version.

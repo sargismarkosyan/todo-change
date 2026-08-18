@@ -22,6 +22,13 @@ Every read must survive:
 In all of these the app opens on an empty, usable list. It never throws a blank
 screen. See `recovery.feature`.
 
+**A partly-bad array keeps what is good.** If the stored value is an array but
+one entry in it is malformed, that entry is dropped and the rest are kept —
+throwing away someone's real todos because a neighbouring one got mangled is the
+larger failure of the two. A todo is well-formed when `id` and `text` are
+non-empty strings and `done` is a boolean; anything else is not a todo and does
+not survive the read.
+
 ## What is not handled yet
 
 **A second tab.** Two tabs open on this app will overwrite each other, because

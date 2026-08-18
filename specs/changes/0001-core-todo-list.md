@@ -1,6 +1,6 @@
 # Spec 0001: core todo list
 
-- **Status:** proposed
+- **Status:** approved
 - **Issue:** none — first feature
 
 ## Who this is for
@@ -45,8 +45,8 @@ nothing typed into the box is ever lost.
   no mouse.
 - Adding puts the todo at the top of the list and empties the box.
 - Blank or whitespace-only text does not become a todo.
-- Each row shows a checkbox and the todo's text. Ticking marks it done — muted
-  and struck through. Unticking reverses it. The row does not move.
+- Each row shows a checkbox and the todo's text. Ticking marks it done — a line
+  through the text, and muted. Unticking reverses it. The row does not move.
 - Each row has a delete control that removes that todo, done or not.
 - An empty list shows "Nothing to do yet." rather than a blank panel.
 - Every change writes to `localStorage`; a reload restores the list exactly.
@@ -54,7 +54,13 @@ nothing typed into the box is ever lost.
   instead of a broken screen.
 
 **Rules added** — all 14 already written and tagged `@planned`; this change
-removes the tags:
+removes the tags. Two of them were strengthened before approval, keeping their
+ids: `complete-marks-done` and `complete-is-reversible` now assert the line
+through the text rather than an unspecified "shown as done", and
+`recover-from-unreadable-data` gained an example for a partly-bad array. The
+strikethrough was in this spec's prose but not in the contract, which meant
+nothing would have failed if it went missing — and it is the part of *done* that
+does the work at a glance.
 
 | Rule id | Feature file | New or changed |
 |---|---|---|
@@ -97,6 +103,11 @@ No existing data to migrate — this is the first version to write anything. Ids
 are generated once per todo and never reused; rows are addressed by id, never by
 text or index.
 
+A stored entry counts as a todo when `id` and `text` are non-empty strings and
+`done` is a boolean. On read, entries failing that are dropped and the rest are
+kept — a value that is not an array at all yields an empty list. Discarding the
+whole list because one neighbour got mangled is the worse of the two failures.
+
 ## Risks
 
 Workflow 5 (Return) is the whole exposure. `localStorage` is the only copy, and
@@ -120,3 +131,5 @@ immediately, with no save button and no debounce, or a closed tab loses data.
 8. Delete the last todo. "Nothing to do yet." comes back.
 9. In devtools, set `todo-change.todos` to `{not json` and reload. The app opens
    on an empty list, not a blank screen.
+10. In devtools, replace one entry of a two-todo array with `{"nonsense":true}`
+    and reload. The other todo is still there.

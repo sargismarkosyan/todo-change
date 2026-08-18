@@ -25,3 +25,11 @@ Feature: Surviving bad stored data
       Given "todo-change.todos" holds "{\"todos\":\"nope\"}"
       When I open the app
       Then the list is empty
+
+    Example: one entry in the array is not a todo
+      Given "todo-change.todos" holds a list of:
+        | {"id": "a", "text": "Buy milk", "done": false} |
+        | {"nonsense": true}                             |
+      When I open the app
+      Then the list reads:
+        | Buy milk |
