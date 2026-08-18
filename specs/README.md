@@ -1,5 +1,11 @@
 # Specs
 
+This folder holds two different things. **[`setup/`](setup/README.md) describes
+how the repository works** — the process, the gates, the skills. Everything else
+describes the product.
+
+What follows is about the product.
+
 Four layers, four jobs. They are not alternatives — a change usually touches
 several.
 

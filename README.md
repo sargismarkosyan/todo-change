@@ -15,8 +15,10 @@ say what must be true. Tests point back at the Gherkin rules by id, and CI
 refuses the build unless every rule has a test, every behaviour test has a rule,
 and coverage clears 95%.
 
-- The process and the rules: [CLAUDE.md](CLAUDE.md)
+- How this repo works, in full: [specs/setup/](specs/setup/README.md)
+- The short version: [CLAUDE.md](CLAUDE.md)
 - How specs are structured: [specs/README.md](specs/README.md)
+- Who the app is for: [specs/persona.md](specs/persona.md)
 - Problems found while testing: [GitHub Issues](https://github.com/sargismarkosyan/todo-change/issues)
 - The screenshot series: [docs/screenshots/](docs/screenshots/)
 
