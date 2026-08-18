@@ -3,7 +3,7 @@ Feature: Paper, ink, and a second voice
 
   The app looks like a book somebody has actually cooked from: a grained paper
   ground, a page laid on it, index cards with a red margin rule, one piece of
-  tape. What that is *for* is in spec.md next to this file.
+  tape holding it down. What that is *for* is in spec.md next to this file.
 
   A look is mostly taste and does not belong in a contract. These three rules
   are the part that is not taste — the guarantees a future palette or a fancier
@@ -48,3 +48,10 @@ Feature: Paper, ink, and a second voice
       And the recipe's name is set in the reading face
       And its ingredients are set in the reading face
       And its method is set in the reading face
+
+  @planned
+  @rule:the-masthead-names-the-book
+  Rule: The masthead says what this is, not what the repository is called
+
+    Example: the cover
+      Then the masthead reads "Recipes"
