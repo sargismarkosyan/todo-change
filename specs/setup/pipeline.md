@@ -17,6 +17,25 @@ npm run serve    # http://localhost:8000
 Run `npm run verify` before every commit. CI runs the same thing, so a green
 local run means a green build.
 
+## What is already wired
+
+The whole of it, so nothing here gets rebuilt or wondered about:
+
+| Piece | Lives in | Gate? |
+|---|---|---|
+| Traceability | `tools/trace.mjs` → step *Traceability* | **Yes** — fails the build |
+| Coverage | `tools/test.mjs` → step *Tests and coverage gate* | **Yes** — 95% × 3 |
+| Machine-readable coverage | `tools/test.mjs` → `coverage/lcov.info` | no — same run, written twice |
+| Pull request report | `tools/report.mjs` → summary + one PR comment | no — cannot fail a build |
+| Pages deploy | `deploy` job | no — `main` only |
+| Branch protection | GitHub settings, not the repo | **Yes** — see [repository.md](repository.md) |
+
+Two things about that table are easy to get wrong. The required status check is
+matched by **name**, and the name is the job's `name:` — `Verify`, not `verify`.
+And branch protection is the one gate that does not live in this repository, so
+it cannot be reviewed in a diff; it is written down in
+[repository.md](repository.md) instead.
+
 ## Gate 1 — traceability (`tools/trace.mjs`)
 
 Enforced in **both directions**:
@@ -104,6 +123,33 @@ a half-finished deploy is worse than a slow one.
 
 The site serves the repo root, so `specs/` and `tests/` are published alongside
 the app. They are public anyway, and it keeps the deploy step to one line.
+
+### Two Nodes, and only one of them is ours
+
+`node-version: '24'` in `setup-node` is the Node that runs `npm ci` and the
+tests. Separately, each `actions/*` step is itself a JavaScript program with its
+own runtime declared in its `action.yml`. **Bumping one does nothing for the
+other.** When the runner warns that "Node 20 is being deprecated", it is talking
+about the second, and the fix is newer action versions — not a change to
+`node-version`, which was already right.
+
+Actions are pinned to major versions, all currently on `node24`. When that
+warning returns, check what each pinned major declares:
+
+```sh
+gh api "/repos/actions/checkout/contents/action.yml?ref=v7" --jq .content   | base64 -d | grep -m1 using:
+```
+
+The `deploy` job's actions will not warn on a pull request, because the job is
+`main`-only and skips. They still need bumping with the rest — the warning
+simply waits until something merges.
+
+### Token permissions
+
+The `verify` job names `permissions:` explicitly, which makes the token
+read-only apart from the `pull-requests: write` the report comment needs. Naming
+any permission drops every unnamed one, so `contents: read` has to be listed
+too — without it, checkout fails.
 
 ## The report
 

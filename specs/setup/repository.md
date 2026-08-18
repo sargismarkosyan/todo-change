@@ -127,8 +127,24 @@ Labels:
 | `question` | Needs an answer before it can be classified. |
 | `needs-spec` | Agreed to be built; waiting on a change spec. |
 
-Issues are closed by the commit that implements the fix (`Closes #12`), not
-before.
+### Closing an issue
+
+Put `Closes #12` in the **pull request description**. Not only in a commit
+message.
+
+Both mechanisms exist and both close the issue when the work reaches `main`. The
+difference is what they depend on. A keyword in a commit message relies on that
+commit's text surviving the merge, which under squash merging depends on the
+repository's squash-message setting — a setting someone can change later without
+any sign that it broke issue closing. A keyword in the PR description fires on
+merge whatever the strategy, and GitHub shows the link on the PR before it
+merges, so you can see it is wired up rather than hope.
+
+Write it in both if you like. Only the description is the mechanism.
+
+Nothing is closed by hand. If an issue turns out to be mistaken rather than
+fixed, close it with a comment saying which — a tracker that does not
+distinguish "fixed" from "wasn't real" stops being worth reading.
 
 ## Screenshots
 
