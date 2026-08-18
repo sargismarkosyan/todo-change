@@ -4,13 +4,19 @@ Feature: Surviving bad stored data
   localStorage is editable by anyone with devtools and shared with every other
   tab. The app must open on a usable screen no matter what it finds there.
 
+  The examples naming "todo-change.todos" are the migration read — a list saved
+  before notepads existed is untrusted in exactly the same way as one saved
+  after, and it lands in a notepad called "My list" either way.
+
   @rule:recover-from-missing-key
-  Rule: A missing key starts an empty list
+  Rule: A browser with nothing stored starts on one empty notepad
 
     Example: a browser that has never opened the app
-      Given "todo-change.todos" is not set
+      Given "todo-change.notepads" is not set
+      And "todo-change.todos" is not set
       When I open the app
-      Then the list is empty
+      Then the open notepad is named "My list"
+      And the list is empty
       And I see the message "Nothing to do yet."
 
   @rule:recover-from-unreadable-data
@@ -57,3 +63,25 @@ Feature: Surviving bad stored data
         | {"id": "a", "text": "Sort out car insurance", "done": true, "subTodos": [{"id": "b", "text": "Call current insurer", "done": false}]} |
       When I open the app
       Then "Sort out car insurance" is shown as unfinished
+
+  @rule:recover-from-bad-notepads
+  Rule: Junk in the notepads key still opens a usable notepad
+
+    Example: the value is not valid JSON
+      Given "todo-change.notepads" holds "{not json"
+      When I open the app
+      Then the open notepad is named "My list"
+      And the list is empty
+
+    Example: one entry in the notepads is not a notepad
+      Given "todo-change.notepads" holds:
+        | {"notepads": [{"id": "a", "name": "Home", "todos": []}, {"nonsense": true}], "openId": "a"} |
+      When I open the app
+      Then the notepads are:
+        | Home |
+
+    Example: the notepad said to be open is not there
+      Given "todo-change.notepads" holds:
+        | {"notepads": [{"id": "a", "name": "Home", "todos": []}], "openId": "gone"} |
+      When I open the app
+      Then the open notepad is named "Home"

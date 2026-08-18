@@ -44,3 +44,23 @@ Feature: Todos survive a reload
         | Compare two quotes   |
       And "Call current insurer" is shown as done
       And "Sort out car insurance" is shown as unfinished
+
+  @rule:persist-notepads
+  Rule: Notepads, their names and the one that was open all come back
+
+    Example: two notepads and a reload
+      Given the notepads are:
+        | My list |
+        | Home    |
+      And the open notepad is named "My list"
+      And the list reads:
+        | Call the bank |
+      When I open the notepad "Home"
+      And I add "Water plants"
+      And I reload the page
+      Then the open notepad is named "Home"
+      And the list reads:
+        | Water plants |
+      When I open the notepad "My list"
+      Then the list reads:
+        | Call the bank |

@@ -9,8 +9,16 @@
 <body>
   <main class="app">
     <header class="app__header">
-      <h1 class="app__title">todo-change</h1>
-      <p class="app__tagline">A todo app built one spec at a time.</p>
+      <div class="app__heading">
+        <h1 class="app__title">todo-change</h1>
+        <p class="app__tagline">A todo app built one spec at a time.</p>
+      </div>
+
+      <div class="notepads" id="notepads">
+        <button class="notepads__open" id="notepad-open" type="button"
+                aria-haspopup="true" aria-expanded="false"></button>
+        <div class="notepads__menu" id="notepad-menu" hidden></div>
+      </div>
     </header>
 
     <form class="composer" id="composer">

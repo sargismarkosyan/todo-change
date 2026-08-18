@@ -64,3 +64,25 @@ rule('persist-sub-todos', () => {
     assert.equal(reopened.isDone('Call current insurer'), true);
   });
 });
+
+rule('persist-notepads', () => {
+  test('two notepads and a reload', () => {
+    const app = openAppWithList('Call the bank');
+    app.makeNotepad('Home');
+    app.add('Water plants');
+
+    const reopened = app.reload();
+    assert.equal(reopened.openNotepad(), 'Home');
+    assert.deepEqual(reopened.list(), ['Water plants']);
+
+    reopened.openNotepadNamed('My list');
+    assert.deepEqual(reopened.list(), ['Call the bank']);
+  });
+
+  test('names and order come back as they were', () => {
+    const app = openAppWithList('Call the bank');
+    app.makeNotepad('Home');
+    app.makeNotepad('Someday');
+    assert.deepEqual(app.reload().notepads(), ['My list', 'Home', 'Someday']);
+  });
+});

@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { openApp, openAppWithList } from '../support/app.mjs';
+import { openAppWithList, openStore } from '../support/app.mjs';
 
 rule('sub-todo-added-under-parent', () => {
   test('adding the first sub-todo', () => {
@@ -97,8 +97,9 @@ rule('sub-todo-depth-is-one', () => {
 
     // Straight into storage, because the UI offers no way to write this.
     const smuggled = JSON.parse(app.stored());
-    smuggled[0].subTodos[0].subTodos = [{ id: 'x', text: 'Find the policy number', done: false }];
-    const reopened = openApp(JSON.stringify(smuggled));
+    const stolen = smuggled.notepads[0].todos[0].subTodos[0];
+    stolen.subTodos = [{ id: 'x', text: 'Find the policy number', done: false }];
+    const reopened = openStore(JSON.stringify(smuggled));
 
     assert.deepEqual(reopened.subTodos('Sort out car insurance'), ['Call current insurer']);
     assert.equal(reopened.offersSubTodos('Call current insurer'), false);
