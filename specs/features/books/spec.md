@@ -91,6 +91,10 @@ first.
 - **Not sync.** One browser, one machine, as before. Two tabs on this app still
   overwrite each other — see `../storage/spec.md`, with the sharper edge that
   the two tabs may be on different books and still share one key.
-- **Not searchable across.** Finding a recipe regardless of which book it is in
-  is a real need and a different feature; it needs this container to exist
-  first. See issue #9.
+
+Searching across books — finding one regardless of which book it is in — was
+listed here as a real need and a different feature, needing this container to
+exist first. It exists, and that feature is version 0008: see
+`../finding/spec.md`. It changes nothing above. A search is a way of looking,
+results are not the contents, and the box at the top still writes into whichever
+book is open.

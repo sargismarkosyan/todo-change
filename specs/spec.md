@@ -121,7 +121,12 @@ Used consistently in specs, code, and UI copy:
 - **open / closed** — the two states of a *recipe on screen*, meaning whether it
   is being read. Never "done", "unfinished", "complete", or "checked": those
   described a state a thing carried, and nothing here carries one.
-- **the box** — the text input a recipe name is typed into.
+- **the box** — the text input a recipe name is typed into. Only that one.
+- **the search box** — the text input a recipe is looked for in, across every
+  book. Never "the box", and never "filter" or "query".
+- **the results** — what a search finds, shown in place of the contents, each
+  one naming the book it is in. Not "hits", not "matches", not "search
+  results".
 
 Retired with version 0004, and not to be reintroduced: **todo**, **sub-todo**,
 **parent**, **done / unfinished**, **the list**, **notepad**.

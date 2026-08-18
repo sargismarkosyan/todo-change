@@ -28,7 +28,14 @@
       <button class="composer__add" type="submit">Add</button>
     </form>
 
+    <div class="finder">
+      <input class="finder__box" id="find-recipe" type="search"
+             placeholder="Find a recipe in any book"
+             aria-label="Find a recipe in any book" autocomplete="off">
+    </div>
+
     <ul class="contents" id="contents"></ul>
+    <ul class="results" id="results" hidden></ul>
     <p class="empty" id="empty">No recipes in this book yet.</p>
   </main>
 
