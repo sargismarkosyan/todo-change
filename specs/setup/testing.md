@@ -103,6 +103,30 @@ Everything that can be tested without the DOM should be — see
 - If a branch is genuinely unreachable, it should not be there. Deleting it is a
   better fix than a test that pretends to reach it.
 
+## A test that fails sometimes is worse than no test
+
+Both gates are only worth what their reliability is worth. A test that fails two
+runs in five teaches everyone to press re-run, and from then on a real failure
+looks like the usual noise.
+
+**No test may depend on chance, timing, or ordering to pass.** The usual
+sources, in the order they tend to appear:
+
+- an assertion resting on a probability rather than a guarantee — that generated
+  values will not collide, that a sample falls within a range;
+- a timeout, or anything assuming one operation completes before another;
+- state left behind by an earlier test, so the suite passes in order and the
+  file fails on its own.
+
+When an assertion is probabilistic, the fix is almost never a looser threshold
+or a retry. Either the code should offer a guarantee strong enough that the
+probability stops mattering, or the test is asking a question that cannot be
+answered reliably and needs to ask a different one.
+
+The tell is a test that passes locally and fails on CI, or that passes on a
+re-run with nothing changed. Treat it as a defect in the test, at the same
+priority as a defect in the code, because a gate nobody trusts is not a gate.
+
 ## Before committing
 
 ```sh
