@@ -135,10 +135,19 @@ const clean = (value) => (typeof value === 'string' ? value.trim() : '');
  * having looked, and accepting it would put the same line on twice.
  */
 function usableGroup(proposed, already) {
+  // Compared without case, kept with it. "3 Apples" against a recipe that
+  // already says "3 apples" is the same line wearing a capital, and the model
+  // is told what is there but cannot be relied on to have read it. Matching is
+  // case-insensitive everywhere else in this app too — see finding.mjs.
+  const seen = already.map((text) => text.toLowerCase());
   const lines = [];
   for (const value of proposed) {
     const text = clean(value);
-    if (text !== '' && !already.includes(text) && !lines.includes(text)) lines.push(text);
+    const key = text.toLowerCase();
+    if (text !== '' && !seen.includes(key)) {
+      seen.push(key);
+      lines.push(text);
+    }
   }
   return lines;
 }

@@ -177,6 +177,16 @@ rule('draft-does-not-touch-what-is-there', () => {
     assert.deepEqual(app.ingredients('Apple pie'), ['3 apples', '200g plain flour']);
   });
 
+  test('a line already there is not proposed back, whatever case it wears', async () => {
+    const app = await book(fakeModel({ drafts: drafts(['3 Apples', '200g plain flour']) }));
+    app.addIngredient('Apple pie', '3 apples');
+
+    app.askForDraft('Apple pie');
+    await app.settle();
+
+    assert.deepEqual(app.proposed('ingredients'), ['200g plain flour']);
+  });
+
   test('the method is left alone while the ingredients are drafted', async () => {
     const app = await book(fakeModel({ drafts: drafts(['3 apples'], []) }));
     app.addStep('Apple pie', 'Heat the oven to 180C');

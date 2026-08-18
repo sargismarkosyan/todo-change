@@ -137,6 +137,26 @@ test('usableDraft trims, deduplicates, and drops what the recipe already holds',
   assert.deepEqual(out, { ingredients: ['3 apples'], steps: ['Bake it'] });
 });
 
+test('a line the recipe already holds is not proposed back in a different case', () => {
+  const out = usableDraft(
+    { ingredients: ['3 Apples', '3 Bramley apples'], steps: ['heat the oven'] },
+    recipe('Apple pie', [line('3 apples')], [line('Heat the oven')]),
+  );
+  assert.deepEqual(
+    out,
+    { ingredients: ['3 Bramley apples'], steps: [] },
+    'a capital does not make it a new line — but a different ingredient still is',
+  );
+});
+
+test('the first spelling of a repeat within one answer is the one kept', () => {
+  const out = usableDraft(
+    { ingredients: ['3 Apples', '3 apples'], steps: [] },
+    recipe('Apple pie'),
+  );
+  assert.deepEqual(out.ingredients, ['3 Apples'], 'kept as the model wrote it');
+});
+
 test('usableDraft survives a recipe stored without its groups', () => {
   const out = usableDraft({ ingredients: ['3 apples'], steps: [] }, { id: 'r', name: 'Apple pie' });
   assert.deepEqual(out, { ingredients: ['3 apples'], steps: [] });

@@ -53,7 +53,16 @@ the draft is dismissed.
 
 **Added, never written over.** A draft is put beside what is already there, not
 in place of it: nothing is replaced, nothing is reordered, and a line the recipe
-already holds is not proposed back to it. Accepted lines append the way typed
+already holds is not proposed back to it.
+
+That happens twice over, deliberately. The model is **told** what the recipe
+already takes and how far the method has got, so it usually does not repeat
+itself — and whatever it answers, the repeat is **filtered out anyway**, because
+being told is not the same as having read it. Matching is by text, without case:
+"3 Apples" against a recipe that already says "3 apples" is the same line
+wearing a capital. It is not by meaning — "3 Bramley apples" beside "3 apples"
+is a second proposal, because deciding those are the same thing is a guess this
+app has no business making. Accepted lines append the way typed
 ones do — oldest first, because a method is a sequence.
 
 **Both groups at once, one press.** The alternative — a control per group, so
