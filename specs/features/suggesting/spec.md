@@ -161,10 +161,22 @@ machine where it has been switched off shows the way back on and nothing else.
 spinners."** Fetching a model is not instant, and pretending otherwise would be
 a frozen page. So this is a real amendment, bounded as tightly as it can be:
 
-- **Only fetching the model can be slow**, and only the first time. It is a
-  thing you press, once, deliberately.
-- **Nothing else ever waits on it.** Writing a recipe down, opening one, filling
-  one in by hand, and searching are unchanged and unblocked.
+**Two things here are slow, not one.** Fetching the model is the obvious one.
+Running it is the other, and it is the one that happens every time: asking for a
+draft is inference, and inference takes seconds even on a model already on the
+machine. An earlier draft of this file claimed only the fetch could be slow.
+That was wrong, and a press that appears to do nothing for four seconds is the
+worst version of it.
+
+- **Both say so.** The fetch reports where it has got to in the masthead; the
+  draft says it is being written, on the control that was pressed.
+- **Neither blocks anything.** Writing a recipe down, opening one, filling one
+  in by hand, and searching are unchanged and unblocked throughout — which is
+  what the message on the control says out loud, because a person who does not
+  know that will simply sit and wait.
+- **Neither can be started twice.** The control cannot be pressed while it is
+  working; a second press would be a second session and a second answer nobody
+  asked for.
 - **A model that never answers costs nothing.** There is no state in which the
   app is waiting to be usable.
 

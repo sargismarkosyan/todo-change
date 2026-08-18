@@ -49,6 +49,14 @@ const NOTHING_DRAFTED = 'Nothing drafted.';
 const DRAFT_FAILED = 'The draft could not be written.';
 
 /**
+ * Running the model is the second slow thing, and the one that happens every
+ * time — inference takes seconds even on a model already on the machine. The
+ * message says what is happening *and* that nothing is blocked, because a
+ * person who does not know that will sit and wait.
+ */
+const DRAFTING_NOW = 'Writing a draft. Nothing else has to wait.';
+
+/**
  * Wire the markup in `doc` to the books in `storage`, and render what is there.
  *
  * Both are arguments rather than globals reached for, so a test can mount a
@@ -117,6 +125,11 @@ export function mountApp(doc, storage, model = null) {
   // exactly like which recipe is open.
   let drafted = null;
   let note = null;
+
+  // Which recipe the model is currently writing for, if any. Screen state, and
+  // the reason the control cannot be pressed twice: a second press would be a
+  // second session and a second answer nobody asked for.
+  let thinking = null;
 
   // The book menu: shut, listing the books, taking a new name, or asking about
   // a delete. Screen state too — none of it is worth storing.
@@ -268,14 +281,17 @@ export function mountApp(doc, storage, model = null) {
     const bar = doc.createElement('div');
     bar.className = 'drafting';
 
+    const working = thinking === recipe.id;
+
     const ask = doc.createElement('button');
     ask.type = 'button';
     ask.className = 'drafting__ask';
-    ask.textContent = 'Draft this recipe';
+    ask.textContent = working ? 'Drafting…' : 'Draft this recipe';
+    ask.disabled = working;
     ask.addEventListener('click', () => askForDraft(recipe.id));
     bar.append(ask);
 
-    if (drafted !== null && drafted.recipeId === recipe.id) {
+    if (!working && drafted !== null && drafted.recipeId === recipe.id) {
       const drop = doc.createElement('button');
       drop.type = 'button';
       drop.className = 'drafting__dismiss';
@@ -304,22 +320,34 @@ export function mountApp(doc, storage, model = null) {
    * asked, and the recipe stays writable by hand while it is out.
    */
   async function askForDraft(recipeId) {
+    // One at a time. The control is disabled while it works, and this is the
+    // guard behind that for anything that reaches here another way.
+    if (thinking !== null) return;
+
     drafted = null;
-    note = null;
+    note = DRAFTING_NOW;
+    thinking = recipeId;
     render();
 
     let proposed;
     try {
       proposed = await model.draft(recipes().find((recipe) => recipe.id === recipeId));
     } catch {
+      thinking = null;
       note = DRAFT_FAILED;
       render();
       return;
     }
+    thinking = null;
 
-    // Re-read: the recipe may have been typed into while the model was out.
+    // Re-read: the recipe may have been typed into, deleted, or the AI switched
+    // off entirely while the model was out.
     const current = recipes().find((recipe) => recipe.id === recipeId);
-    if (!current) return;
+    if (!current || !aiIsOn()) {
+      note = null;
+      render();
+      return;
+    }
 
     const draft = usableDraft(proposed, current);
     drafted = isEmptyDraft(draft) ? null : { recipeId, ...draft };
@@ -658,6 +686,7 @@ export function mountApp(doc, storage, model = null) {
     progress = null;
     drafted = null;
     note = null;
+    thinking = null;
     commit(setSuggestions(store, 'off'));
   }
 

@@ -683,9 +683,17 @@ body {
   cursor: pointer;
 }
 
-.drafting__ask:hover {
+.drafting__ask:hover:enabled {
   border-color: var(--red);
   background: var(--page);
+}
+
+/* While the model writes. Text only — features/look/spec.md says nothing moves,
+   so there is no spinner and nothing pulses; the word changes and the control
+   stops being pressable. */
+.drafting__ask:disabled {
+  color: var(--faded);
+  cursor: default;
 }
 
 .drafting__dismiss {

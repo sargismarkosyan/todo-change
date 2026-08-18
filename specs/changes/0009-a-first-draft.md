@@ -72,6 +72,11 @@ moment drafting becomes a step in workflow 1 this has cost more than it bought.
   reordered, and a line the recipe already holds is not proposed back to it.
 - **Once accepted, a line is a line** — no mark, no stored field, edited and
   deleted like any other.
+- **It says when it is working.** Running the model is the second slow thing,
+  and the one that happens every time — inference takes seconds even on a model
+  already downloaded. The control reads *Drafting…* while it writes, cannot be
+  pressed again, and the line under it says nothing else has to wait, because a
+  person who does not know that will sit and wait.
 - **Turning the draft down costs nothing**, and a model that answers with
   nothing usable says so and changes nothing.
 - **It never touches the name or the book.** A book is an occasion somebody
@@ -105,6 +110,7 @@ moment drafting becomes a step in workflow 1 this has cost more than it bought.
 |---|---|---|
 | `draft-proposes-both-groups` | `features/suggesting/drafting.feature` | new |
 | `draft-accepted-line-by-line` | `features/suggesting/drafting.feature` | new |
+| `draft-says-it-is-thinking` | `features/suggesting/drafting.feature` | new |
 | `draft-does-not-touch-what-is-there` | `features/suggesting/drafting.feature` | new |
 | `draft-dismissed-changes-nothing` | `features/suggesting/turning-a-draft-down.feature` | new |
 | `draft-can-fail` | `features/suggesting/turning-a-draft-down.feature` | new |
@@ -152,8 +158,11 @@ A screen is a place you go to configure something before using it. This is a
 switch in a popover, holding an answer already asked for once. **The check that
 keeps it honest is the line count: two.** A third means it became the screen.
 
-**[`spec.md`](../spec.md): "Instant."** Amended for one press, once, and
-bounded: nothing else in the app ever waits on the model.
+**[`spec.md`](../spec.md): "Instant."** Amended, and for **two** slow things
+rather than one: fetching the model, and running it. The second was missed in
+the first pass of this spec, which claimed only the fetch could be slow — an
+error caught by pressing the button and watching nothing happen. Both now
+report, neither blocks anything else, and neither can be started twice.
 
 **[`setup/constraints.md`](../setup/constraints.md): zero dependencies** is
 untouched. The model belongs to the browser. A bundled one is ruled out

@@ -336,6 +336,13 @@ function open(seed, model = null) {
     /** Turn the whole draft down. */
     dismissDraft: () => doc.querySelector('.drafting__dismiss').click(),
 
+    /** What the control says right now — it says so while the model writes. */
+    draftControl: (name) => recipe(name).querySelector('.drafting__ask')?.textContent ?? null,
+
+    /** Whether it can be pressed. It cannot, while it is already working. */
+    draftControlCanBePressed: (name) =>
+      recipe(name).querySelector('.drafting__ask')?.disabled === false,
+
     /** The one line under the control, or null when there is nothing to say. */
     note: () => doc.querySelector('.drafting__note')?.textContent ?? null,
 
