@@ -20,7 +20,6 @@ Feature: Opening a recipe to read it
       | Apple cake    |
       | Lemon drizzle |
 
-  @planned
   @rule:recipe-opens-to-be-read
   Rule: Opening a recipe shows its ingredients, and its method under them
 
@@ -48,7 +47,6 @@ Feature: Opening a recipe to read it
       And "Lemon drizzle" shows no ingredients
       And "Lemon drizzle" shows no method
 
-  @planned
   @rule:one-recipe-open-at-a-time
   Rule: Opening a recipe closes the one that was open
 
@@ -66,7 +64,6 @@ Feature: Opening a recipe to read it
         | Apple cake    |
         | Lemon drizzle |
 
-  @planned
   @rule:nothing-is-ticked-off
   Rule: Nothing in a book can be ticked off
 

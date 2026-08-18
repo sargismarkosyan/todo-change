@@ -1,66 +1,69 @@
 @feature:storage-persistence
-Feature: Todos survive a reload
+Feature: Recipes survive a reload
 
   There is no server. localStorage is the only copy of the data, so anything the
-  screen shows must still be there after a refresh.
+  screen shows must still be there after a refresh — and what is behind it now
+  may be the only record of something somebody dictated once.
 
   @rule:persist-across-reload
-  Rule: The list is restored exactly as it was left
+  Rule: The contents is restored exactly as it was left
 
-    Example: text, order and done state all come back
-      Given the list reads:
-        | Call the bank |
-        | Buy milk      |
-      And I tick "Buy milk"
+    Example: names and order both come back
+      Given the contents reads:
+        | Lemon drizzle |
+        | Apple cake    |
       When I reload the page
-      Then the list reads:
-        | Call the bank |
-        | Buy milk      |
-      And "Buy milk" is shown as done
+      Then the contents reads:
+        | Lemon drizzle |
+        | Apple cake    |
 
   @rule:persist-deletions
-  Rule: A deleted todo stays deleted
+  Rule: A deleted recipe stays deleted
 
     Example: deleting then reloading
-      Given the list reads:
-        | Buy milk |
-      When I delete "Buy milk"
+      Given the contents reads:
+        | Apple cake |
+      When I delete the recipe "Apple cake"
       And I reload the page
-      Then the list is empty
+      Then the contents is empty
 
   @rule:persist-sub-todos
-  Rule: Sub-todos come back with their parent, in order and state
+  Rule: The ingredients and the method come back with their recipe, in order
 
-    Example: nesting survives a reload
-      Given the list reads:
-        | Sort out car insurance |
-      And "Sort out car insurance" has the sub-todos:
-        | Call current insurer |
-        | Compare two quotes   |
-      And I tick "Call current insurer"
+    Example: a whole recipe survives a reload
+      Given the contents reads:
+        | Apple cake |
+      And "Apple cake" has the ingredients:
+        | 200g plain flour |
+        | 3 apples         |
+      And "Apple cake" has the method:
+        | Heat the oven to 180C     |
+        | Peel and slice the apples |
       When I reload the page
-      Then "Sort out car insurance" has the sub-todos:
-        | Call current insurer |
-        | Compare two quotes   |
-      And "Call current insurer" is shown as done
-      And "Sort out car insurance" is shown as unfinished
+      And I open the recipe "Apple cake"
+      Then "Apple cake" shows the ingredients:
+        | 200g plain flour |
+        | 3 apples         |
+      And "Apple cake" shows the method:
+        | Heat the oven to 180C     |
+        | Peel and slice the apples |
 
   @rule:persist-notepads
-  Rule: Notepads, their names and the one that was open all come back
+  Rule: Books, their names and the one that was open all come back
 
-    Example: two notepads and a reload
-      Given the notepads are:
-        | My list |
-        | Home    |
-      And the open notepad is named "My list"
-      And the list reads:
-        | Call the bank |
-      When I open the notepad "Home"
-      And I add "Water plants"
+    Example: two books and a reload
+      Given the books are:
+        | Sweets |
+        | Dinner |
+      And the open book is named "Sweets"
+      And the contents reads:
+        | Apple cake |
+      When I open the book "Dinner"
+      And I write down "Roast chicken"
       And I reload the page
-      Then the open notepad is named "Home"
-      And the list reads:
-        | Water plants |
-      When I open the notepad "My list"
-      Then the list reads:
-        | Call the bank |
+      Then the open book is named "Dinner"
+      And the contents reads:
+        | Roast chicken |
+      When I open the book "Sweets"
+      Then the contents reads:
+        | Apple cake |

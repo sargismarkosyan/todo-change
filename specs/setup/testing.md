@@ -21,9 +21,9 @@ import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
 
 rule('add-goes-to-top', () => {
-  test('a new todo appears above the older ones', () => {
+  test('a new recipe appears above the older ones', () => {
     // ...
-    assert.deepEqual(texts(), ['Buy milk', 'Call the bank']);
+    assert.deepEqual(app.contents(), ['Apple cake', 'Lemon drizzle']);
   });
 });
 ```
@@ -35,8 +35,8 @@ exist, which is usually enough to spot the typo.
 It wraps `describe()`, so the rule id and its text appear in the test output:
 
 ```
-▶ [add-goes-to-top] A new todo goes to the top of the list
-  ✔ a new todo appears above the older ones
+▶ [add-goes-to-top] A new recipe goes to the top of the contents
+  ✔ a new recipe appears above the older ones
 ```
 
 Every `test()` in a behaviour file must sit **inside** a `rule()` block. One at
@@ -49,9 +49,10 @@ mirrors.
 ### Write them against the rule, not the implementation
 
 The Gherkin `Example:` blocks are the specification of what to assert. If the
-rule says the list reads `Buy milk` then `Call the bank`, assert the rendered
-order — not that a sort function was called. A behaviour test that passes while
-the screen is wrong is worse than no test, because it costs the gate its meaning.
+rule says the contents reads `Apple cake` then `Lemon drizzle`, assert the
+rendered order — not that a sort function was called. A behaviour test that
+passes while the screen is wrong is worse than no test, because it costs the
+gate its meaning.
 
 `ruleText(id)` from the same helper returns the parsed rule if a test wants to
 read its text.
@@ -99,7 +100,7 @@ Everything that can be tested without the DOM should be — see
   hide, and V8's line counting is generous about function declarations.
 - The error-handling paths in storage reads are real behaviour with real rules
   behind them, not coverage chores. Corrupt the stored value and assert the app
-  still opens.
+  still opens on a usable book.
 - If a branch is genuinely unreachable, it should not be there. Deleting it is a
   better fix than a test that pretends to reach it.
 

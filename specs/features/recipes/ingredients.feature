@@ -15,7 +15,6 @@ Feature: What a recipe takes
       | Apple cake |
     And I open the recipe "Apple cake"
 
-  @planned
   @rule:ingredient-added-to-recipe
   Rule: An ingredient is typed into the open recipe and appears in it
 
@@ -35,7 +34,6 @@ Feature: What a recipe takes
         | Lemon drizzle |
         | Apple cake    |
 
-  @planned
   @rule:ingredients-keep-typing-order
   Rule: Ingredients stay in the order they were typed
 
@@ -48,7 +46,6 @@ Feature: What a recipe takes
         | 3 apples             |
         | a good pinch of salt |
 
-  @planned
   @rule:ingredient-rejects-blank
   Rule: Blank text does not become an ingredient
 

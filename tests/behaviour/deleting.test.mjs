@@ -1,51 +1,46 @@
-// specs/features/todo/deleting.feature
+// specs/features/recipes/deleting.feature
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { openAppWithList } from '../support/app.mjs';
+import { openAppWithContents } from '../support/app.mjs';
 
 rule('delete-removes-only-that-one', () => {
-  test('deleting the middle of three', () => {
-    const app = openAppWithList('Call the bank', 'Buy milk', 'Water plants');
-    app.deleteTodo('Buy milk');
-    assert.deepEqual(app.list(), ['Call the bank', 'Water plants']);
+  test('deleting the middle of three recipes', () => {
+    const app = openAppWithContents('Lemon drizzle', 'Apple cake', 'Roast chicken');
+    app.deleteRecipe('Apple cake');
+    assert.deepEqual(app.contents(), ['Lemon drizzle', 'Roast chicken']);
   });
 
-  test('two todos reading the same thing are told apart', () => {
-    const app = openAppWithList('Buy milk', 'Buy milk');
-    app.deleteTodo('Buy milk');
-    assert.deepEqual(app.list(), ['Buy milk'], 'exactly one should have gone');
+  test('deleting one ingredient out of a recipe', () => {
+    const app = openAppWithContents('Apple cake');
+    app.give('Apple cake', 'ingredient', ['200g plain flour', '3 apples']);
+    app.openRecipe('Apple cake');
+    app.deleteLine('3 apples');
+    assert.deepEqual(app.ingredients('Apple cake'), ['200g plain flour']);
   });
-});
 
-rule('delete-works-on-done-todos', () => {
-  test('clearing something finished', () => {
-    const app = openAppWithList('Buy milk');
-    app.tick('Buy milk');
-    app.deleteTodo('Buy milk');
-    assert.deepEqual(app.list(), []);
+  test('deleting one step leaves the rest of the method', () => {
+    const app = openAppWithContents('Apple cake');
+    app.give('Apple cake', 'step', ['Heat the oven to 180C', 'Bake for forty minutes']);
+    app.openRecipe('Apple cake');
+    app.deleteLine('Heat the oven to 180C');
+    assert.deepEqual(app.method('Apple cake'), ['Bake for forty minutes']);
   });
 });
 
 rule('delete-parent-deletes-sub-todos', () => {
-  test('the whole group goes at once', () => {
-    const app = openAppWithList('Sort out car insurance');
-    app.addSub('Sort out car insurance', 'Call current insurer');
-    app.addSub('Sort out car insurance', 'Compare two quotes');
+  test('the whole thing goes at once', () => {
+    const app = openAppWithContents('Apple cake');
+    app.give('Apple cake', 'ingredient', ['200g plain flour']);
+    app.give('Apple cake', 'step', ['Heat the oven to 180C']);
 
-    app.deleteTodo('Sort out car insurance');
-    assert.deepEqual(app.list(), []);
-    assert.equal(app.message(), 'Nothing to do yet.');
-  });
-
-  test('the neighbouring group is left alone', () => {
-    const app = openAppWithList('Water plants', 'Sort out car insurance');
-    app.addSub('Sort out car insurance', 'Call current insurer');
-    app.addSub('Water plants', 'Fill the can');
-
-    app.deleteTodo('Sort out car insurance');
-    assert.deepEqual(app.list(), ['Water plants']);
-    assert.deepEqual(app.subTodos('Water plants'), ['Fill the can']);
+    app.deleteRecipe('Apple cake');
+    assert.deepEqual(app.contents(), []);
+    assert.equal(
+      app.stored().includes('200g plain flour'),
+      false,
+      'the ingredients went with it',
+    );
   });
 });

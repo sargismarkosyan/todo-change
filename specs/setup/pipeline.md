@@ -66,16 +66,16 @@ followed by a count. It is worth reading even when green.
 ## The id system
 
 ```gherkin
-@feature:todo-adding
-Feature: Adding a todo
+@feature:recipe-writing
+Feature: Writing a recipe down
 
   @rule:add-goes-to-top
-  Rule: A new todo goes to the top of the list
+  Rule: A new recipe goes to the top of the contents
 
-    Example: adding to an empty list
-      When I add "Buy milk"
-      Then the list reads:
-        | Buy milk |
+    Example: writing one down in an empty book
+      When I write down "Apple cake"
+      Then the contents reads:
+        | Apple cake |
 ```
 
 - `@feature:<id>` on every Feature, `@rule:<id>` on every Rule, both unique

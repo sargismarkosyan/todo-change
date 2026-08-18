@@ -41,20 +41,20 @@ testable; if a statement *is* testable it belongs in a `.feature` file.
 checked against, and the only layer the pipeline enforces.
 
 Folders group by area and may nest. **Keep files small — one behaviour per file,
-never one component.** A file describing "todos" is too big; `adding.feature`,
-`completing.feature`, and `deleting.feature` are right, because they are the
-things Rowan does.
+never one component.** A file describing "recipes" is too big; `writing.feature`,
+`reading.feature`, and `deleting.feature` are right, because they are the things
+Nell does.
 
-Splitting by UI part instead — `list-item.feature`, `checkbox.feature` — looks
-tidier and is a trap. "A todo row renders a checkbox" is an implementation
+Splitting by UI part instead — `recipe-card.feature`, `menu.feature` — looks
+tidier and is a trap. "A recipe row renders a delete button" is an implementation
 detail in spec costume, and since tests bind to rule ids, component rules breed
 component tests wearing behaviour badges. That is the coverage filler
 [setup/pipeline.md](setup/pipeline.md) exists to reject, and neither gate can
 tell the difference — only this naming rule can. Reusable components are a
 `src/` concern; the contract should not know the UI has parts.
 
-When a file does outgrow itself, split by sub-behaviour: `adding.feature` into
-`adding.feature` and `adding-multiline.feature`.
+When a file does outgrow itself, split by sub-behaviour: `writing.feature` into
+`writing.feature` and `writing-multiline.feature`.
 
 Soft limits, warned about by `npm run trace`: 120 lines and 6 rules per file.
 The truer signal comes earlier — a `Background:` that individual rules keep
@@ -67,16 +67,16 @@ it.
 Required tags — traceability is built on them:
 
 ```gherkin
-@feature:todo-adding
-Feature: Adding a todo
+@feature:recipe-writing
+Feature: Writing a recipe down
 
   @rule:add-goes-to-top
-  Rule: A new todo goes to the top of the list
+  Rule: A new recipe goes to the top of the contents
 
-    Example: adding to an empty list
-      When I add "Buy milk"
-      Then the list reads:
-        | Buy milk |
+    Example: writing one down in an empty book
+      When I write down "Apple cake"
+      Then the contents reads:
+        | Apple cake |
 ```
 
 - `@feature:<id>` on every Feature. Unique across the repo.

@@ -1,53 +1,65 @@
 // The DOM layer: rendering and events, and nothing else.
 //
-// Everything it needs to decide anything lives in todos.mjs, notepads.mjs and
+// Everything it needs to decide anything lives in recipes.mjs, books.mjs and
 // storage.mjs, none of which knows a document exists. Keeping this layer thin is
 // what makes the rest directly testable. See specs/setup/constraints.md.
 
-import { addSubTodo, addTodo, removeTodo, subTodosOf, toggleTodo } from './todos.mjs';
+import { addIngredient, addRecipe, addStep, linesOf, removeFrom } from './recipes.mjs';
 import {
-  addNotepad,
-  openNotepad,
-  openTodos,
-  removeNotepad,
-  renameNotepad,
+  addBook,
+  openBook,
+  openRecipes,
+  removeBook,
+  renameBook,
   switchTo,
-  withOpenTodos,
-} from './notepads.mjs';
+  withOpenRecipes,
+} from './books.mjs';
 import { readStore, writeStore } from './storage.mjs';
 
+/** The two groups inside a recipe, in the order they are read. */
+const GROUPS = [
+  { key: 'ingredients', block: 'ingredient', heading: 'Ingredients', placeholder: 'What does it take?' },
+  { key: 'steps', block: 'step', heading: 'Method', placeholder: 'And then?' },
+];
+
+const ADD_LINE = { ingredients: addIngredient, steps: addStep };
+
 /**
- * Wire the markup in `doc` to the notepads in `storage`, and render what is
- * there.
+ * Wire the markup in `doc` to the books in `storage`, and render what is there.
  *
  * Both are arguments rather than globals reached for, so a test can mount a
  * fresh document against a fresh store without either leaking into the next one.
  */
 export function mountApp(doc, storage) {
   const form = doc.getElementById('composer');
-  const box = doc.getElementById('new-todo');
-  const listEl = doc.getElementById('list');
+  const box = doc.getElementById('new-recipe');
+  const contentsEl = doc.getElementById('contents');
   const emptyEl = doc.getElementById('empty');
-  const notepadsEl = doc.getElementById('notepads');
-  const openEl = doc.getElementById('notepad-open');
-  const menuEl = doc.getElementById('notepad-menu');
+  const booksEl = doc.getElementById('books');
+  const openEl = doc.getElementById('book-open');
+  const menuEl = doc.getElementById('book-menu');
 
   let store = readStore(storage);
 
-  // Which todo has its sub-todo box open, if any. Rendering replaces the list
-  // wholesale, so this is the one piece of screen state that has to outlive it.
-  let openFor = null;
+  // Which recipe is being read, if any. One at a time, so that there is always
+  // a contents page to read down — see specs/features/recipes/spec.md. It is
+  // not stored: it is where the reader is looking, not something they own.
+  let readingId = null;
 
-  // The notepad menu: shut, listing the notepads, taking a new name, or asking
-  // about a delete. Screen state too — none of it is worth storing.
+  // Which of the open recipe's two boxes had the caret, so a repaint can put it
+  // back. Screen state, like the above.
+  let typingIn = null;
+
+  // The book menu: shut, listing the books, taking a new name, or asking about
+  // a delete. Screen state too — none of it is worth storing.
   let menu = { open: false, mode: 'list' };
 
   const shutMenu = () => {
     menu = { open: false, mode: 'list' };
   };
 
-  // The todos on screen are the open notepad's, and never anything else's.
-  const todos = () => openTodos(store);
+  // The contents on screen is the open book's, and never anything else's.
+  const recipes = () => openRecipes(store);
 
   // Every mutation goes through here: store first, then paint. Anything on
   // screen has been written, which is the whole promise of the app.
@@ -57,124 +69,128 @@ export function mountApp(doc, storage) {
     render();
   };
 
-  /** The same, for a change to the list inside the open notepad. */
-  const commitTodos = (next) => commit(withOpenTodos(store, next));
+  /** The same, for a change to the contents of the open book. */
+  const commitRecipes = (next) => commit(withOpenRecipes(store, next));
 
-  // A parent row and a sub-todo row are the same three controls under different
-  // class names. `kind` is the block half of each one.
-  function checkbox(todo, kind) {
-    const check = doc.createElement('input');
-    check.type = 'checkbox';
-    check.className = `${kind}__check`;
-    check.id = `check-${todo.id}`;
-    check.checked = todo.done;
-    check.addEventListener('change', () => commitTodos(toggleTodo(todos(), todo.id)));
-    return check;
-  }
-
-  // A label, so the text itself is part of the tick target.
-  function textLabel(todo, kind) {
-    const text = doc.createElement('label');
-    text.className = `${kind}__text`;
-    text.htmlFor = `check-${todo.id}`;
-    text.textContent = todo.text;
-    return text;
-  }
-
-  function deleteButton(todo, kind) {
+  function deleteButton(block, id, label) {
     const remove = doc.createElement('button');
     remove.type = 'button';
-    remove.className = `${kind}__delete`;
+    remove.className = `${block}__delete`;
     remove.textContent = '×';
-    remove.setAttribute('aria-label', `Delete ${todo.text}`);
-    remove.addEventListener('click', () => commitTodos(removeTodo(todos(), todo.id)));
+    remove.setAttribute('aria-label', `Delete ${label}`);
+    remove.addEventListener('click', () => commitRecipes(removeFrom(recipes(), id)));
     return remove;
   }
 
-  // No add control here: a sub-todo cannot have sub-todos, and the cheapest way
-  // to guarantee that is to give the second level nothing to click.
-  function subRow(sub) {
+  // ---- an open recipe ------------------------------------------------------
+  //
+  // Ingredients, then the method. That order is not decoration: the ingredients
+  // answer "can I make this tonight", which is the question asked at the
+  // contents, and the method answers "what do I do now".
+
+  function lineRow(line, block) {
     const item = doc.createElement('li');
-    item.className = sub.done ? 'sub-todo sub-todo--done' : 'sub-todo';
-    item.dataset.id = sub.id;
-    item.append(checkbox(sub, 'sub-todo'), textLabel(sub, 'sub-todo'), deleteButton(sub, 'sub-todo'));
+    item.className = block;
+    item.dataset.id = line.id;
+
+    const text = doc.createElement('span');
+    text.className = `${block}__text`;
+    text.textContent = line.text;
+
+    item.append(text, deleteButton(block, line.id, line.text));
     return item;
   }
 
-  function subComposer(todo) {
+  function lineComposer(recipe, group) {
     const composer = doc.createElement('form');
-    composer.className = 'sub-composer';
+    composer.className = `${group.block}-composer`;
 
-    const subBox = doc.createElement('input');
-    subBox.type = 'text';
-    subBox.className = 'sub-composer__box';
-    subBox.id = `sub-box-${todo.id}`;
-    subBox.placeholder = 'And then?';
-    subBox.autocomplete = 'off';
-    subBox.setAttribute('aria-label', `New sub-todo under ${todo.text}`);
+    const lineBox = doc.createElement('input');
+    lineBox.type = 'text';
+    lineBox.className = `${group.block}-composer__box`;
+    lineBox.id = `${group.block}-box-${recipe.id}`;
+    lineBox.placeholder = group.placeholder;
+    lineBox.autocomplete = 'off';
+    lineBox.setAttribute('aria-label', `New ${group.block} for ${recipe.name}`);
 
     const add = doc.createElement('button');
     add.type = 'submit';
-    add.className = 'sub-composer__add';
+    add.className = `${group.block}-composer__add`;
     add.textContent = 'Add';
 
     composer.addEventListener('submit', (event) => {
       event.preventDefault();
-      const next = addSubTodo(todos(), todo.id, subBox.value);
-      subBox.value = '';
-      // Left open on purpose: steps arrive in threes more often than in ones,
-      // and render() puts the caret back for the next one.
-      commitTodos(next);
+      const next = ADD_LINE[group.key](recipes(), recipe.id, lineBox.value);
+      lineBox.value = '';
+      // The caret stays here on purpose: ingredients arrive six at a time, and
+      // render() puts it back for the next one.
+      typingIn = group.block;
+      commitRecipes(next);
     });
 
-    composer.append(subBox, add);
+    composer.append(lineBox, add);
     return composer;
   }
 
-  function row(todo) {
+  function group(recipe, spec) {
+    const section = doc.createElement('div');
+    section.className = `recipe__group recipe__${spec.key}`;
+
+    const heading = doc.createElement('h2');
+    heading.className = 'recipe__heading';
+    heading.textContent = spec.heading;
+
+    const lines = doc.createElement('ul');
+    lines.className = `recipe__${spec.key}-lines`;
+    lines.append(...linesOf(recipe, spec.key).map((line) => lineRow(line, spec.block)));
+
+    section.append(heading, lines, lineComposer(recipe, spec));
+    return section;
+  }
+
+  // ---- the contents --------------------------------------------------------
+
+  function row(recipe) {
     const item = doc.createElement('li');
-    item.className = todo.done ? 'todo todo--done' : 'todo';
-    item.dataset.id = todo.id;
+    const reading = recipe.id === readingId;
+    item.className = reading ? 'recipe recipe--open' : 'recipe';
+    item.dataset.id = recipe.id;
 
     const main = doc.createElement('div');
-    main.className = 'todo__row';
+    main.className = 'recipe__row';
 
-    const openSub = doc.createElement('button');
-    openSub.type = 'button';
-    openSub.className = 'todo__add-sub';
-    openSub.textContent = '+';
-    openSub.setAttribute('aria-label', `Add a sub-todo to ${todo.text}`);
-    openSub.addEventListener('click', () => {
-      openFor = openFor === todo.id ? null : todo.id;
+    // A button, not a label: opening a recipe is the click this page is for,
+    // and there is nothing to tick.
+    const name = doc.createElement('button');
+    name.type = 'button';
+    name.className = 'recipe__name';
+    name.textContent = recipe.name;
+    name.setAttribute('aria-expanded', String(reading));
+    name.addEventListener('click', () => {
+      readingId = reading ? null : recipe.id;
+      typingIn = null;
       render();
     });
 
-    main.append(
-      checkbox(todo, 'todo'),
-      textLabel(todo, 'todo'),
-      openSub,
-      deleteButton(todo, 'todo'),
-    );
+    main.append(name, deleteButton('recipe', recipe.id, recipe.name));
     item.append(main);
 
-    const subs = subTodosOf(todo);
-    if (subs.length > 0) {
-      const subList = doc.createElement('ul');
-      subList.className = 'todo__subs';
-      subList.append(...subs.map(subRow));
-      item.append(subList);
+    if (reading) {
+      const body = doc.createElement('div');
+      body.className = 'recipe__body';
+      body.append(...GROUPS.map((spec) => group(recipe, spec)));
+      item.append(body);
     }
 
-    if (openFor === todo.id) item.append(subComposer(todo));
     return item;
   }
 
-  // ---- the notepad menu ----------------------------------------------------
+  // ---- the book menu -------------------------------------------------------
   //
-  // A popover over the one page, not a screen to navigate to: the list stays
-  // where it is behind it, and it shuts on the next click. Switching is the
-  // only thing here that happens more than rarely, so it is the only thing that
-  // is one click deep. See specs/features/notepads/spec.md.
+  // A popover over the one page, not a screen to navigate to: the contents
+  // stays where it is behind it, and it shuts on the next click. Switching is
+  // the only thing here that happens more than rarely, so it is the only thing
+  // that is one click deep. See specs/features/books/spec.md.
 
   function menuButton(className, label, onClick) {
     const button = doc.createElement('button');
@@ -185,18 +201,20 @@ export function mountApp(doc, storage) {
     return button;
   }
 
-  function switchRow(notepad) {
+  function switchRow(book) {
     const item = doc.createElement('li');
-    const button = menuButton('notepads__switch', notepad.name, () => {
+    const button = menuButton('books__switch', book.name, () => {
       shutMenu();
-      commit(switchTo(store, notepad.id));
+      // Another book is another contents page, read from the top.
+      readingId = null;
+      commit(switchTo(store, book.id));
     });
-    if (notepad.id === store.openId) button.setAttribute('aria-current', 'true');
+    if (book.id === store.openId) button.setAttribute('aria-current', 'true');
     item.append(button);
     return item;
   }
 
-  /** A one-line form, used for both naming a new notepad and renaming this one. */
+  /** A one-line form, used for both naming a new book and renaming this one. */
   function nameForm({ className, id, label, value, placeholder, action, onSubmit }) {
     const formEl = doc.createElement('form');
     formEl.className = className;
@@ -225,19 +243,20 @@ export function mountApp(doc, storage) {
     return formEl;
   }
 
-  function newNotepadForm() {
+  function newBookForm() {
     return nameForm({
-      className: 'notepads__new',
-      id: 'new-notepad',
-      label: 'Name a new notepad',
+      className: 'books__new',
+      id: 'new-book',
+      label: 'Name a new book',
       value: '',
-      placeholder: 'Name a new notepad',
+      placeholder: 'Name a new book',
       action: 'Add',
       onSubmit: (name) => {
-        const next = addNotepad(store, name);
+        const next = addBook(store, name);
         // Nothing was named, so nothing happened and the menu stays as it is.
         if (next === store) return;
         shutMenu();
+        readingId = null;
         commit(next);
       },
     });
@@ -245,37 +264,38 @@ export function mountApp(doc, storage) {
 
   function renameForm() {
     return nameForm({
-      className: 'notepads__rename',
-      id: 'rename-notepad',
-      label: 'Rename this notepad',
-      value: openNotepad(store).name,
-      placeholder: openNotepad(store).name,
+      className: 'books__rename',
+      id: 'rename-book',
+      label: 'Rename this book',
+      value: openBook(store).name,
+      placeholder: openBook(store).name,
       action: 'Rename',
       onSubmit: (name) => {
-        const next = renameNotepad(store, store.openId, name);
+        const next = renameBook(store, store.openId, name);
         shutMenu();
         commit(next);
       },
     });
   }
 
-  /** "3 todos", "1 todo" — the number is the whole reason the question exists. */
-  const counted = (n) => `${n} ${n === 1 ? 'todo' : 'todos'}`;
+  /** "3 recipes", "1 recipe" — the number is the whole reason the question exists. */
+  const counted = (n) => `${n} ${n === 1 ? 'recipe' : 'recipes'}`;
 
   function deleteConfirmation() {
     const asking = doc.createElement('div');
-    asking.className = 'notepads__confirm';
+    asking.className = 'books__confirm';
 
     const question = doc.createElement('p');
-    question.className = 'notepads__question';
+    question.className = 'books__question';
     question.textContent =
-      `Delete "${openNotepad(store).name}" and its ${counted(todos().length)}?`;
+      `Delete "${openBook(store).name}" and its ${counted(recipes().length)}?`;
 
-    const yes = menuButton('notepads__confirm-yes', 'Delete', () => {
+    const yes = menuButton('books__confirm-yes', 'Delete', () => {
       shutMenu();
-      commit(removeNotepad(store, store.openId));
+      readingId = null;
+      commit(removeBook(store, store.openId));
     });
-    const no = menuButton('notepads__confirm-no', 'Keep it', () => {
+    const no = menuButton('books__confirm-no', 'Keep it', () => {
       menu = { open: true, mode: 'list' };
       render();
     });
@@ -286,24 +306,25 @@ export function mountApp(doc, storage) {
 
   function menuActions() {
     const actions = doc.createElement('div');
-    actions.className = 'notepads__actions';
+    actions.className = 'books__actions';
     actions.append(
-      newNotepadForm(),
-      menuButton('notepads__rename-open', 'Rename this notepad', () => {
+      newBookForm(),
+      menuButton('books__rename-open', 'Rename this book', () => {
         menu = { open: true, mode: 'renaming' };
         render();
       }),
     );
 
-    // The last notepad does not go — there is always somewhere for a todo to be.
-    if (store.notepads.length > 1) {
+    // The last book does not go — there is always somewhere for a recipe to be.
+    if (store.books.length > 1) {
       actions.append(
-        menuButton('notepads__delete', 'Delete this notepad', () => {
+        menuButton('books__delete', 'Delete this book', () => {
           // Nothing is at stake in an empty one, and asking anyway is the
           // confirmation dialog persona.md complains about.
-          if (todos().length === 0) {
+          if (recipes().length === 0) {
             shutMenu();
-            commit(removeNotepad(store, store.openId));
+            readingId = null;
+            commit(removeBook(store, store.openId));
             return;
           }
           menu = { open: true, mode: 'confirming' };
@@ -316,8 +337,8 @@ export function mountApp(doc, storage) {
   }
 
   function renderMenu() {
-    openEl.textContent = openNotepad(store).name;
-    openEl.setAttribute('aria-label', `Notepad: ${openNotepad(store).name}`);
+    openEl.textContent = openBook(store).name;
+    openEl.setAttribute('aria-label', `Book: ${openBook(store).name}`);
     openEl.setAttribute('aria-expanded', String(menu.open));
     menuEl.hidden = !menu.open;
 
@@ -327,8 +348,8 @@ export function mountApp(doc, storage) {
     }
 
     const list = doc.createElement('ul');
-    list.className = 'notepads__list';
-    list.append(...store.notepads.map(switchRow));
+    list.className = 'books__list';
+    list.append(...store.books.map(switchRow));
 
     menuEl.replaceChildren(
       list,
@@ -342,12 +363,12 @@ export function mountApp(doc, storage) {
 
   function render() {
     renderMenu();
-    listEl.replaceChildren(...todos().map(row));
-    emptyEl.hidden = todos().length > 0;
+    contentsEl.replaceChildren(...recipes().map(row));
+    emptyEl.hidden = recipes().length > 0;
     // The repaint threw away the box that had the caret in it. Put it back, so
-    // adding three steps in a row costs three lines of typing and nothing else.
-    if (openFor !== null) doc.getElementById(`sub-box-${openFor}`)?.focus();
-    if (menu.mode === 'renaming') doc.getElementById('rename-notepad')?.focus();
+    // typing out six ingredients costs six lines of typing and nothing else.
+    if (typingIn !== null) doc.getElementById(`${typingIn}-box-${readingId}`)?.focus();
+    if (menu.mode === 'renaming') doc.getElementById('rename-book')?.focus();
   }
 
   openEl.addEventListener('click', () => {
@@ -355,18 +376,18 @@ export function mountApp(doc, storage) {
     render();
   });
 
-  // A popover, so anything else being clicked shuts it — including a checkbox,
-  // which is the click most likely to follow "show me the other list".
+  // A popover, so anything else being clicked shuts it — including a recipe's
+  // name, which is the click most likely to follow "show me the other book".
   //
   // On the way down rather than the way up, and repainting only the menu: by
   // the time a click has bubbled back up here, whatever was clicked may have
   // repainted itself out of the document, and a detached target reads as
   // "outside". Going first also leaves the clicked control in place to handle
-  // its own click — shutting the menu must never swallow a tick.
+  // its own click — shutting the menu must never swallow it.
   doc.addEventListener(
     'click',
     (event) => {
-      if (!menu.open || notepadsEl.contains(event.target)) return;
+      if (!menu.open || booksEl.contains(event.target)) return;
       shutMenu();
       renderMenu();
     },
@@ -375,11 +396,11 @@ export function mountApp(doc, storage) {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const next = addTodo(todos(), box.value);
-    // Cleared either way: what did not become a todo was whitespace, and the
-    // box has to be ready for the next thought without a decision.
+    const next = addRecipe(recipes(), box.value);
+    // Cleared either way: what did not become a recipe was whitespace, and the
+    // box has to be ready for the next one without a decision.
     box.value = '';
-    commitTodos(next);
+    commitRecipes(next);
   });
 
   render();

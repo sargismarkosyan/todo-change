@@ -1,6 +1,6 @@
 # Spec 0004: the recipe book
 
-- **Status:** proposed
+- **Status:** approved
 - **Issue:** [#8](https://github.com/sargismarkosyan/todo-change/issues/8)
 
 **This change replaces the product.** It is the largest thing that has happened

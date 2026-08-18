@@ -11,25 +11,25 @@
     <header class="app__header">
       <div class="app__heading">
         <h1 class="app__title">todo-change</h1>
-        <p class="app__tagline">A todo app built one spec at a time.</p>
+        <p class="app__tagline">A recipe book built one spec at a time.</p>
       </div>
 
-      <div class="notepads" id="notepads">
-        <button class="notepads__open" id="notepad-open" type="button"
+      <div class="books" id="books">
+        <button class="books__open" id="book-open" type="button"
                 aria-haspopup="true" aria-expanded="false"></button>
-        <div class="notepads__menu" id="notepad-menu" hidden></div>
+        <div class="books__menu" id="book-menu" hidden></div>
       </div>
     </header>
 
     <form class="composer" id="composer">
-      <input class="composer__box" id="new-todo" type="text"
-             placeholder="What needs doing?" aria-label="New todo"
+      <input class="composer__box" id="new-recipe" type="text"
+             placeholder="What are we cooking?" aria-label="New recipe"
              autocomplete="off" autofocus>
       <button class="composer__add" type="submit">Add</button>
     </form>
 
-    <ul class="list" id="list"></ul>
-    <p class="empty" id="empty">Nothing to do yet.</p>
+    <ul class="contents" id="contents"></ul>
+    <p class="empty" id="empty">No recipes in this book yet.</p>
   </main>
 
   <script type="module">

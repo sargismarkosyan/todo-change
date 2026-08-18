@@ -1,28 +1,28 @@
-// specs/features/todo/adding.feature
+// specs/features/recipes/writing.feature
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { openApp, openAppWithList } from '../support/app.mjs';
+import { openApp, openAppWithContents } from '../support/app.mjs';
 
 rule('add-goes-to-top', () => {
-  test('adding to an empty list', () => {
+  test('writing one down in an empty book', () => {
     const app = openApp();
-    app.add('Buy milk');
-    assert.deepEqual(app.list(), ['Buy milk']);
+    app.writeDown('Apple cake');
+    assert.deepEqual(app.contents(), ['Apple cake']);
   });
 
-  test('adding above what is already there', () => {
-    const app = openAppWithList('Call the bank');
-    app.add('Buy milk');
-    assert.deepEqual(app.list(), ['Buy milk', 'Call the bank']);
+  test('it goes above what is already there', () => {
+    const app = openAppWithContents('Lemon drizzle');
+    app.writeDown('Apple cake');
+    assert.deepEqual(app.contents(), ['Apple cake', 'Lemon drizzle']);
   });
 });
 
 rule('add-clears-the-box', () => {
   test('the box is ready for the next one', () => {
     const app = openApp();
-    app.add('Buy milk');
+    app.writeDown('Apple cake');
     assert.equal(app.box(), '');
   });
 });
@@ -32,13 +32,13 @@ rule('add-rejects-blank', () => {
     const app = openApp();
     app.type('');
     app.submit();
-    assert.deepEqual(app.list(), []);
+    assert.deepEqual(app.contents(), []);
   });
 
   test('submitting only spaces', () => {
     const app = openApp();
     app.type('   ');
     app.submit();
-    assert.deepEqual(app.list(), []);
+    assert.deepEqual(app.contents(), []);
   });
 });

@@ -42,16 +42,15 @@ body {
   color: var(--muted);
 }
 
-/* The box. Capture is the workflow that matters most, so it sits above the
-   list, is focused on load, and needs no mouse. */
-/* The notepad switcher: a name, and a popover behind it. It sits in the header
-   rather than above the list, so nothing moves between the box and the todos. */
-.notepads {
+/* The book switcher: a name, and a popover behind it. It sits in the header
+   rather than above the contents, so nothing moves between the box and the
+   recipes. */
+.books {
   position: relative;
   flex: none;
 }
 
-.notepads__open {
+.books__open {
   max-width: 12rem;
   overflow: hidden;
   padding: 0.4rem 0.7rem;
@@ -66,17 +65,17 @@ body {
   cursor: pointer;
 }
 
-.notepads__open::after {
+.books__open::after {
   content: " ▾";
   color: var(--muted);
   font-weight: 400;
 }
 
-.notepads__open:hover {
+.books__open:hover {
   border-color: var(--muted);
 }
 
-.notepads__menu {
+.books__menu {
   position: absolute;
   z-index: 1;
   top: calc(100% + 0.4rem);
@@ -89,17 +88,17 @@ body {
   box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
 }
 
-.notepads__menu[hidden] {
+.books__menu[hidden] {
   display: none;
 }
 
-.notepads__list {
+.books__list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.notepads__switch {
+.books__switch {
   display: block;
   width: 100%;
   padding: 0.4rem 0.5rem;
@@ -112,36 +111,36 @@ body {
   cursor: pointer;
 }
 
-.notepads__switch:hover {
+.books__switch:hover {
   background: var(--bg);
 }
 
 /* The open one is marked by weight and a dot, not by colour alone. */
-.notepads__switch[aria-current]::before {
+.books__switch[aria-current]::before {
   content: "• ";
   color: var(--accent);
 }
 
-.notepads__switch[aria-current] {
+.books__switch[aria-current] {
   font-weight: 600;
 }
 
-.notepads__actions,
-.notepads__confirm {
+.books__actions,
+.books__confirm {
   margin-top: 0.4rem;
   padding-top: 0.4rem;
   border-top: 1px solid var(--border);
 }
 
-.notepads__new,
-.notepads__rename {
+.books__new,
+.books__rename {
   display: flex;
   gap: 0.4rem;
   padding: 0.2rem 0.5rem 0.4rem;
 }
 
-.notepads__new-box,
-.notepads__rename-box {
+.books__new-box,
+.books__rename-box {
   min-width: 0;
   flex: 1;
   padding: 0.35rem 0.5rem;
@@ -152,15 +151,15 @@ body {
   font: inherit;
 }
 
-.notepads__new-box::placeholder,
-.notepads__rename-box::placeholder {
+.books__new-box::placeholder,
+.books__rename-box::placeholder {
   color: var(--muted);
 }
 
-.notepads__new-add,
-.notepads__rename-add,
-.notepads__confirm-yes,
-.notepads__confirm-no {
+.books__new-add,
+.books__rename-add,
+.books__confirm-yes,
+.books__confirm-no {
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) - 4px);
@@ -170,8 +169,8 @@ body {
   cursor: pointer;
 }
 
-.notepads__rename-open,
-.notepads__delete {
+.books__rename-open,
+.books__delete {
   display: block;
   width: 100%;
   padding: 0.4rem 0.5rem;
@@ -184,34 +183,36 @@ body {
   cursor: pointer;
 }
 
-.notepads__rename-open:hover,
-.notepads__delete:hover {
+.books__rename-open:hover,
+.books__delete:hover {
   background: var(--bg);
   color: var(--text);
 }
 
 /* The one question this app asks. It carries a number, so it is information
-   rather than ceremony — see specs/features/notepads/spec.md. */
-.notepads__question {
+   rather than ceremony — see specs/features/books/spec.md. */
+.books__question {
   margin: 0 0 0.5rem;
   padding: 0 0.5rem;
   color: var(--text);
 }
 
-.notepads__confirm {
+.books__confirm {
   padding-bottom: 0.2rem;
 }
 
-.notepads__confirm-yes,
-.notepads__confirm-no {
+.books__confirm-yes,
+.books__confirm-no {
   margin-left: 0.5rem;
 }
 
-.notepads__confirm-yes {
+.books__confirm-yes {
   border-color: #b3261e;
   color: #b3261e;
 }
 
+/* The box. Writing a recipe down is the workflow with the least room to spare
+   in it, so it sits above the contents, is focused on load, and needs no mouse. */
 .composer {
   display: flex;
   gap: 0.5rem;
@@ -249,55 +250,58 @@ body {
 
 .composer__add:hover { filter: brightness(1.08); }
 
-.list {
+/* The contents: a page of names to read down. */
+.contents {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* A todo is a card, not a row: it may have a group of sub-todos folded inside
-   it. The row is the card's first line. */
-.todo {
+/* A recipe is a card. Closed it is one line; open it unfolds what it takes and
+   what to do, in place, without leaving the contents. */
+.recipe {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-.todo + .todo { margin-top: 0.4rem; }
+.recipe + .recipe { margin-top: 0.4rem; }
 
-.todo__row {
+.recipe__row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.7rem 0.85rem;
 }
 
-.todo__check {
-  flex: none;
-  width: 1.15rem;
-  height: 1.15rem;
-  margin: 0;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.todo__text {
+/* The name is the whole target: opening a recipe is the click this page is for. */
+.recipe__name {
   flex: 1;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   overflow-wrap: anywhere;
+  text-align: left;
   cursor: pointer;
 }
 
-/* Done reads as a line through the text *and* muted. The line is what carries
-   the meaning at a glance; the muting is what stops a list of finished todos
-   shouting as loudly as the two that are left. See specs/features/todo/spec.md. */
-.todo--done .todo__text {
-  text-decoration-line: line-through;
-  text-decoration-thickness: 1px;
+.recipe__name::before {
+  content: "▸ ";
   color: var(--muted);
 }
 
-.todo__delete {
+.recipe--open > .recipe__row > .recipe__name {
+  font-weight: 600;
+}
+
+.recipe--open > .recipe__row > .recipe__name::before {
+  content: "▾ ";
+}
+
+.recipe__delete {
   flex: none;
   width: 1.75rem;
   height: 1.75rem;
@@ -312,76 +316,76 @@ body {
   cursor: pointer;
 }
 
-/* No confirmation on delete — pruning is meant to be repeatable, not a chore —
+/* No confirmation on delete — tidying is meant to be repeatable, not a chore —
    so the control stays quiet until it is aimed at. */
-.todo__delete:hover,
-.todo__add-sub:hover,
-.sub-todo__delete:hover {
+.recipe__delete:hover,
+.ingredient__delete:hover,
+.step__delete:hover {
   background: var(--bg);
   border-color: var(--border);
   color: var(--text);
 }
 
-/* Opens the sub-todo box. Same weight as delete: present on every row, loud on
-   none of them, because most todos never grow steps. */
-.todo__add-sub {
-  flex: none;
-  width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--muted);
-  font: inherit;
-  font-size: 1.15rem;
-  line-height: 1;
-  cursor: pointer;
+.recipe__body {
+  padding: 0 0.85rem 0.5rem;
 }
 
-/* The group. Indented to the parent's text, with a rule down the side — the
-   indent alone leaves it ambiguous which todo a step belongs to once two
-   groups sit next to each other. */
-.todo__subs {
-  margin: 0 0 0 2.75rem;
-  padding: 0 0.85rem 0.5rem 0.7rem;
+.recipe__group + .recipe__group {
+  margin-top: 0.75rem;
+}
+
+.recipe__heading {
+  margin: 0 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Both groups read the same way: a line, and a quiet way to take it back out.
+   The method is numbered because a step's position is part of what it says. */
+.recipe__ingredients-lines,
+.recipe__steps-lines {
+  margin: 0;
+  padding: 0 0 0 0.7rem;
   border-left: 2px solid var(--border);
   list-style: none;
 }
 
-.sub-todo {
+.ingredient,
+.step {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.2rem 0;
+  padding: 0.15rem 0;
   font-size: 0.95rem;
 }
 
-.sub-todo__check {
-  flex: none;
-  width: 1rem;
-  height: 1rem;
-  margin: 0;
-  accent-color: var(--accent);
-  cursor: pointer;
+.recipe__steps-lines {
+  counter-reset: step;
 }
 
-.sub-todo__text {
+.step {
+  counter-increment: step;
+}
+
+.step::before {
+  content: counter(step) ".";
+  flex: none;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ingredient__text,
+.step__text {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
-  cursor: pointer;
 }
 
-/* Same pairing as a done todo, one size down. A parent is only done when all of
-   these are, so a struck-through parent always sits above struck-through steps. */
-.sub-todo--done .sub-todo__text {
-  text-decoration-line: line-through;
-  text-decoration-thickness: 1px;
-  color: var(--muted);
-}
-
-.sub-todo__delete {
+.ingredient__delete,
+.step__delete {
   flex: none;
   width: 1.4rem;
   height: 1.4rem;
@@ -395,15 +399,17 @@ body {
   cursor: pointer;
 }
 
-/* Opened by the + on a row, and left open afterwards so a run of steps is one
-   uninterrupted stretch of typing. */
-.sub-composer {
+/* One box per group, at the bottom of it, left open the whole time the recipe
+   is — a recipe is typed in one sitting, six ingredients at a time. */
+.ingredient-composer,
+.step-composer {
   display: flex;
   gap: 0.4rem;
-  margin: 0 0.85rem 0.6rem 2.75rem;
+  margin: 0.4rem 0 0 0.7rem;
 }
 
-.sub-composer__box {
+.ingredient-composer__box,
+.step-composer__box {
   flex: 1;
   min-width: 0;
   padding: 0.4rem 0.6rem;
@@ -415,14 +421,17 @@ body {
   font-size: 0.95rem;
 }
 
-.sub-composer__box::placeholder { color: var(--muted); }
+.ingredient-composer__box::placeholder,
+.step-composer__box::placeholder { color: var(--muted); }
 
-.sub-composer__box:focus-visible {
+.ingredient-composer__box:focus-visible,
+.step-composer__box:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -1px;
 }
 
-.sub-composer__add {
+.ingredient-composer__add,
+.step-composer__add {
   padding: 0.4rem 0.8rem;
   background: none;
   border: 1px solid var(--border);
@@ -433,12 +442,13 @@ body {
   cursor: pointer;
 }
 
-.sub-composer__add:hover {
+.ingredient-composer__add:hover,
+.step-composer__add:hover {
   background: var(--bg);
   color: var(--text);
 }
 
-/* An empty list says it is empty. A blank panel reads as "broken", not "done". */
+/* An empty book says it is empty. A blank panel reads as "broken", not "new". */
 .empty {
   margin: 0;
   padding: 1.5rem;

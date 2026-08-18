@@ -15,8 +15,8 @@ write the spec. **Not to build anything.** No `src/` edits in this skill, ever.
 
 ## Before anything else, read
 
-- `specs/persona.md` — who Rowan is, and who this app is explicitly not for
-- `specs/workflows.md` — the five things Rowan actually does
+- `specs/persona.md` — who Nell is, and who this app is explicitly not for
+- `specs/workflows.md` — the five things Nell actually does
 - `specs/spec.md` — product boundaries, the storage contract, and the vocabulary
 - `specs/features/` — what is already specced, so you do not contradict or
   duplicate a live Rule
@@ -44,17 +44,20 @@ serves the job better is the most valuable thing this skill produces.
 
 ## 2. Place it on the map
 
-- **Which persona?** If it only pays off for someone who sets due dates and
-  priorities, it is not for Rowan, and `persona.md` says that out loud. That does
+- **Which persona?** If it only pays off for someone who counts calories and
+  scales servings, it is not for Nell, and `persona.md` says that out loud. That
+  does
   not kill it — but the spec must argue for the new persona explicitly instead of
   smuggling them in.
 - **Which workflow, and where in it?** Name the step. A change that touches no
   workflow in `workflows.md` is either serving something undocumented (update
   `workflows.md` as part of the change) or serving nobody.
-- **Does it make Capture or Complete shorter, or longer?** Adding a step to
-  Capture to serve a once-a-month need is the single most common bad trade here.
+- **Does it make writing a recipe down, or browsing, shorter or longer?** Adding
+  a step to writing one down to serve a once-a-year need is the single most
+  common bad trade here.
 - **Does it collide with a product boundary?** No backend, no accounts, no sync,
-  no archives. If it does, say so plainly and stop for a decision.
+  no meal planning, no nutrition, no importing from a URL. If it does, say so
+  plainly and stop for a decision.
 
 ## 3. Work out the end value
 
@@ -73,9 +76,9 @@ decide yourself and record the assumption in the spec.
 Batch the questions — one round, three or four at most, each with your
 recommendation attached. Do not interview.
 
-Good: "When the last unfinished todo is ticked, should the list look like the
-empty state, or stay as it is? I lean toward staying — the ticked items are the
-proof of a day's work, and hiding them takes the reward away."
+Good: "When a book is deleted, should the recipes in it go with it or move
+somewhere else? I lean toward going with it — a book is the unit somebody chose,
+and rehoming them quietly puts things where nobody asked for them."
 
 Bad: "What color should the button be?"
 
@@ -104,9 +107,10 @@ The step must be small enough to be one screenshot's worth of change.
   repo-wide and stable — tests will point at those ids forever.
 - Tag every new Rule `@planned`. It is not built yet. The tag comes off in the
   implementing change, not here.
-- Every Rule needs at least one `Example:`. Write the examples in Rowan's terms
-  and the repo's vocabulary — *todo*, *done*, *unfinished*, *the list*, *the box*
-  — never "task", "item", or "complete".
+- Every Rule needs at least one `Example:`. Write the examples in Nell's terms
+  and the repo's vocabulary — *recipe*, *book*, *the contents*, *ingredient*,
+  *the method*, *step*, *the box* — never "dish", "item", or "task", and never
+  the todo words retired in 0004. Nothing in this product is *done*.
 - Changing existing behaviour? Edit the Rule in place and keep its id. A reworded
   Rule is the same Rule; a new id orphans every test pointing at it.
 
@@ -140,8 +144,8 @@ paths: Claude Code turns `path:line` into a link, so give the change spec first
 and every feature file touched beneath it.
 
 ```
-specs/changes/0004-clear-done-todos.md:1
-specs/features/todo/clearing.feature:12
+specs/changes/0005-paper-and-ink.md:1
+specs/features/recipes/reading.feature:12
 ```
 
 Above the links, keep it to a short paragraph of what the **file will not tell
