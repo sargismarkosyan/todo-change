@@ -76,6 +76,14 @@ One numbered markdown file per version, from `changes/TEMPLATE.md`. This is the
 increment: what is being added *now*, what is deliberately out of scope, and how
 to check it by hand. Once shipped it is history and is not edited.
 
+**Read them on demand, never in bulk.** Nothing indexes this folder — neither
+gate reads it, and neither skill reads it for background. Open the current one
+to implement it, or an old one when the question is specifically "why is it like
+this." Reading the series to get oriented is the one thing it is not for: what
+is true *now* is in `features/`, and why the product is shaped this way is in
+the prose specs. This folder only grows, and it is the one part of `specs/` that
+is safe to leave unread.
+
 The template opens with four sections — who it is for, the job behind the
 request, why now, and the end value — before it gets anywhere near what changes.
 That order is deliberate: a change spec that cannot fill them in is a solution
