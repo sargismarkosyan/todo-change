@@ -54,3 +54,11 @@ Feature: Paper, ink, and a second voice
 
     Example: the cover
       Then the masthead reads "Recipes"
+
+  @planned
+  @rule:nothing-is-fetched-from-elsewhere
+  Rule: Drawing this page asks no other machine for anything
+
+    Example: what the page reaches for
+      Then the page asks for nothing over http
+      And every font it uses is one of this app's own files

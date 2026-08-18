@@ -50,29 +50,38 @@ breaks it.
 The page and the cards are flat, because texture behind words is the fastest way
 to lose the thing the words are for.
 
-## Faces, and the fact that we cannot ship one
+## Faces
 
-There is no webfont. A `<link>` to a font host is a request on every load and a
-second origin the app depends on, which is the no-backend constraint, and a
-font file in the repo is a binary asset in a repository whose whole argument is
-readable diffs. Version 0005 was specced without one deliberately.
+Two: a book face for everything that is read, and **Caveat** for the four things
+that only label — the masthead, the open book's name, the two group headings,
+and the empty-book message.
 
-That has a consequence worth writing down rather than discovering: **the
-labelling face is whatever the reader's machine happens to have.** Windows has
-Segoe Print, macOS has Bradley Hand and Apple Chancery, and a stripped Linux box
-has neither.
+**Caveat is one of this app's own files**, at `src/fonts/`, under the SIL Open
+Font License with the licence beside it. It is not linked from a font host, and
+that distinction is the whole of the reasoning: a `<link>` to one is a request
+on every load and a second origin the app depends on, which is the no-backend
+constraint. A file served from this origin is neither. `nothing-is-fetched-from-elsewhere`
+is the rule that keeps it that way, and it is written broadly on purpose — it
+will fail for the next tempting CDN as well as for this one.
 
-So the stack ends in **Palatino, then Georgia, then a generic serif — not in the
-`cursive` generic.** `cursive` always matches something, and where nothing
-handwritten is installed that something is the default sans, which lands beside
-a serif body looking like a mistake rather than a choice. Ending in a book face
-means the labels are a deliberate second voice everywhere: real handwriting
-where the system has it, a second serif where it does not.
+Versions 0005 and 0006 shipped without it, on a stack of whatever handwriting
+the reader's machine happened to have. That was wrong in a way worth recording
+rather than quietly fixing: on a machine with none — which includes the one the
+screenshot series is recorded on — there was no second voice at all, and the two
+group headings differed from the lines under them by colour alone. The look was
+being carried entirely by palette and rules, and it read as a warm app rather
+than as a book.
 
-The practical cost is that **a screenshot taken on a machine with no handwriting
-installed does not show the handwriting** — the clip in `docs/screenshots/` is
-recorded in exactly such an environment. The live page on the reader's own
-machine is the one that decides how this looks.
+**The system handwriting names stay in the stack behind Caveat**, and the stack
+still ends in Palatino and then a serif rather than the `cursive` generic. That
+is the same argument as before, now doing a smaller job: it only matters if the
+file fails to load, and where it does the fallback should still be a deliberate
+second voice.
+
+**The face never carries anything read while cooking.** A recipe's name, its
+ingredients and its method are all set in the book face, and
+`handwriting-labels-but-is-not-read` enforces it. Handwriting is legible in
+four words and tiring in forty, and workflow 3 is the forty.
 
 ## What is still deliberately plain
 

@@ -57,6 +57,12 @@ one inline script, and it was paid in version 1. Before then this file claimed
 opening from disk behaved the same as the deployed page, which stopped being
 true the moment there was a module to import.
 
+**A static asset is not a dependency.** `src/fonts/` holds one self-hosted
+typeface, under a licence that travels with it. It adds no build step, no
+runtime fetch to anyone else's machine, and nothing to keep current — which is
+what this constraint is actually protecting. A `<link>` to a font host would
+fail all three and is ruled out; see `../features/look/spec.md`.
+
 **Dev tooling is a different thing.** `jsdom` is a devDependency, used by tests
 only. Node's own test runner and coverage provide the rest, so there is no test
 framework, no assertion library, and no coverage tool to keep current. Adding a
