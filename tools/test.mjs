@@ -6,11 +6,14 @@
 // is worse than no gate — so it says out loud that it is inactive.
 
 import { spawnSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 const THRESHOLD = 95;
 const SOURCE_DIR = 'src';
+// Machine-readable coverage, for tools/report.mjs. The human-readable table
+// still goes to stdout; this is the same run, written twice.
+const LCOV_FILE = 'coverage/lcov.info';
 
 function listModules(dir) {
   const found = [];
@@ -49,6 +52,14 @@ if (sources.length > 0) {
       `It turns on by itself as soon as the first one lands.\n`,
   );
 }
+
+mkdirSync(dirname(LCOV_FILE), { recursive: true });
+args.push(
+  '--test-reporter=spec',
+  '--test-reporter-destination=stdout',
+  '--test-reporter=lcov',
+  `--test-reporter-destination=${LCOV_FILE}`,
+);
 
 args.push('tests/**/*.test.mjs', ...process.argv.slice(2));
 

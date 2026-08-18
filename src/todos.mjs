@@ -4,9 +4,22 @@
 // tested and reasoned about on its own. The DOM layer is app.mjs; the storage
 // layer is storage.mjs. See specs/setup/constraints.md.
 
-/** A fresh id: when it was made, plus enough randomness to break ties within a ms. */
+/**
+ * A fresh id: when it was made, plus 64 bits of randomness.
+ *
+ * The randomness is the part that matters. Ids are how rows are addressed, so
+ * two todos sharing one would mean ticking one ticks both. An earlier version
+ * used four base36 characters from `Math.random()` — about 1.7 million values
+ * against the ~265 ids that fit in a millisecond, which collided roughly two
+ * runs in five. See issue #2.
+ *
+ * `getRandomValues` rather than `randomUUID`: the latter is undefined outside a
+ * secure context, which would break the app entirely over plain http.
+ */
 export function newId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  const suffix = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  return `${Date.now()}-${suffix}`;
 }
 
 /**

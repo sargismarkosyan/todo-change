@@ -30,7 +30,7 @@ out of scope, and a spec proposing one is proposing a different product.
 first:
 
 ```json
-[{ "id": "1739827200000-a1b2", "text": "Buy milk", "done": false }]
+[{ "id": "1739827200000-9f2c41ab7e0d5c83", "text": "Buy milk", "done": false }]
 ```
 
 `localStorage` is not a database. It is a string that anyone with devtools can

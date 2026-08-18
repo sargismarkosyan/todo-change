@@ -19,6 +19,12 @@ Every todo carries an `id` that is generated once and never changes. Rows are
 addressed by id, never by text or by index — two todos may legitimately have the
 same text, and indexes shift the moment something is deleted.
 
+That makes uniqueness load-bearing rather than nice to have: two todos sharing
+an id would be ticked and deleted together. The id is a timestamp plus 64 bits
+of `crypto.getRandomValues()` entropy, which is enough that a collision is not a
+scenario worth designing around. An earlier version used four `Math.random()`
+characters and collided in testing — see issue #2.
+
 ## Text
 
 One line, stored exactly as typed apart from trimming the ends. No markdown, no

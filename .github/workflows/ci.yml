@@ -14,6 +14,11 @@ jobs:
   verify:
     name: Verify
     runs-on: ubuntu-latest
+    # Default token is read-only once any permission is named; the report needs
+    # to write a comment, and nothing else does.
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v7
 
@@ -31,6 +36,25 @@ jobs:
       - name: Tests and coverage gate
         # Fails under 95% lines, branches or functions across src/.
         run: npm test
+
+      # Everything below is reporting. Both gates have already passed by here —
+      # steps stop on first failure — so this only ever describes a green run.
+      - name: Build the report
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node tools/report.mjs | tee report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment it on the pull request
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        # One comment per PR, rewritten in place, so pushing does not bury the
+        # thread in near-identical reports.
+        run: |
+          gh pr comment "$PR" --body-file report.md --edit-last --create-if-none \
+            || gh pr comment "$PR" --body-file report.md
 
   deploy:
     name: Deploy to Pages

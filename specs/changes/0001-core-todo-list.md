@@ -96,7 +96,7 @@ does the work at a glance.
 New key `todo-change.todos`, a JSON array ordered newest first:
 
 ```json
-[{ "id": "1739827200000-a1b2", "text": "Buy milk", "done": false }]
+[{ "id": "1739827200000-9f2c41ab7e0d5c83", "text": "Buy milk", "done": false }]
 ```
 
 No existing data to migrate — this is the first version to write anything. Ids

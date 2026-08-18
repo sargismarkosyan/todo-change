@@ -9,3 +9,4 @@ node_modules/
 # tooling
 coverage/
 .trace/
+report.md
