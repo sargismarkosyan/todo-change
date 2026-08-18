@@ -109,17 +109,19 @@ Both gates are only worth what their reliability is worth. A test that fails two
 runs in five teaches everyone to press re-run, and from then on a real failure
 looks like the usual noise.
 
-This is not hypothetical here. `newId` built its suffix from four `Math.random()`
-characters, and `tests/unit/todos.test.mjs` asserted 1000 generated ids were
-unique. It passed locally, and failed on CI. Reproduced afterwards: **8 runs in
-20**. The test was right and the code was wrong — but the same setup would have
-been just as flaky with correct code, because the assertion rested on a
-probability rather than a guarantee.
+**No test may depend on chance, timing, or ordering to pass.** The usual
+sources, in the order they tend to appear:
 
-So: no test may depend on chance, timing, or ordering to pass. If an assertion
-is probabilistic, either the code should give a guarantee strong enough that the
-probability stops mattering — which is what 64 bits of `crypto.getRandomValues`
-did here — or the test is asking the wrong question.
+- an assertion resting on a probability rather than a guarantee — that generated
+  values will not collide, that a sample falls within a range;
+- a timeout, or anything assuming one operation completes before another;
+- state left behind by an earlier test, so the suite passes in order and the
+  file fails on its own.
+
+When an assertion is probabilistic, the fix is almost never a looser threshold
+or a retry. Either the code should offer a guarantee strong enough that the
+probability stops mattering, or the test is asking a question that cannot be
+answered reliably and needs to ask a different one.
 
 The tell is a test that passes locally and fails on CI, or that passes on a
 re-run with nothing changed. Treat it as a defect in the test, at the same
