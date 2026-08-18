@@ -69,10 +69,46 @@ framework, no assertion library, and no coverage tool to keep current. Adding a
 devDependency is a smaller decision than adding a runtime one, but it is still a
 decision — prefer the standard library.
 
+## A model, if the browser has one, and never otherwise
+
+Version 0009 asks the browser's built-in model to draft a recipe. This does not
+loosen the constraint above, and the distinction is worth being exact about.
+
+**What is allowed.** The Prompt API — `LanguageModel` in the global scope,
+Chrome 148 and later, desktop only. It adds no dependency, because the model
+belongs to the browser the way `localStorage` and `crypto` do: nothing to
+install, nothing to bundle, nothing to keep current, no build step, and no
+request to anyone else's machine. `index.html` is still the whole app.
+
+**What is not, and will not be.** A bundled model — Transformers.js, WebLLM, or
+anything like them — is a runtime dependency plus a model download measured in
+hundreds of megabytes, and a build step in practice. It contradicts this
+constraint rather than bending it. A hosted model behind a key contradicts *No
+backend*. **With no model on the machine there is no drafting**, and that is the
+end of it; the app never grows a build step to get one.
+
+**It is a minority feature and must be built as one.** Not Edge, Firefox or
+Safari; not Chrome on Android or iOS; and not every desktop Chrome either — it
+wants roughly 22 GB free on the profile volume and either more than 4 GB of VRAM
+or 16 GB of RAM with four cores. Everything the model touches is an addition to
+a screen that already works without it, and the browser that has no model shows
+no trace of one: no disabled control, no explanatory line. See
+[`../features/suggesting/spec.md`](../features/suggesting/spec.md).
+
+**Its output is untrusted**, in the same posture as `localStorage` and for a
+different reason — it is plausible rather than correct. Nothing it proposes is
+stored until a person accepts it, and it reaches the page as text, never as
+markup.
+
 ## Single page
 
 `index.html` is the entire app. No routing, no second page, no view layer that
 implies one.
+
+**Popovers are not pages.** The book menu and the AI settings both open over the
+contents and shut on the next click; nothing is navigated to and nothing is
+navigated back from. A "settings page" would break this constraint and
+`../persona.md` at once, which is why neither of them is one.
 
 ## Logic stays out of the DOM where it can
 
@@ -89,7 +125,13 @@ event handlers is not.
 
 Fixed across specs, code, and UI copy. Defined in [`../spec.md`](../spec.md):
 **recipe** (not dish, card, or entry), **book** (not list, folder, or category),
-**the contents**, **ingredient**, **the method** and its **steps**, **the box**.
+**the contents**, **ingredient**, **the method** and its **steps**, **the box**,
+**the search box**, **AI**, **a draft**, **a proposal**.
+
+**AI** is the one word here that names the machine rather than what Nell gets,
+added in version 0009 for the thing that is downloaded, switched on and reported
+on. A **proposal** is what comes out of it, and it is never "generated" — see
+`../features/suggesting/spec.md`.
 
 Version 0004 replaced the whole of it — the app used to be a todo list, and
 **todo**, **sub-todo**, **done / unfinished**, **the list** and **notepad** are

@@ -66,6 +66,31 @@ shopping list. A card written by hand has none of that and is not worse for it.
 If scaling ever becomes real, it needs the field, and the field needs its own
 spec.
 
+## Lines the machine drafted
+
+Since version 0009 an ingredient or a step may have arrived as a **proposal**
+from the browser's own model rather than from the keyboard — see
+`../suggesting/spec.md`. Three things about that belong here, because they are
+about what a recipe *is* rather than about the model.
+
+**A proposal is not a line.** Nothing is stored until it is accepted, one line
+at a time. Until then it is on screen and nowhere else, exactly like which
+recipe is open.
+
+**An accepted line is an ordinary line.** It carries no mark and no memory of
+where it came from, it is edited and deleted the same way, and the stored shape
+does not change. That is deliberate: the alternative was a field on every line
+and a mark on the card that never quite goes away.
+
+**A draft is added, never written over.** Existing lines are untouched, nothing
+is reordered, and a line the recipe already holds is not proposed back to it.
+Accepted lines append oldest-first like typed ones, because a method is a
+sequence.
+
+The cost of all this — that a wrong quantity is worse than a wrong word, and
+that months later nothing distinguishes what was checked from what was waved
+through — is written down in `../suggesting/spec.md` rather than left implied.
+
 ## The method
 
 One line per step, in the order typed. A step is a step of exactly one recipe

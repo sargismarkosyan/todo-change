@@ -19,7 +19,10 @@ sync between machines.
 ## What it must always be
 
 - **Instant.** No loading states, no spinners. Every action lands on the next
-  frame, because nothing leaves the machine.
+  frame, because nothing leaves the machine. **One exception**, added in version
+  0009 and bounded there: fetching the browser's own model, once, on a press.
+  It is the only thing in the app that can wait, and nothing else ever waits on
+  it — see [features/suggesting/spec.md](features/suggesting/spec.md).
 - **Trustworthy.** Anything on screen has been written to `localStorage`. If it
   is visible, it survives a refresh. Some of what is in here exists nowhere
   else.
@@ -62,7 +65,8 @@ open:
       ]
     }
   ],
-  "openId": "1739827000000-1a2b3c4d5e6f7a8b"
+  "openId": "1739827000000-1a2b3c4d5e6f7a8b",
+  "suggestions": "on"
 }
 ```
 
@@ -79,8 +83,13 @@ none. An ingredient and a step have the same shape as each other — a non-empty
 there is no state to store. A `done` found in stored data is ignored on read and
 gone on the next write.
 
+`suggestions` is whether the AI has been turned on: `"unasked"`, `"on"` or
+`"off"`. Absent, or anything else, reads as `"unasked"`. It is the first thing
+in this shape that is not a recipe — it is stored because it is an answer
+somebody gave, and asking again is asking once too often.
+
 Which recipe is open is not stored. It is where you are looking, not what you
-have.
+have. Neither is a draft: a proposal nobody accepted is never written down.
 
 ### The older keys
 
@@ -127,6 +136,20 @@ Used consistently in specs, code, and UI copy:
 - **the results** — what a search finds, shown in place of the contents, each
   one naming the book it is in. Not "hits", not "matches", not "search
   results".
+- **AI** — the browser's own on-device model, named plainly and only where the
+  machine itself is the subject: the thing downloaded, switched on, and reported
+  on. Not "the model" in UI copy, not "Gemini", not "smart".
+- **a draft** — what the AI proposes for one recipe: ingredients and steps
+  together, none of them written down.
+- **a proposal** — one line of a draft. It is not an ingredient or a step until
+  it has been accepted, and it is never "generated".
+- **the offer** — the one question asked about the AI, on the first visit that
+  could use it. Asked once and remembered.
+- **the indicator** — the line in the masthead saying where the AI stands. Never
+  there when the AI is off or absent.
+- **the AI settings** — the popover in the colophon holding the switch. Never a
+  screen, never a page, and never somewhere you have to go before using the
+  app.
 
 Retired with version 0004, and not to be reintroduced: **todo**, **sub-todo**,
 **parent**, **done / unfinished**, **the list**, **notepad**.
