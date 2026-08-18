@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
 import { openApp, openAppWithContents } from '../support/app.mjs';
 import { contrast, lightness, resolve, token, warmth } from '../support/palette.mjs';
+import { readFileSync } from 'node:fs';
 
 /** The resolved font stack an element is actually set in. */
 const faceOf = (app, selector) =>
@@ -116,5 +117,41 @@ rule('handwriting-labels-but-is-not-read', () => {
     // reads as a mistake rather than a choice. See features/look/spec.md.
     assert.ok(!/\bcursive\b/.test(LABELLING), `the labelling stack ends in: ${LABELLING}`);
     assert.ok(/serif$/.test(LABELLING), 'the labelling stack must end in a serif');
+  });
+});
+
+rule('nothing-is-fetched-from-elsewhere', () => {
+  // Read off the files rather than the DOM: jsdom fetches no subresources, so
+  // a request to a font host would simply not happen here and the test would
+  // pass while the real page reached for another origin.
+  const sources = ['index.html', 'src/styles.css'].map((path) => [
+    path,
+    readFileSync(path, 'utf8'),
+  ]);
+
+  test('the page asks for nothing over http', () => {
+    for (const [path, source] of sources) {
+      const found = source.match(/https?:\/\/[^\s"')]+/g) ?? [];
+      // A link in a comment is a reference, not a request; anything in an
+      // href, src or url() is the app reaching for another machine.
+      const fetched = (source.match(/(?:href|src)\s*=\s*["']https?:[^"']*|url\(\s*["']?https?:[^)]*/g) ?? []);
+      assert.deepEqual(fetched, [], `${path} reaches for: ${fetched.join(', ')}`);
+      assert.ok(found.length === 0 || fetched.length === 0, `${path} is self-contained`);
+    }
+  });
+
+  test('every font it uses is one of this app own files', () => {
+    const [, css] = sources.find(([path]) => path === 'src/styles.css');
+    const faces = [...css.matchAll(/@font-face\s*\{([\s\S]*?)\}/g)].map((m) => m[1]);
+    assert.ok(faces.length > 0, 'the labelling face is shipped, not borrowed');
+    for (const face of faces) {
+      const url = face.match(/url\(\s*["']?([^"')]+)/)?.[1] ?? '';
+      assert.ok(url !== '', 'a @font-face with no file is a font host in disguise');
+      assert.ok(!/^https?:/.test(url), `a face is fetched from elsewhere: ${url}`);
+      assert.ok(
+        readFileSync(`src/${url}`).length > 0,
+        `${url} is not in this repository`,
+      );
+    }
   });
 });
