@@ -109,7 +109,12 @@ test('a bare recipe is asked about without inventing sections', async () => {
   assert.equal(prompt.text, 'Recipe: Apple pie');
 });
 
-test('the answer is held to two lists by a schema, not by hoping', async () => {
+let n = 0;
+const ids = () => `p${(n += 1)}`;
+const shown = (entries) =>
+  entries.map((entry) => (entry.kind === 'line' ? entry.id : `+${entry.text}`));
+
+test('the answer is held to two lists of placed lines by a schema, not by hoping', async () => {
   const api = fakeApi();
   const model = createModel({ LanguageModel: api });
   await model.draft(recipe('Apple pie'));
@@ -117,7 +122,10 @@ test('the answer is held to two lists by a schema, not by hoping', async () => {
   const { responseConstraint } = api.asked.at(-1).opts;
   assert.equal(responseConstraint.type, 'object');
   assert.deepEqual(responseConstraint.required, ['ingredients', 'steps']);
-  assert.equal(responseConstraint.properties.ingredients.items.type, 'string');
+  const item = responseConstraint.properties.steps.items;
+  assert.equal(item.properties.text.type, 'string');
+  assert.equal(item.properties.index.type, 'integer', 'the place, so it cannot be misspelt');
+  assert.deepEqual(item.required, ['text', 'index']);
 });
 
 test('an answer that is not two lists of lines is no answer', async () => {
@@ -129,46 +137,105 @@ test('an answer that is not two lists of lines is no answer', async () => {
   }
 });
 
+test('a proposal lands at the place it asked for', () => {
+  const out = usableDraft(
+    { ingredients: [], steps: [{ text: 'Rub the butter in', index: 1 }] },
+    recipe('Apple pie', [], [line('Heat the oven'), line('Bake it')]),
+    ids,
+  );
+  assert.deepEqual(shown(out.steps), ['Heat the oven', '+Rub the butter in', 'Bake it']);
+});
+
+test('several at one place keep the order they were drafted in', () => {
+  const out = usableDraft(
+    { ingredients: [], steps: [{ text: 'Rub', index: 1 }, { text: 'Peel', index: 1 }] },
+    recipe('Apple pie', [], [line('Heat the oven'), line('Bake it')]),
+    ids,
+  );
+  assert.deepEqual(shown(out.steps), ['Heat the oven', '+Rub', '+Peel', 'Bake it']);
+});
+
+test('a place that is not there lands last rather than nowhere', () => {
+  const before = [line('Heat the oven'), line('Bake it')];
+  for (const index of [9, -3, undefined, 'no', 1.5, null]) {
+    const out = usableDraft(
+      { ingredients: [], steps: [{ text: 'Dust it', index }] },
+      recipe('Apple pie', [], before),
+      ids,
+    );
+    assert.deepEqual(
+      shown(out.steps),
+      ['Heat the oven', 'Bake it', '+Dust it'],
+      `for index ${String(index)}`,
+    );
+  }
+});
+
 test('usableDraft trims, deduplicates, and drops what the recipe already holds', () => {
   const out = usableDraft(
-    { ingredients: ['3 apples', ' 3 apples ', '200g plain flour', '', '  '], steps: ['Bake it'] },
-    recipe('Apple pie', [line('200g plain flour')], []),
+    {
+      ingredients: [
+        { text: '3 apples', index: 0 },
+        { text: ' 3 apples ', index: 0 },
+        { text: '200g plain flour', index: 0 },
+        { text: '', index: 0 },
+      ],
+      steps: [],
+    },
+    recipe('Apple pie', [line('3 apples')], []),
+    ids,
   );
-  assert.deepEqual(out, { ingredients: ['3 apples'], steps: ['Bake it'] });
+  assert.deepEqual(shown(out.ingredients), ['+200g plain flour', '3 apples']);
 });
 
 test('a line the recipe already holds is not proposed back in a different case', () => {
   const out = usableDraft(
-    { ingredients: ['3 Apples', '3 Bramley apples'], steps: ['heat the oven'] },
+    { ingredients: [{ text: '3 Apples', index: 0 }], steps: [{ text: 'heat the oven', index: 0 }] },
     recipe('Apple pie', [line('3 apples')], [line('Heat the oven')]),
+    ids,
   );
-  assert.deepEqual(
-    out,
-    { ingredients: ['3 Bramley apples'], steps: [] },
-    'a capital does not make it a new line — but a different ingredient still is',
-  );
+  assert.deepEqual(shown(out.ingredients), ['3 apples']);
+  assert.deepEqual(shown(out.steps), ['Heat the oven']);
 });
 
 test('the first spelling of a repeat within one answer is the one kept', () => {
   const out = usableDraft(
-    { ingredients: ['3 Apples', '3 apples'], steps: [] },
+    { ingredients: [{ text: '3 Apples', index: 0 }, { text: '3 apples', index: 0 }], steps: [] },
     recipe('Apple pie'),
+    ids,
   );
-  assert.deepEqual(out.ingredients, ['3 Apples'], 'kept as the model wrote it');
+  assert.deepEqual(shown(out.ingredients), ['+3 Apples']);
 });
 
 test('usableDraft survives a recipe stored without its groups', () => {
-  const out = usableDraft({ ingredients: ['3 apples'], steps: [] }, { id: 'r', name: 'Apple pie' });
-  assert.deepEqual(out, { ingredients: ['3 apples'], steps: [] });
+  const out = usableDraft(
+    { ingredients: [{ text: '3 apples', index: 0 }], steps: [] },
+    { id: 'r', name: 'Apple pie' },
+    ids,
+  );
+  assert.deepEqual(shown(out.ingredients), ['+3 apples']);
+  assert.deepEqual(out.steps, []);
 });
 
 test('usableDraft keeps nothing that is not a line of text', () => {
-  const out = usableDraft({ ingredients: [7, null, {}, ''], steps: [undefined] }, recipe('X'));
-  assert.deepEqual(out, { ingredients: [], steps: [] });
+  const out = usableDraft(
+    { ingredients: [{ text: 7, index: 0 }, { index: 0 }, { text: '', index: 0 }], steps: [null] },
+    recipe('X'),
+    ids,
+  );
+  assert.deepEqual(out.ingredients, []);
+  assert.deepEqual(out.steps, []);
 });
 
 test('isEmptyDraft is the difference between no answer and an answer', () => {
-  assert.equal(isEmptyDraft({ ingredients: [], steps: [] }), true);
-  assert.equal(isEmptyDraft({ ingredients: ['3 apples'], steps: [] }), false);
-  assert.equal(isEmptyDraft({ ingredients: [], steps: ['Bake it'] }), false);
+  const bare = recipe('Apple pie', [], [line('Heat the oven')]);
+  const nothing = usableDraft({ ingredients: [], steps: [] }, bare, ids);
+  assert.equal(isEmptyDraft(nothing), true, 'a group of lines alone is not a draft');
+
+  const something = usableDraft(
+    { ingredients: [], steps: [{ text: 'Bake it', index: 1 }] },
+    bare,
+    ids,
+  );
+  assert.equal(isEmptyDraft(something), false);
 });

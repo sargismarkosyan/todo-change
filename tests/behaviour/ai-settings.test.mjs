@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { fakeModel, openApp } from '../support/app.mjs';
+import { drafts, fakeModel, openApp } from '../support/app.mjs';
 
 /** The Background: "Sweets" open with one recipe, and a model on the machine. */
 async function book(model, answer = null) {
@@ -84,7 +84,7 @@ rule('ai-turned-off-from-settings', () => {
 
   test('a draft on screen goes with it', async () => {
     const app = await book(
-      fakeModel({ state: 'available', drafts: { ingredients: ['200g plain flour'], steps: [] } }),
+      fakeModel({ state: 'available', drafts: drafts(['200g plain flour']) }),
       'on',
     );
     app.askForDraft('Apple pie');

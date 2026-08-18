@@ -25,7 +25,7 @@ Feature: Taking the draft
       | Heat the oven to 180C |
       | Bake for 45 minutes   |
 
-  @planned @rule:draft-taken-whole
+  @rule:draft-taken-whole
   Rule: The whole draft can be taken in one press, each line landing where it sat
 
     Example: a bare recipe, filled in at once

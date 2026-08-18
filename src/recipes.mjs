@@ -139,53 +139,31 @@ export function addStep(recipes, recipeId, text) {
 }
 
 /**
- * `recipes` with one line moved to sit immediately before or after another, in
- * its own group, or `recipes` unchanged when the move is not a move.
+ * `recipes` with one group replaced wholesale, or `recipes` unchanged when the
+ * group would come out the same.
  *
- * A person moves a line; the app never does. That is not a contradiction of
- * "nothing rearranges itself" — that promise is about the app reordering things
- * under somebody's eye, and this is the opposite. See
- * specs/features/recipes/spec.md.
+ * The one way the order of a group ever changes. Moving a line, and accepting a
+ * proposal into the middle of one, both come down to "this group now reads like
+ * this" — the view on screen already knows the order, and handing it here is
+ * simpler and harder to get wrong than a set of splices.
  *
- * Only within one group: an ingredient cannot become a step. What a recipe
- * takes and what you do with it are two different lists that happen to sit near
- * each other, so a line whose target is in the other group does not move.
- *
- * Unchanged is returned as the identical array where nothing happens, so a
- * no-op move writes nothing and repaints nothing.
+ * Unchanged is returned as the identical array where the ids come out in the
+ * same order, so a line dropped where it already was writes nothing and
+ * repaints nothing.
  */
-export function moveLine(recipes, recipeId, group, lineId, targetId, before) {
-  if (lineId === targetId) return recipes;
-
+export function setGroup(recipes, recipeId, group, lines) {
   return recipes.map((recipe) => {
     if (recipe.id !== recipeId) return recipe;
-
-    const lines = linesOf(recipe, group);
-    const from = lines.findIndex((line) => line.id === lineId);
-    const onto = lines.findIndex((line) => line.id === targetId);
-    if (from === -1 || onto === -1) return recipe;
-
-    const without = lines.filter((line) => line.id !== lineId);
-    const at = without.findIndex((line) => line.id === targetId) + (before ? 0 : 1);
-    const moved = [...without.slice(0, at), lines[from], ...without.slice(at)];
-
-    // A line dropped where it already was is not a change.
-    if (moved.every((line, index) => line.id === lines[index].id)) return recipe;
-    return { ...recipe, [group]: moved };
+    const before = linesOf(recipe, group);
+    const same =
+      before.length === lines.length && before.every((line, at) => line.id === lines[at].id);
+    return same ? recipe : { ...recipe, [group]: lines };
   });
 }
 
-/**
- * The line one place up or down from `lineId` in its group, or `null` at the
- * ends. What the arrow keys move against, and what makes the ends hold.
- */
-export function neighbourOf(recipes, recipeId, group, lineId, step) {
-  const recipe = recipes.find((each) => each.id === recipeId);
-  if (!recipe) return null;
-  const lines = linesOf(recipe, group);
-  const at = lines.findIndex((line) => line.id === lineId);
-  if (at === -1) return null;
-  return lines[at + step] ?? null;
+/** One line, ready to go into a group. The id is made once and never changes. */
+export function makeLine(text) {
+  return { id: newId(), text: text.trim() };
 }
 
 /**

@@ -785,33 +785,54 @@ body {
   font-style: italic;
 }
 
-/* What was proposed. Dashed all through, because not one line of it is written
-   down — a wrong quantity is not a wrong word, and there is no undo here. */
-.proposals {
-  margin: 0.35rem 0 0;
-  padding: 0;
-  list-style: none;
+/* A proposal, sitting in the list where it belongs.
+   It is numbered with everything else and moves like everything else, so the
+   one thing it must never do is read as a line: dashed all through, in the red
+   the model's things are drawn in, and marked with a + that says taking it is
+   an act. It is on the page and not in the book. */
+.proposal {
+  border-bottom-style: dashed;
 }
 
-.proposal + .proposal { margin-top: 0.25rem; }
-
 .proposal__take {
-  display: block;
-  width: 100%;
-  padding: 0.2rem 0.45rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.1rem 0.45rem;
   border: 1px dashed var(--red);
   border-radius: 2px;
   background: none;
   color: var(--red);
   font: inherit;
   font-family: var(--reading);
-  font-size: 0.95rem;
+  font-size: 1rem;
   text-align: left;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 
 .proposal__take::before { content: "+ "; }
 .proposal__take:hover { background: var(--page); }
+
+/* A proposal's number is the model's too, so it is drawn as the model's. */
+.step.proposal .line-handle::after {
+  opacity: 0.6;
+}
+
+/* Taking the lot. Beside "No thanks" and never the default: per-line
+   acceptance is what keeps an unread quantity out of the book. */
+.drafting__take-all {
+  padding: 0.25rem 0.6rem;
+  border: 1px dashed var(--red);
+  border-radius: 2px;
+  background: none;
+  color: var(--red);
+  font: inherit;
+  font-family: var(--reading);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.drafting__take-all:hover { background: var(--page); }
 
 /* The colophon: what a book puts at the back — the machinery, small and last.
    The switch is pressed twice ever, so it gets the least prominent place on the

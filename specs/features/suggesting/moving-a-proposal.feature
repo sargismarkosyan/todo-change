@@ -21,7 +21,7 @@ Feature: Moving a proposal
       | Heat the oven to 180C |
       | Bake for 45 minutes   |
 
-  @planned @rule:proposal-can-be-moved
+  @rule:proposal-can-be-moved
   Rule: A proposal is moved like any other line, before it is accepted
 
     Example: putting one where the model should have put it

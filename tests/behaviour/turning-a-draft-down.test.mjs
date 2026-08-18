@@ -3,11 +3,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { fakeModel, openApp } from '../support/app.mjs';
+import { drafts, fakeModel, openApp } from '../support/app.mjs';
 
 /** The Background: "Sweets" open, "Apple pie" in it and open. */
 async function book(model, { on = true } = {}) {
   const app = openApp(model);
+  app.model = model;
   app.renameBook('Sweets');
   app.writeDown('Apple pie');
   await app.settle();
@@ -19,7 +20,6 @@ async function book(model, { on = true } = {}) {
   return app;
 }
 
-const drafts = (ingredients, steps = []) => ({ ingredients, steps });
 
 rule('draft-dismissed-changes-nothing', () => {
   test('none of it was any good', async () => {
@@ -95,6 +95,30 @@ rule('draft-can-fail', () => {
 
     app.addIngredient('Apple pie', '3 apples');
     assert.deepEqual(app.ingredients('Apple pie'), ['3 apples']);
+  });
+
+  test('an answer for a recipe that has gone lands nowhere', async () => {
+    const app = await book(fakeModel({ drafts: drafts(['3 apples']), holds: true }));
+
+    app.askForDraft('Apple pie');
+    app.deleteRecipe('Apple pie');
+    app.model.answers();
+    await app.settle();
+
+    assert.deepEqual(app.contents(), []);
+  });
+
+  test('an answer that arrives after the AI is switched off is dropped', async () => {
+    const app = await book(fakeModel({ drafts: drafts(['3 apples']), holds: true }));
+
+    app.askForDraft('Apple pie');
+    app.toggleAi();
+    app.model.answers();
+    await app.settle();
+
+    app.openRecipe('Apple pie');
+    assert.equal(app.hasProposals(), false);
+    assert.deepEqual(app.ingredients('Apple pie'), []);
   });
 });
 

@@ -9,7 +9,23 @@
 // global and takes the scope holding it as an argument, so a test can pass a
 // fake one. The app never reaches for `LanguageModel` itself.
 
-const LINES = { type: 'array', items: { type: 'string' } };
+/**
+ * A line and the place it should take.
+ *
+ * The place is an index rather than a quotation of the line it follows: naming
+ * the line would mean asking the model to quote text back exactly, and one
+ * wrong character puts the proposal nowhere at all. An index cannot be
+ * misspelt, and one that points past the end lands last — which matters,
+ * because a recipe can be typed into while the model is still writing.
+ */
+const LINES = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: { text: { type: 'string' }, index: { type: 'integer', minimum: 0 } },
+    required: ['text', 'index'],
+  },
+};
 
 /**
  * What the model is asked to answer with: two lists of lines, never prose.
@@ -44,24 +60,35 @@ const DRAFTING = [
   'You write down recipes somebody already knows how to cook.',
   'Given a recipe name, answer with the ingredients it takes and the steps to make it.',
   'One ingredient per line, written the way it is said out loud, with the amount in the line.',
-  'One step per line, in order, in plain sentences.',
+  'One step per line, in plain sentences.',
+  'Give each line the index it should take in the list it belongs to,',
+  'counting the lines that are already there: 0 puts it first, and an index',
+  'equal to the number of existing lines puts it last.',
+  'Do not repeat a line that is already there, and do not move one.',
   'No headings, no numbering, no commentary.',
 ].join(' ');
 
-/** A recipe as the model reads it: its name, and anything already written down. */
+/**
+ * A recipe as the model reads it: its name, and anything already written down —
+ * numbered, so the index it answers with means something.
+ */
 function asPrompt(recipe) {
   const lines = [`Recipe: ${recipe.name}`];
-  const has = (group) => (recipe[group] ?? []).map((line) => line.text);
-  if (has('ingredients').length > 0) {
-    lines.push('It already takes:', ...has('ingredients').map((text) => `- ${text}`));
-  }
-  if (has('steps').length > 0) {
-    lines.push('The method so far:', ...has('steps').map((text) => `- ${text}`));
+  const numbered = (group) =>
+    (recipe[group] ?? []).map((line, at) => `${at}: ${line.text}`);
+  const say = (heading, group) => {
+    const shown = numbered(group);
+    lines.push(shown.length > 0 ? `${heading}` : `${heading} nothing yet`);
+    lines.push(...shown);
+  };
+  if ((recipe.ingredients ?? []).length > 0 || (recipe.steps ?? []).length > 0) {
+    say('It already takes:', 'ingredients');
+    say('The method so far:', 'steps');
   }
   return lines.join('\n');
 }
 
-/** An answer, read as two lists of lines. Anything else is no answer. */
+/** An answer, read as two lists of placed lines. Anything else is no answer. */
 function parse(answer) {
   try {
     const found = JSON.parse(answer);
@@ -128,45 +155,79 @@ export function createModel(scope) {
 const clean = (value) => (typeof value === 'string' ? value.trim() : '');
 
 /**
- * What is left of one group of a draft once it is worth showing: trimmed,
- * non-empty, deduplicated, and without anything the recipe already holds.
+ * The place a proposal asked for, clamped into the list it is joining.
  *
- * Proposing a line back to somebody who already typed it reads as the model not
- * having looked, and accepting it would put the same line on twice.
+ * Anything that is not a whole number — missing, a word, a fraction, negative —
+ * lands last rather than nowhere. A place that is not there is not a reason to
+ * throw a line away.
  */
-function usableGroup(proposed, already) {
-  // Compared without case, kept with it. "3 Apples" against a recipe that
-  // already says "3 apples" is the same line wearing a capital, and the model
-  // is told what is there but cannot be relied on to have read it. Matching is
-  // case-insensitive everywhere else in this app too — see finding.mjs.
-  const seen = already.map((text) => text.toLowerCase());
-  const lines = [];
-  for (const value of proposed) {
-    const text = clean(value);
-    const key = text.toLowerCase();
-    if (text !== '' && !seen.includes(key)) {
-      seen.push(key);
-      lines.push(text);
-    }
-  }
-  return lines;
+function placeOf(value, length) {
+  // A negative is no more a real place than a word is, so it lands last with
+  // the rest of the nonsense rather than being clamped to the front.
+  const at = Number.isInteger(value) && value >= 0 ? value : length;
+  return Math.min(at, length);
 }
 
 /**
- * A whole draft, filtered against the recipe as it stands.
+ * A group as it would read with the draft in it: the lines that are there and
+ * the ones being proposed, in one order.
  *
- * Returns both groups. Empty in both is not a draft — it is a model that
- * answered with nothing usable, which the app reports rather than showing an
- * empty panel.
+ * Each entry is either `{ kind: 'line', id }` — a line the recipe already holds
+ * — or `{ kind: 'proposal', id, text }`, which is on screen and nowhere else.
+ * The list *is* the view: what is drawn, what the numbers count, and what
+ * accepting reads a position out of.
+ *
+ * Indices are read against the group as it stands right now, all of them, so
+ * proposals landing at the same place keep the order they were drafted in.
+ * After this they are positions in a list rather than indices, and editing the
+ * recipe moves them the way it moves anything else.
  */
-export function usableDraft(proposed, recipe) {
-  const textOf = (group) => (recipe[group] ?? []).map((line) => line.text);
+function mergeGroup(lines, proposed, newId) {
+  const already = lines.map((line) => line.text.toLowerCase());
+  const taken = [];
+
+  const wanted = [];
+  for (const entry of proposed) {
+    const text = clean(entry?.text);
+    const key = text.toLowerCase();
+    // A line the recipe already holds is not proposed back to it, and the model
+    // repeating itself is one proposal, not two.
+    if (text === '' || already.includes(key) || taken.includes(key)) continue;
+    taken.push(key);
+    wanted.push({ at: placeOf(entry?.index, lines.length), text });
+  }
+
+  const merged = [];
+  const emitAt = (at) => {
+    for (const { at: place, text } of wanted) {
+      if (place === at) merged.push({ kind: 'proposal', id: newId(), text });
+    }
+  };
+  lines.forEach((line, at) => {
+    emitAt(at);
+    merged.push({ kind: 'line', id: line.id });
+  });
+  emitAt(lines.length);
+  return merged;
+}
+
+/**
+ * A whole draft, merged into the recipe as it stands.
+ *
+ * Both groups come back as the list they would read as. Nothing is stored — a
+ * proposal is on screen and nowhere else, which is the guarantee this version
+ * has to be most careful about, now that proposals sit *inside* the list rather
+ * than beside it.
+ */
+export function usableDraft(proposed, recipe, newId) {
   return {
-    ingredients: usableGroup(proposed.ingredients, textOf('ingredients')),
-    steps: usableGroup(proposed.steps, textOf('steps')),
+    ingredients: mergeGroup(recipe.ingredients ?? [], proposed.ingredients, newId),
+    steps: mergeGroup(recipe.steps ?? [], proposed.steps, newId),
   };
 }
 
-/** Whether a filtered draft has anything in it at all. */
+/** Whether a merged draft is proposing anything at all. */
 export const isEmptyDraft = (draft) =>
-  draft.ingredients.length === 0 && draft.steps.length === 0;
+  !['ingredients', 'steps'].some((group) =>
+    draft[group].some((entry) => entry.kind === 'proposal'),
+  );

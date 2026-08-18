@@ -9,9 +9,10 @@ import {
   addRecipe,
   addStep,
   linesOf,
-  moveLine,
-  neighbourOf,
+  makeLine,
+  newId,
   removeFrom,
+  setGroup,
 } from './recipes.mjs';
 import { findRecipes } from './finding.mjs';
 import {
@@ -182,11 +183,104 @@ export function mountApp(doc, storage, model = null) {
   // answer "can I make this tonight", which is the question asked at the
   // contents, and the method answers "what do I do now".
 
-  /** Move a line and put the focus back on the handle that moved it. */
-  const move = (recipe, spec, lineId, targetId, before) => {
-    focusedHandle = lineId;
+  // ---- one list, lines and proposals together ------------------------------
+  //
+  // A group on screen is a single ordered list: the lines the recipe holds and
+  // the ones being proposed, in one run of numbers. The list *is* the view —
+  // what is drawn, what the numbers count, and what accepting reads a position
+  // out of. See specs/features/suggesting/placing-a-draft.feature.
+
+  const isDrafting = (recipe) => drafted !== null && drafted.recipeId === recipe.id;
+
+  /**
+   * The entries of one group, reconciled against what is actually stored.
+   *
+   * A line typed by hand while a draft is on screen is not in the draft's list,
+   * so it joins at the bottom — which is where typing lands anyway. A line
+   * deleted while a draft is up drops out.
+   */
+  function entriesOf(recipe, spec) {
+    const lines = linesOf(recipe, spec.key);
+    if (!isDrafting(recipe)) return lines.map((line) => ({ kind: 'line', id: line.id }));
+
+    const held = new Set(lines.map((line) => line.id));
+    const kept = drafted[spec.key].filter(
+      (entry) => entry.kind === 'proposal' || held.has(entry.id),
+    );
+    const mentioned = new Set(kept.filter((entry) => entry.kind === 'line').map((e) => e.id));
+    const missing = lines
+      .filter((line) => !mentioned.has(line.id))
+      .map((line) => ({ kind: 'line', id: line.id }));
+    return [...kept, ...missing];
+  }
+
+  /** The stored group implied by a list of entries, in the order they sit. */
+  const linesFrom = (entries, lines) => {
+    const byId = new Map(lines.map((line) => [line.id, line]));
+    return entries
+      .filter((entry) => entry.kind === 'line')
+      .map((entry) => byId.get(entry.id))
+      .filter((line) => line !== undefined);
+  };
+
+  /** Put `entries` back on the draft, when one is on screen for this recipe. */
+  const withEntries = (recipe, spec, entries) => {
+    if (isDrafting(recipe)) drafted = { ...drafted, [spec.key]: entries };
+  };
+
+  /**
+   * Take some proposals into the recipe, each where it sits.
+   *
+   * One path for taking one and for taking the lot: a proposal becomes a line
+   * in place, and the group is rewritten in the order the view already shows.
+   */
+  function accept(recipe, spec, wanted) {
+    const lines = linesOf(recipe, spec.key);
+    const byId = new Map(lines.map((line) => [line.id, line]));
+    const next = [];
+    const entries = [];
+
+    for (const entry of entriesOf(recipe, spec)) {
+      if (entry.kind === 'line') {
+        const line = byId.get(entry.id);
+        if (line) {
+          next.push(line);
+          entries.push(entry);
+        }
+        continue;
+      }
+      if (!wanted.has(entry)) {
+        entries.push(entry);
+        continue;
+      }
+      const made = makeLine(entry.text);
+      next.push(made);
+      entries.push({ kind: 'line', id: made.id });
+    }
+
+    withEntries(recipe, spec, entries);
+    return setGroup(recipes(), recipe.id, spec.key, next);
+  }
+
+  /** Move an entry — line or proposal — and put focus back on its handle. */
+  const move = (recipe, spec, entryId, targetId, before) => {
+    const entries = entriesOf(recipe, spec);
+    const moved = entries.find((entry) => entry.id === entryId);
+    const target = entries.find((entry) => entry.id === targetId);
+    if (!moved || !target || moved === target) return;
+
+    const rest = entries.filter((entry) => entry !== moved);
+    const at = rest.indexOf(target) + (before ? 0 : 1);
+    const next = [...rest.slice(0, at), moved, ...rest.slice(at)];
+
+    focusedHandle = entryId;
     typingIn = null;
-    commitRecipes(moveLine(recipes(), recipe.id, spec.key, lineId, targetId, before));
+    withEntries(recipe, spec, next);
+    // Storage takes the line order out of the new view. Moving a proposal
+    // therefore writes nothing: no line changed places.
+    commitRecipes(
+      setGroup(recipes(), recipe.id, spec.key, linesFrom(next, linesOf(recipe, spec.key))),
+    );
   };
 
   /**
@@ -194,13 +288,13 @@ export function mountApp(doc, storage, model = null) {
    * with a pointer, or focused and moved with the arrow keys. Arrows sitting
    * beside a drag handle would be two controls doing one job.
    */
-  function handle(recipe, spec, line) {
+  function handle(recipe, spec, id, label) {
     const grip = doc.createElement('button');
     grip.type = 'button';
     grip.className = 'line-handle';
     grip.draggable = true;
-    grip.dataset.handle = line.id;
-    grip.setAttribute('aria-label', `Move ${line.text}`);
+    grip.dataset.handle = id;
+    grip.setAttribute('aria-label', `Move ${label}`);
 
     const dots = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
     dots.setAttribute('viewBox', '0 0 10 16');
@@ -217,7 +311,7 @@ export function mountApp(doc, storage, model = null) {
     grip.append(dots);
 
     grip.addEventListener('dragstart', () => {
-      dragging = { id: line.id, group: spec.key, recipeId: recipe.id };
+      dragging = { id, group: spec.key, recipeId: recipe.id };
     });
     grip.addEventListener('dragend', () => {
       dragging = null;
@@ -227,23 +321,24 @@ export function mountApp(doc, storage, model = null) {
       const step = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
       if (step === 0) return;
       event.preventDefault();
-      const next = neighbourOf(recipes(), recipe.id, spec.key, line.id, step);
+      const entries = entriesOf(recipe, spec);
+      const next = entries[entries.findIndex((entry) => entry.id === id) + step];
       // The ends hold: nothing above the first, nothing below the last.
-      if (next === null) return;
-      move(recipe, spec, line.id, next.id, step === -1);
+      if (next === undefined) return;
+      move(recipe, spec, id, next.id, step === -1);
     });
 
     return grip;
   }
 
-  function lineRow(recipe, spec, line) {
+  /**
+   * The shell every row in a group shares — a line's and a proposal's alike,
+   * because both are moved the same way and both sit in the same numbering.
+   */
+  function rowFrame(recipe, spec, id, className) {
     const item = doc.createElement('li');
-    item.className = spec.block;
-    item.dataset.id = line.id;
-
-    const text = doc.createElement('span');
-    text.className = `${spec.block}__text`;
-    text.textContent = line.text;
+    item.className = className;
+    item.dataset.id = id;
 
     /** Which half of the row the pointer is over decides above or below. */
     const edgeAt = (event) => {
@@ -251,7 +346,7 @@ export function mountApp(doc, storage, model = null) {
       return event.clientY < box.top + box.height / 2;
     };
 
-    // Only a line from this recipe's own same group can land here.
+    // Only something from this recipe's own same group can land here.
     const takes = () =>
       dragging !== null && dragging.group === spec.key && dragging.recipeId === recipe.id;
 
@@ -265,10 +360,49 @@ export function mountApp(doc, storage, model = null) {
       event.preventDefault();
       const dropped = dragging;
       dragging = null;
-      move(recipe, spec, dropped.id, line.id, edgeAt(event));
+      move(recipe, spec, dropped.id, id, edgeAt(event));
     });
 
-    item.append(handle(recipe, spec, line), text, deleteButton(spec.block, line.id, line.text));
+    return item;
+  }
+
+  function lineRow(recipe, spec, line) {
+    const item = rowFrame(recipe, spec, line.id, spec.block);
+
+    const text = doc.createElement('span');
+    text.className = `${spec.block}__text`;
+    text.textContent = line.text;
+
+    item.append(
+      handle(recipe, spec, line.id, line.text),
+      text,
+      deleteButton(spec.block, line.id, line.text),
+    );
+    return item;
+  }
+
+  /**
+   * One proposed line, sitting in the list where it belongs.
+   *
+   * Dashed all through, because it is on the page and not in the book — a wrong
+   * quantity is not a wrong word, and there is no undo anywhere here. It is
+   * moved like any other row and takes its place in the numbering, which is the
+   * whole point: the group reads as it would read if the draft were taken.
+   */
+  function proposalRow(recipe, spec, entry) {
+    const item = rowFrame(recipe, spec, entry.id, `${spec.block} proposal`);
+
+    const take = doc.createElement('button');
+    take.type = 'button';
+    take.className = 'proposal__take';
+    take.textContent = entry.text;
+    take.setAttribute('aria-label', `Add ${entry.text} to ${recipe.name}`);
+    take.addEventListener('click', () => {
+      typingIn = null;
+      commitRecipes(accept(recipe, spec, new Set([entry])));
+    });
+
+    item.append(handle(recipe, spec, entry.id, entry.text), take);
     return item;
   }
 
@@ -303,46 +437,6 @@ export function mountApp(doc, storage, model = null) {
     return composer;
   }
 
-  /**
-   * One proposed line. Dashed all through, because it is not a line yet — a
-   * wrong quantity is not a wrong word, and there is no undo anywhere here.
-   */
-  function proposalRow(recipe, group, text) {
-    const item = doc.createElement('li');
-    item.className = 'proposal';
-
-    const take = doc.createElement('button');
-    take.type = 'button';
-    take.className = 'proposal__take';
-    take.textContent = text;
-    take.setAttribute('aria-label', `Add ${text} to ${recipe.name}`);
-    take.addEventListener('click', () => {
-      // Taken out of the draft first, so the same line cannot be added twice
-      // by a second click before the repaint lands.
-      drafted = {
-        ...drafted,
-        [group]: drafted[group].filter((each) => each !== text),
-      };
-      typingIn = null;
-      commitRecipes(ADD_LINE[group](recipes(), recipe.id, text));
-    });
-
-    item.append(take);
-    return item;
-  }
-
-  /** The proposals for one group, or nothing when there are none. */
-  function proposals(recipe, spec) {
-    if (drafted === null || drafted.recipeId !== recipe.id) return null;
-    const lines = drafted[spec.key];
-    if (lines.length === 0) return null;
-
-    const list = doc.createElement('ul');
-    list.className = `proposals proposals--${spec.key}`;
-    list.append(...lines.map((text) => proposalRow(recipe, spec.key, text)));
-    return list;
-  }
-
   function group(recipe, spec) {
     const section = doc.createElement('div');
     section.className = `recipe__group recipe__${spec.key}`;
@@ -351,14 +445,18 @@ export function mountApp(doc, storage, model = null) {
     heading.className = 'recipe__heading';
     heading.textContent = spec.heading;
 
+    const held = new Map(linesOf(recipe, spec.key).map((line) => [line.id, line]));
     const lines = doc.createElement('ul');
     lines.className = `recipe__${spec.key}-lines`;
-    lines.append(...linesOf(recipe, spec.key).map((line) => lineRow(recipe, spec, line)));
+    lines.append(
+      ...entriesOf(recipe, spec).map((entry) =>
+        entry.kind === 'line'
+          ? lineRow(recipe, spec, held.get(entry.id))
+          : proposalRow(recipe, spec, entry),
+      ),
+    );
 
-    section.append(heading, lines);
-    const proposed = proposals(recipe, spec);
-    if (proposed !== null) section.append(proposed);
-    section.append(lineComposer(recipe, spec));
+    section.append(heading, lines, lineComposer(recipe, spec));
     return section;
   }
 
@@ -381,7 +479,28 @@ export function mountApp(doc, storage, model = null) {
     ask.addEventListener('click', () => askForDraft(recipe.id));
     bar.append(ask);
 
-    if (!working && drafted !== null && drafted.recipeId === recipe.id) {
+    if (!working && isDrafting(recipe)) {
+      // Taking the lot is the press to be honest about: per-line acceptance is
+      // what keeps an unread quantity out of the book, and this is the way
+      // round it. A second control, never the default.
+      const all = doc.createElement('button');
+      all.type = 'button';
+      all.className = 'drafting__take-all';
+      all.textContent = 'Take all';
+      all.addEventListener('click', () => {
+        typingIn = null;
+        let next = recipes();
+        for (const spec of GROUPS) {
+          const wanted = new Set(
+            entriesOf(recipe, spec).filter((entry) => entry.kind === 'proposal'),
+          );
+          const taken = accept(recipe, spec, wanted).find((each) => each.id === recipe.id);
+          // Each group folds onto the last, so the whole draft is one write.
+          next = setGroup(next, recipe.id, spec.key, linesOf(taken, spec.key));
+        }
+        commitRecipes(next);
+      });
+
       const drop = doc.createElement('button');
       drop.type = 'button';
       drop.className = 'drafting__dismiss';
@@ -390,7 +509,7 @@ export function mountApp(doc, storage, model = null) {
         drafted = null;
         render();
       });
-      bar.append(drop);
+      bar.append(all, drop);
     }
 
     if (note !== null) {
@@ -439,7 +558,7 @@ export function mountApp(doc, storage, model = null) {
       return;
     }
 
-    const draft = usableDraft(proposed, current);
+    const draft = usableDraft(proposed, current, newId);
     drafted = isEmptyDraft(draft) ? null : { recipeId, ...draft };
     note = isEmptyDraft(draft) ? NOTHING_DRAFTED : null;
     modelState = 'available';

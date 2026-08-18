@@ -113,6 +113,22 @@ rule('moving-changes-nothing-but-the-order', () => {
     ]);
   });
 
+  test('a line picked up and let go over nothing stays put', () => {
+    const app = book();
+    app.dragAndAbandon('Bake for 45 minutes');
+    app.dragAbove('Bake for 45 minutes', 'Rub the butter into the flour');
+
+    assert.deepEqual(
+      app.method('Apple pie'),
+      [
+        'Bake for 45 minutes',
+        'Rub the butter into the flour',
+        'Heat the oven to 190C',
+      ],
+      'letting go ends the drag, and the next one is a fresh one',
+    );
+  });
+
   test('the recipe stays where it is in the contents', () => {
     const app = openAppWithContents('Apple pie', 'Lemon drizzle');
     app.give('Apple pie', 'step', ['Heat the oven to 190C', 'Bake for 45 minutes']);

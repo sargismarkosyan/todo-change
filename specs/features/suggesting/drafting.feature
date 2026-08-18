@@ -8,13 +8,16 @@ Feature: The AI drafting a recipe
 
   One press asks the browser's own model for the whole card: what it takes and
   how it is made, both at once. **Not one line of it is written down.** A draft
-  is a proposal until it is accepted, and it is accepted a line at a time,
-  because a wrong quantity is not a wrong word — it is a cake that does not
-  work, and there is no undo anywhere in this app.
+  is a proposal until it is accepted, because a wrong quantity is not a wrong
+  word — it is a cake that does not work, and there is no undo anywhere here.
 
   What is already on the recipe is left alone. A draft is added to a recipe,
-  never over it: nothing is replaced, nothing is reordered, and a line the
-  recipe already has is not proposed back to it.
+  never over it: nothing is replaced, no line you wrote is reordered, and a line
+  the recipe already has is not proposed back to it.
+
+  A proposal sits **where it belongs**, not at the bottom, and a line taken out
+  of the middle stays in the middle. Where they sit is `placing-a-draft.feature`;
+  how they are taken is `taking-a-draft.feature`.
 
   These rules never assert what a model says. A model is handed to the app the
   way the document and the storage are, so what is asserted is what the app does
@@ -33,9 +36,9 @@ Feature: The AI drafting a recipe
 
     Example: a bare name, filled in
       Given a model that drafts:
-        | ingredients | 200g plain flour      |
-        | ingredients | 3 apples              |
-        | steps       | Heat the oven to 180C |
+        | ingredients | 0 | 200g plain flour      |
+        | ingredients | 1 | 3 apples              |
+        | steps       | 0 | Heat the oven to 180C |
       When I ask for a draft of "Apple pie"
       Then the proposed ingredients read:
         | 200g plain flour |
@@ -47,18 +50,27 @@ Feature: The AI drafting a recipe
 
     Example: a proposal is not written down, so it does not survive the tab
       Given a model that drafts:
-        | ingredients | 3 apples |
+        | ingredients | 0 | 3 apples |
       When I ask for a draft of "Apple pie"
       And I reload
       Then "Apple pie" shows no ingredients
 
+    Example: a line the model repeats is offered once
+      Given a model that drafts:
+        | ingredients | 0 | 3 apples   |
+        | ingredients | 1 | 3 apples   |
+        | ingredients | 2 |  3 apples  |
+      When I ask for a draft of "Apple pie"
+      Then the proposed ingredients read:
+        | 3 apples |
+
   @rule:draft-accepted-line-by-line
-  Rule: A proposal becomes a line only when it is taken, one at a time
+  Rule: A proposal becomes a line where it sits, one at a time
 
     Example: taking one of two
       Given a model that drafts:
-        | ingredients | 200g plain flour |
-        | ingredients | 3 apples         |
+        | ingredients | 0 | 200g plain flour |
+        | ingredients | 1 | 3 apples         |
       When I ask for a draft of "Apple pie"
       And I accept the proposal "3 apples"
       Then "Apple pie" shows the ingredients:
@@ -66,47 +78,34 @@ Feature: The AI drafting a recipe
       And the proposed ingredients read:
         | 200g plain flour |
 
-    Example: the method takes the order they were accepted in
+    Example: taking one out of the middle leaves it in the middle
+      Given "Apple pie" has the method:
+        | Heat the oven to 180C |
+        | Bake for 45 minutes   |
+      And a model that drafts:
+        | steps | 1 | Peel and slice the apples |
+      When I ask for a draft of "Apple pie"
+      And I accept the proposal "Peel and slice the apples"
+      Then "Apple pie" shows the method:
+        | Heat the oven to 180C     |
+        | Peel and slice the apples |
+        | Bake for 45 minutes       |
+
+    Example: taken out of order, they still land in the drafted order
       Given a model that drafts:
-        | steps | Heat the oven to 180C     |
-        | steps | Peel and slice the apples |
+        | steps | 0 | Heat the oven to 180C     |
+        | steps | 1 | Peel and slice the apples |
       When I ask for a draft of "Apple pie"
       And I accept the proposal "Peel and slice the apples"
       And I accept the proposal "Heat the oven to 180C"
       Then "Apple pie" shows the method:
-        | Peel and slice the apples |
         | Heat the oven to 180C     |
+        | Peel and slice the apples |
 
     Example: once taken it is an ordinary line, and goes the ordinary way
       Given a model that drafts:
-        | ingredients | 3 apples |
+        | ingredients | 0 | 3 apples |
       When I ask for a draft of "Apple pie"
       And I accept the proposal "3 apples"
       And I delete the ingredient "3 apples"
       Then "Apple pie" shows no ingredients
-
-  @rule:draft-does-not-touch-what-is-there
-  Rule: A draft is added to a recipe, never written over it
-
-    Example: a recipe already half typed
-      Given "Apple pie" has the ingredients:
-        | 3 apples |
-      And a model that drafts:
-        | ingredients | 3 apples         |
-        | ingredients | 200g plain flour |
-      When I ask for a draft of "Apple pie"
-      Then the proposed ingredients read:
-        | 200g plain flour |
-      And "Apple pie" shows the ingredients:
-        | 3 apples |
-
-    Example: what was typed stays where it was typed
-      Given "Apple pie" has the ingredients:
-        | 3 apples |
-      And a model that drafts:
-        | ingredients | 200g plain flour |
-      When I ask for a draft of "Apple pie"
-      And I accept the proposal "200g plain flour"
-      Then "Apple pie" shows the ingredients:
-        | 3 apples         |
-        | 200g plain flour |

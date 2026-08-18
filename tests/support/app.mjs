@@ -68,19 +68,23 @@ function open(seed, model = null) {
 
   const isOpen = (name) => recipe(name).classList.contains('recipe--open');
   const groupEl = (name, group) => recipe(name).querySelector(`.recipe__${group}-lines`);
-  const lines = (name, group) =>
-    groupEl(name, group) === null
-      ? []
-      : [...groupEl(name, group).children].map(
-          (el) => el.querySelector('[class$="__text"]').textContent,
-        );
+  const rows = (name, group) =>
+    groupEl(name, group) === null ? [] : [...groupEl(name, group).children];
 
-  /** Every ingredient and step on screen, for the ones addressed by their text. */
+  /** What the recipe actually holds — proposals are on the page, not in it. */
+  const lines = (name, group) =>
+    rows(name, group)
+      .filter((el) => !el.classList.contains('proposal'))
+      .map((el) => el.querySelector('[class$="__text"]').textContent);
+
+  /** Every row of either group on screen, line or proposal alike. */
   const lineEls = () => [...doc.querySelectorAll('.ingredient, .step')];
+  const textOf = (el) =>
+    el.querySelector('[class$="__text"]')?.textContent ??
+    el.querySelector('.proposal__take')?.textContent ??
+    '';
   const line = (text) => {
-    const found = lineEls().find(
-      (el) => el.querySelector('[class$="__text"]').textContent === text,
-    );
+    const found = lineEls().find((el) => textOf(el) === text);
     if (!found) throw new Error(`nothing on screen reads "${text}"`);
     return found;
   };
@@ -232,6 +236,13 @@ function open(seed, model = null) {
       );
     },
 
+    /** Pick a line up and let go of it over nothing at all. */
+    dragAndAbandon(text) {
+      const grip = this.handleOf(text);
+      grip.dispatchEvent(new window.Event('dragstart', { bubbles: true }));
+      grip.dispatchEvent(new window.Event('dragend', { bubbles: true }));
+    },
+
     dragAbove(text, targetText) {
       this.dragOnto(text, targetText, true);
     },
@@ -372,11 +383,27 @@ function open(seed, model = null) {
       control.click();
     },
 
-    /** What is on offer for a group — not one line of it written down. */
-    proposed: (group) =>
-      [...doc.querySelectorAll(`.proposals--${group} .proposal__take`)].map(
-        (el) => el.textContent,
-      ),
+    /** What is on offer in a group — not one line of it written down. */
+    proposed(group, name = null) {
+      const of = name ?? contents()[0];
+      return rows(of, group)
+        .filter((el) => el.classList.contains('proposal'))
+        .map((el) => el.querySelector('.proposal__take').textContent);
+    },
+
+    /**
+     * A whole group as it reads on screen, saying which rows are written down
+     * and which are only proposed — the one list this version is about.
+     */
+    groupReads(name, group) {
+      return rows(name, group).map((el) => [
+        textOf(el),
+        el.classList.contains('proposal') ? 'proposed' : 'mine',
+      ]);
+    },
+
+    /** Take the lot in one press. */
+    takeWholeDraft: () => doc.querySelector('.drafting__take-all').click(),
 
     /** Take one line. */
     acceptProposal(text) {
@@ -389,6 +416,9 @@ function open(seed, model = null) {
 
     /** Turn the whole draft down. */
     dismissDraft: () => doc.querySelector('.drafting__dismiss').click(),
+
+    /** Whether anything at all is being proposed. */
+    hasProposals: () => doc.querySelector('.proposal') !== null,
 
     /** What the control says right now — it says so while the model writes. */
     draftControl: (name) => recipe(name).querySelector('.drafting__ask')?.textContent ?? null,
@@ -504,12 +534,32 @@ export const storedBooks = (books, openId) => JSON.stringify({ books, openId });
  * what an LLM says is not the app's promise to keep. What the rules check is
  * what the app does with an answer. See specs/features/suggesting/spec.md.
  */
+/**
+ * A drafted line and the place it asked for. Pass a nonsense index, or none, to
+ * exercise a model that gives no usable place.
+ */
+export const at = (index, text) => ({ index, text });
+
+/** Turn a plain string into a line that asked for the place it was written in. */
+const placed = (lines) =>
+  lines.map((line, index) => (typeof line === 'string' ? { text: line, index } : line));
+
+/**
+ * A drafted recipe. Plain strings take the places they are written in, which is
+ * what most rules want; use `at(index, text)` where the place is the point.
+ */
+export const drafts = (ingredients = [], steps = []) => ({
+  ingredients: placed(ingredients),
+  steps: placed(steps),
+});
+
 export function fakeModel({
   state = 'available',
   drafts = { ingredients: [], steps: [] },
   fails = false,
   cannotSay = false,
   silent = false,
+  holds = false,
   fetchFails = false,
 } = {}) {
   const never = () => new Promise(() => {});
@@ -518,6 +568,8 @@ export function fakeModel({
   // A fetch the test drives: `reaches` reports progress, `arrives` finishes it.
   let report = null;
   let finish = null;
+  // A draft the test drives, for what happens while one is still out.
+  let answer = null;
 
   return {
     availability: () => (cannotSay ? gaveUp() : Promise.resolve(state)),
@@ -528,7 +580,15 @@ export function fakeModel({
         finish = resolve;
       });
     },
-    draft: () => (fails ? gaveUp() : silent ? never() : Promise.resolve(drafts)),
+    draft: () => {
+      if (fails) return gaveUp();
+      if (silent) return never();
+      if (holds) return new Promise((resolve) => { answer = () => resolve(drafts); });
+      return Promise.resolve(drafts);
+    },
+
+    /** Let a held draft come back. */
+    answers: () => answer?.(),
 
     /** Drive the download from the test. */
     reaches: (loaded) => report?.(loaded),

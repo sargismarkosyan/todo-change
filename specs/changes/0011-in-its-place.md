@@ -1,6 +1,6 @@
 # Spec 0011: in its place
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** none — direct request, correcting version 0009.
 
 ## Who this is for

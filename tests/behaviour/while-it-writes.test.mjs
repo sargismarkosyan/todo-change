@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { fakeModel, openApp } from '../support/app.mjs';
+import { drafts, fakeModel, openApp } from '../support/app.mjs';
 
 /** The Background: "Sweets" open, "Apple pie" in it and open, the AI on. */
 async function book(model) {
@@ -16,7 +16,6 @@ async function book(model) {
   return app;
 }
 
-const drafts = (ingredients, steps = []) => ({ ingredients, steps });
 
 rule('draft-says-it-is-thinking', () => {
   test('pressing, and waiting', async () => {

@@ -34,7 +34,7 @@ Feature: Where a proposal sits
       | Heat the oven to 180C |
       | Bake for 45 minutes   |
 
-  @planned @rule:draft-lands-where-the-model-put-it
+  @rule:draft-lands-where-the-model-put-it
   Rule: A proposal is drawn at the place the model gave it
 
     Example: between two lines that are already there
@@ -66,7 +66,7 @@ Feature: Where a proposal sits
         | Peel and slice the apples     | proposed |
         | Bake for 45 minutes           | mine     |
 
-  @planned @rule:draft-index-out-of-range-lands-last
+  @rule:draft-index-out-of-range-lands-last
   Rule: A place that is not there puts the line last, rather than nowhere
 
     Example: past the end
@@ -88,3 +88,28 @@ Feature: Where a proposal sits
         | Bake for 45 minutes   | mine     |
         | Dust it with sugar    | proposed |
         | Grease the tin        | proposed |
+
+  @rule:draft-does-not-touch-what-is-there
+  Rule: A draft is added to a recipe, never written over it
+
+    Example: a recipe already half typed
+      Given "Apple pie" has the ingredients:
+        | 3 apples |
+      And a model that drafts:
+        | ingredients | 0 | 3 apples         |
+        | ingredients | 1 | 200g plain flour |
+      When I ask for a draft of "Apple pie"
+      Then the proposed ingredients read:
+        | 200g plain flour |
+      And "Apple pie" shows the ingredients:
+        | 3 apples |
+
+    Example: a line already there is not proposed back, whatever case it wears
+      Given "Apple pie" has the ingredients:
+        | 3 apples |
+      And a model that drafts:
+        | ingredients | 0 | 3 Apples         |
+        | ingredients | 1 | 200g plain flour |
+      When I ask for a draft of "Apple pie"
+      Then the proposed ingredients read:
+        | 200g plain flour |

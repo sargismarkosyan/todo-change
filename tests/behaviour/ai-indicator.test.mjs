@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
-import { fakeModel, openApp } from '../support/app.mjs';
+import { drafts, fakeModel, openApp } from '../support/app.mjs';
 
 /** The Background: "Sweets" open, one recipe in it. */
 async function book(model) {
