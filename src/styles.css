@@ -128,6 +128,15 @@ body {
   line-height: 0.95;
 }
 
+.app__home {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app__home:hover {
+  color: var(--red);
+}
+
 .app__tagline {
   margin: 0.35rem 0 0;
   color: var(--faded);
@@ -315,6 +324,12 @@ body {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.4rem;
+}
+
+/* `display` beats the attribute, so the box needs telling twice: there is no
+   book at the front door for a name typed here to land in. */
+.composer[hidden] {
+  display: none;
 }
 
 .composer__box {
@@ -1016,7 +1031,8 @@ body {
    page does not change character — but with no margin rule down the left, so
    the eye can tell at a glance that it is looking at an answer rather than at a
    book. */
-.results {
+.results,
+.picks {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1072,6 +1088,7 @@ body {
 }
 
 .results[hidden],
+.picks[hidden],
 .contents[hidden] {
   display: none;
 }

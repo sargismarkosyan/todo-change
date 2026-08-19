@@ -31,7 +31,6 @@ Feature: A front door, and a book with its own address
       | Roast chicken |
       | Lemon chicken |
 
-  @planned
   @rule:the-front-door-is-the-home
   Rule: With no book in the address, the app opens on the home
 
@@ -42,7 +41,6 @@ Feature: A front door, and a book with its own address
       And the contents is not on screen
       And there is nothing on screen to write a recipe into
 
-  @planned
   @rule:a-book-has-its-own-address
   Rule: A book's address opens that book, and that is the book written into
 
@@ -63,7 +61,6 @@ Feature: A front door, and a book with its own address
         | Roast chicken |
         | Lemon chicken |
 
-  @planned
   @rule:the-masthead-goes-home
   Rule: The title of the book takes you back to the front door
 
@@ -73,7 +70,6 @@ Feature: A front door, and a book with its own address
       Then I am on the home
       And the picks are on screen
 
-  @planned
   @rule:back-and-forward-move-between-them
   Rule: Back and forward walk the same way in and out
 
@@ -85,7 +81,6 @@ Feature: A front door, and a book with its own address
       When I go forward
       Then I am in the book "Dinner"
 
-  @planned
   @rule:an-address-that-names-nothing-opens-the-front-door
   Rule: An address naming no book opens the home, never a blank page
 

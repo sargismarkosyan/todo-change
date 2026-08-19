@@ -30,7 +30,6 @@ Feature: Somewhere to start from
       | Lemon chicken |
       | Thursday casserole |
 
-  @planned
   @rule:picks-reach-every-book
   Rule: Three recipes, from any book, each naming the book it is in
 
@@ -49,7 +48,6 @@ Feature: Somewhere to start from
       Then the picks read:
         | Apple cake | Sweets |
 
-  @planned
   @rule:picks-hold-still-all-day
   Rule: The same day gives the same three, and not every day the same
 
@@ -63,12 +61,14 @@ Feature: Somewhere to start from
       When the app is opened at the home on each day of one week
       Then more than one set of three came up
 
-  @planned
   @rule:picks-open-where-they-live
   Rule: Opening a pick opens the book it is in, with the recipe open in it
 
     Example: starting from one
-      Given "Roast chicken" has the method:
+      Given the only recipes written down are:
+        | Apple cake    | Sweets |
+        | Roast chicken | Dinner |
+      And "Roast chicken" has the method:
         | Heat the oven to 200C |
       And the app is opened at the home
       When I open the pick "Roast chicken"
@@ -78,7 +78,6 @@ Feature: Somewhere to start from
       And "Roast chicken" shows the method:
         | Heat the oven to 200C |
 
-  @planned
   @rule:picks-give-what-there-is
   Rule: Fewer than three written down shows what there is, and none says so
 
@@ -99,7 +98,6 @@ Feature: Somewhere to start from
       And I see the message "Nothing written down yet."
       And I do not see the message "No recipes in this book yet."
 
-  @planned
   @rule:picks-step-aside-for-the-results
   Rule: Searching puts results in their place, and clearing puts them back unchanged
 

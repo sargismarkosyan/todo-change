@@ -24,6 +24,11 @@ const PAGE = HTML.replace(
 /**
  * A fresh browser with a fresh store, holding nothing at all.
  *
+ * **Open in a book**, which is where all but the front door's own rules happen.
+ * The app itself opens on the home when nothing in the address names a book, so
+ * these go there the way a pinned tab does: the address of the open book, set
+ * before anything is read or typed. See specs/features/home/spec.md.
+ *
  * `model` stands in for the browser's own, and is null by default because that
  * is what most browsers have. jsdom has none of any kind, and no rule asserts
  * what a model says — see specs/features/suggesting/spec.md.
@@ -32,6 +37,21 @@ export const openApp = (model = null) => open({}, model);
 
 /** The same, with the current key already holding `books`. */
 export const openStore = (books, model = null) => open({ [STORAGE_KEY]: books }, model);
+
+/**
+ * The app at the front door instead.
+ *
+ * `day` fixes the clock: the picks are worked out from the date, so a rule about
+ * what the same day gives cannot be checked against whatever today happens to
+ * be. `books` is the stored string, or nothing at all for a browser that has
+ * never opened the app.
+ */
+export const openHome = (books = null, { day = null, model = null } = {}) =>
+  open(books === null ? {} : { [STORAGE_KEY]: books }, model, 'home', day);
+
+/** The app at an address somebody typed. Anything that names no book is the home. */
+export const openAt = (address, books = null) =>
+  open(books === null ? {} : { [STORAGE_KEY]: books }, null, address);
 
 /** The same, seeded with the key version 0003 wrote. */
 export const openNotepads = (notepads) => open({ [NOTEPADS_KEY]: notepads });
@@ -42,7 +62,7 @@ export const openLegacy = (todos) => open({ [LEGACY_KEY]: todos });
 /** For the cases that care about more than one key being there at once. */
 export const openWith = (seed) => open(seed);
 
-function open(seed, model = null) {
+function open(seed, model = null, at = 'book', day = null) {
   const dom = new JSDOM(PAGE, { url: 'http://localhost/' });
   const { window } = dom;
   const doc = window.document;
@@ -60,7 +80,50 @@ function open(seed, model = null) {
   globalThis.window = window;
   globalThis.document = doc;
 
-  mountApp(doc, window.localStorage, model);
+  /**
+   * Go to an address the way the bar does, and draw it now.
+   *
+   * jsdom updates `location.hash` on the spot but queues `hashchange` for the
+   * next task, and almost every test below is synchronous — so the event the
+   * browser would fire is fired here. jsdom's own arrives later and repaints
+   * over the top of an identical page.
+   */
+  const goTo = (address) => {
+    window.location.hash = address;
+    window.dispatchEvent(new window.Event('hashchange'));
+  };
+
+  /**
+   * Move through the session history, and wait until it has actually moved.
+   *
+   * jsdom traverses in a queued task and fires `hashchange` in another, so a
+   * `history.back()` is not done when it returns — and the app draws on the
+   * event, not on the call. Waiting for the address to change, then one more
+   * tick for the repaint, is what makes the two lines after this readable.
+   */
+  const afterATick = async (move) => {
+    const before = window.location.hash;
+    move();
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 1));
+    for (let tries = 0; tries < 100 && window.location.hash === before; tries += 1) {
+      await settle();
+    }
+    await settle();
+  };
+
+  if (at !== 'book') goTo(at === 'home' ? '#/' : at);
+
+  mountApp(
+    doc,
+    window.localStorage,
+    model,
+    day === null ? () => new Date() : () => new Date(`${day}T12:00:00`),
+  );
+
+  // The open book's address is only knowable once the app has read the store and
+  // said which book that is — so this goes there after mounting, and without
+  // touching storage on the way.
+  if (at === 'book') goTo(`#/book/${doc.getElementById('book-open').dataset.book}`);
 
   const recipeEls = () => [...doc.querySelectorAll('.recipe')];
   const nameEl = (el) => el.querySelector(':scope > .recipe__row > .recipe__name');
@@ -102,7 +165,14 @@ function open(seed, model = null) {
   const composer = (name, block) =>
     recipe(name).querySelector(`.${block}-composer`);
 
-  const resultEls = () => [...doc.querySelectorAll('.result')];
+  // Scoped to the results list: a pick is drawn as the same kind of row, and the
+  // two must never be read for each other.
+  const resultEls = () => [...doc.querySelectorAll('#results .result')];
+  const pickEls = () => [...doc.querySelectorAll('#picks .result')];
+  const rowReads = (el) => [
+    el.querySelector('.result__name').textContent,
+    el.querySelector('.result__book').textContent,
+  ];
   const resultEl = (name) => {
     const found = resultEls().find(
       (el) => el.querySelector('.result__name').textContent === name,
@@ -328,11 +398,7 @@ function open(seed, model = null) {
      * The results, top to bottom, as the Gherkin tables read them: the recipe
      * and the book it is in.
      */
-    results: () =>
-      resultEls().map((el) => [
-        el.querySelector('.result__name').textContent,
-        el.querySelector('.result__book').textContent,
-      ]),
+    results: () => resultEls().map(rowReads),
 
     /** The line a result matched on, or null when it was the name that matched. */
     resultLine: (name) => resultEl(name).querySelector('.result__line')?.textContent ?? null,
@@ -342,6 +408,63 @@ function open(seed, model = null) {
 
     /** Whether the contents is the thing on screen, or the results are. */
     contentsIsShowing: () => !doc.getElementById('contents').hidden,
+
+    // ---- the front door, and the addresses -------------------------------
+
+    /** Where the browser is. */
+    address: () => window.location.hash,
+
+    /** Whether the address names the very book the masthead says is open. */
+    addressNamesTheOpenBook: () =>
+      window.location.hash === `#/book/${doc.getElementById('book-open').dataset.book}`,
+
+    /** Whether there is a box to look for a recipe in. There is, on both. */
+    searchBoxIsShowing: () =>
+      window.getComputedStyle(doc.getElementById('find-recipe')).display !== 'none',
+
+    /**
+     * Whether the front door is what is on screen.
+     *
+     * Read off the box: it is the one thing that is on a book's page and never on
+     * the home's, and unlike the picks it does not come and go with a search.
+     */
+    atHome: () => doc.getElementById('composer').hidden,
+
+    /** The picks, top to bottom, read the way the results are. */
+    picks: () => pickEls().map(rowReads),
+
+    /** Start from one — the book it lives in opens, with the recipe open in it. */
+    openPick(name) {
+      const found = pickEls().find(
+        (el) => el.querySelector('.result__name').textContent === name,
+      );
+      if (!found) {
+        throw new Error(
+          `nothing offered reads "${name}" — the picks read: ` +
+            pickEls().map((el) => el.querySelector('.result__name').textContent).join(', '),
+        );
+      }
+      found.querySelector('.result__open').click();
+    },
+
+    /**
+     * Whether there is anywhere on screen to write a recipe down.
+     *
+     * Off the computed style rather than the attribute: `display: flex` beats
+     * `hidden`, so a box that is marked away can still be sitting on the page.
+     */
+    canWriteARecipe: () =>
+      window.getComputedStyle(doc.getElementById('composer')).display !== 'none',
+
+    /** Press the cover, which is the way back out of a book. */
+    pressCover: () => doc.querySelector('.app__home').click(),
+
+    /** The browser's own Back and Forward. jsdom fires `hashchange` a tick late. */
+    goBack: () => afterATick(() => window.history.back()),
+    goForward: () => afterATick(() => window.history.forward()),
+
+    /** Go to an address by hand, the way editing the bar does. */
+    goTo: (address) => goTo(address),
 
     // ---- turning the AI on, and where it stands --------------------------
 
