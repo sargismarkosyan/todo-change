@@ -15,6 +15,7 @@ import {
   setGroup,
 } from './recipes.mjs';
 import { findRecipes } from './finding.mjs';
+import { HOME, addressOf, dayOf, picksForDay, routeOf } from './home.mjs';
 import {
   addBook,
   openBook,
@@ -48,6 +49,14 @@ const NO_RECIPES = 'No recipes in this book yet.';
 const NO_MATCHES = 'No recipe matches that.';
 
 /**
+ * The third thing that element can say, and the only one about the app rather
+ * than about a book: the front door of a shelf with nothing on it. Whoever
+ * reads this has never written a recipe down, so it must not talk about "this
+ * book" — they have not chosen one.
+ */
+const NOTHING_YET = 'Nothing written down yet.';
+
+/**
  * What the line in the masthead can say. It answers one question — *would
  * waiting change this?* — and says nothing at all when the answer is no,
  * because there is no model or because the AI is off.
@@ -74,13 +83,15 @@ const DRAFTING_NOW = 'Writing a draft. Nothing else has to wait.';
  * Both are arguments rather than globals reached for, so a test can mount a
  * fresh document against a fresh store without either leaking into the next one.
  */
-export function mountApp(doc, storage, model = null) {
+export function mountApp(doc, storage, model = null, now = () => new Date()) {
   const form = doc.getElementById('composer');
   const box = doc.getElementById('new-recipe');
   const contentsEl = doc.getElementById('contents');
   const resultsEl = doc.getElementById('results');
   const emptyEl = doc.getElementById('empty');
   const findEl = doc.getElementById('find-recipe');
+  const picksEl = doc.getElementById('picks');
+  const homeEl = doc.querySelector('.app__home');
   const booksEl = doc.getElementById('books');
   const openEl = doc.getElementById('book-open');
   const menuEl = doc.getElementById('book-menu');
@@ -109,6 +120,48 @@ export function mountApp(doc, storage, model = null) {
   let finding = '';
 
   const searching = () => finding.trim() !== '';
+
+  // ---- where we are --------------------------------------------------------
+  //
+  // The address is the state, and it is read back rather than kept: Back,
+  // Forward and anybody typing in the bar all change it without asking this app
+  // first. See specs/features/home/spec.md.
+
+  const view = () => doc.defaultView;
+  const route = () => routeOf(view().location.hash, store.books);
+  const atHome = () => route().at === 'home';
+
+  /**
+   * Put the open book in step with the address, without writing anything.
+   *
+   * A route change is not an action — it says where the reader is looking, the
+   * same as which recipe is open — so it moves `openId` in memory and leaves the
+   * write to the next real change. Opening the app would otherwise write to
+   * storage before anybody had done anything, which nothing in here has ever
+   * done. See specs/features/storage/spec.md.
+   */
+  const followRoute = () => {
+    const { at, id } = route();
+    if (at === 'book' && id !== store.openId) store = switchTo(store, id);
+  };
+
+  /** Go somewhere, and draw what is there. */
+  const goTo = (address) => {
+    view().location.hash = address;
+    render();
+  };
+
+  /**
+   * Go into a book: the address changes, and the stored open book keeps up.
+   *
+   * The write is the one that switching books has always done. What is new is
+   * only that the address goes with it, so a reload lands here again.
+   */
+  const goToBook = (id) => {
+    store = switchTo(store, id);
+    writeStore(storage, store);
+    goTo(addressOf(id));
+  };
 
   // Everything that follows a search ends it: the contents has to come back, or
   // it is covered by results while the book underneath changes.
@@ -169,8 +222,14 @@ export function mountApp(doc, storage, model = null) {
   // Every mutation goes through here: store first, then paint. Anything on
   // screen has been written, which is the whole promise of the app.
   const commit = (next) => {
+    const moved = next.openId !== store.openId;
     store = next;
     writeStore(storage, store);
+    // The address always names the book on screen, so an action that moves the
+    // open book takes the address with it: making a book opens it, and deleting
+    // one opens its neighbour. Without this the next repaint would read the old
+    // address back and undo the move.
+    if (moved) view().location.hash = addressOf(store.openId);
     render();
   };
 
@@ -640,7 +699,7 @@ export function mountApp(doc, storage, model = null) {
       readingId = recipe.id;
       typingIn = null;
       stopFinding();
-      commit(switchTo(store, book.id));
+      goToBook(book.id);
     });
 
     item.append(open);
@@ -670,7 +729,7 @@ export function mountApp(doc, storage, model = null) {
       // Another book is another contents page, read from the top.
       readingId = null;
       stopFinding();
-      commit(switchTo(store, book.id));
+      goToBook(book.id);
     });
     if (book.id === store.openId) button.setAttribute('aria-current', 'true');
     item.append(button);
@@ -804,6 +863,9 @@ export function mountApp(doc, storage, model = null) {
 
   function renderMenu() {
     openEl.textContent = openBook(store).name;
+    // The masthead says which book is open; now that a book has an address, the
+    // control that names it carries the id that address is built from.
+    openEl.dataset.book = openBook(store).id;
     openEl.setAttribute('aria-label', `Book: ${openBook(store).name}`);
     openEl.setAttribute('aria-expanded', String(menu.open));
     menuEl.hidden = !menu.open;
@@ -816,6 +878,14 @@ export function mountApp(doc, storage, model = null) {
     const list = doc.createElement('ul');
     list.className = 'books__list';
     list.append(...store.books.map(switchRow));
+
+    // At the front door the menu is the way into a book and nothing more.
+    // Making, renaming and deleting are about the book on screen, and at the
+    // front door there is not one — see specs/features/home/spec.md.
+    if (atHome()) {
+      menuEl.replaceChildren(list);
+      return;
+    }
 
     menuEl.replaceChildren(
       list,
@@ -939,7 +1009,7 @@ export function mountApp(doc, storage, model = null) {
    * reason behind it yet.
    */
   const offering = () =>
-    couldRunAi() && store.suggestions === 'unasked' && recipes().length > 0;
+    couldRunAi() && store.suggestions === 'unasked' && !atHome() && recipes().length > 0;
 
   /**
    * Hand the lists on screen to SortableJS, and take back what it did.
@@ -987,23 +1057,47 @@ export function mountApp(doc, storage, model = null) {
     doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
   function render() {
+    followRoute();
+    const home = atHome();
+
     sortable = [];
     renderMenu();
     renderAi();
     askEl.hidden = !offering();
 
     const found = searching() ? findRecipes(store.books, finding) : [];
-    contentsEl.hidden = searching();
+    // Worked out from the day, so the same three hold still through every
+    // repaint — and this repaints on each letter typed into the search box.
+    const picks = home && !searching() ? picksForDay(store.books, dayOf(now())) : [];
+
+    // The box writes into the open book, and the home is not in one. What is on
+    // screen there comes from every book at once, so there is no book for a name
+    // typed at the front door to belong to — see specs/features/home/spec.md.
+    form.hidden = home;
+    contentsEl.hidden = home || searching();
+    picksEl.hidden = !home || searching();
     resultsEl.hidden = !searching();
 
-    contentsEl.replaceChildren(...recipes().map(row));
+    contentsEl.replaceChildren(...(home ? [] : recipes().map(row)));
+    // A pick is the shape of a result, so the same row draws it: a name, the
+    // book it is in, and a way to get there.
+    picksEl.replaceChildren(...picks.map(resultRow));
     resultsEl.replaceChildren(...found.map(resultRow));
 
-    // One message, two things it can say. A search that found nothing says so
-    // about the search, never about the book — the book is not empty and has
-    // not been touched.
-    emptyEl.textContent = searching() ? NO_MATCHES : NO_RECIPES;
-    emptyEl.hidden = searching() ? found.length > 0 : recipes().length > 0;
+    // One message, three things it can say, and the wrong one is worse than
+    // none. A search that found nothing says so about the search, never about
+    // the book — the book is not empty and has not been touched. The front door
+    // of an app with nothing in it talks about neither.
+    if (searching()) {
+      emptyEl.textContent = NO_MATCHES;
+      emptyEl.hidden = found.length > 0;
+    } else if (home) {
+      emptyEl.textContent = NOTHING_YET;
+      emptyEl.hidden = picks.length > 0;
+    } else {
+      emptyEl.textContent = NO_RECIPES;
+      emptyEl.hidden = recipes().length > 0;
+    }
 
     // The repaint threw away the box that had the caret in it. Put it back, so
     // typing out six ingredients costs six lines of typing and nothing else.
@@ -1027,6 +1121,21 @@ export function mountApp(doc, storage, model = null) {
     finding = findEl.value;
     render();
   });
+
+  // The way out of a book, and the only navigation this version adds: the cover
+  // goes back to the front door. It is a real link, so it can be opened in a
+  // tab and reached by keyboard, and the press is handled here so the page is
+  // drawn now rather than when the browser gets round to `hashchange`.
+  homeEl.addEventListener('click', (event) => {
+    event.preventDefault();
+    readingId = null;
+    stopFinding();
+    goTo(HOME);
+  });
+
+  // Back, Forward, and anybody editing the address by hand. The app is not told
+  // about any of them, so it reads where it is and draws that.
+  view().addEventListener('hashchange', () => render());
 
   openEl.addEventListener('click', () => {
     // Two popovers now, and never both at once.

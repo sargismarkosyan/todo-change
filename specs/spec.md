@@ -6,6 +6,10 @@ A single-page recipe book that runs entirely in the browser. You write recipes
 down, keep them in named **books** — Sweets, Dinner, Chicken — and open one to
 read what it takes and how to make it. That is the whole product.
 
+One page, two addresses since version 0013: `#/` is **the home**, a search box
+with three recipes to start from, and `#/book/<id>` is one book's contents. See
+[features/home/spec.md](features/home/spec.md).
+
 The repository is still called `todo-change`, and so is the storage namespace.
 It was a todo list for its first three versions; what it is now, and why it
 stopped being one, is [change 0004](changes/0004-recipe-book.md).
@@ -26,9 +30,10 @@ sync between machines.
 - **Trustworthy.** Anything on screen has been written to `localStorage`. If it
   is visible, it survives a refresh. Some of what is in here exists nowhere
   else.
-- **Legible at a glance, and from a step back.** The contents is the interface,
-  and an open recipe is read with your hands full. Chrome around either earns
-  its place or it goes.
+- **Legible at a glance, and from a step back.** The contents is the interface of
+  a book, and an open recipe is read with your hands full. Chrome around either
+  earns its place or it goes. The home is the one other thing to look at, and it
+  holds three names and a box for the same reason.
 - **Kept, not cleared.** Nothing is finished, expires, or ages out. There is no
   tick box anywhere in this product.
 
@@ -73,6 +78,10 @@ open:
 A book has a non-empty `id`, a non-empty `name`, and a `recipes` array ordered
 newest first. Books themselves sit oldest first. `openId` names the book on
 screen; one that names nothing opens the first book.
+
+Since 0013 **the address is what puts a book on screen**, and going to one sets
+`openId` — the two never disagree, because one follows the other. On the home no
+book is on screen and `openId` is simply the last one that was.
 
 A recipe has a non-empty `id` and a non-empty `name`. `ingredients` and `steps`
 are optional arrays, each ordered oldest first; an entry without the key has
@@ -137,9 +146,15 @@ Used consistently in specs, code, and UI copy:
   else on the line.
 - **the search box** — the text input a recipe is looked for in, across every
   book. Never "the box", and never "filter" or "query".
-- **the results** — what a search finds, shown in place of the contents, each
-  one naming the book it is in. Not "hits", not "matches", not "search
-  results".
+- **the results** — what a search finds, shown in place of the contents, or of
+  the picks, each one naming the book it is in. Not "hits", not "matches", not
+  "search results".
+- **the home** — the front door at `#/`: the search box and the picks, with no
+  contents and no box. Not "the dashboard", not "the landing page", not "the
+  start page", and never "the index".
+- **the picks** — the three recipes offered on the home as somewhere to start,
+  from any book, the same all day. Not "suggestions" — that word belongs to the
+  AI — and never "recommendations", "featured", or "popular".
 - **AI** — the browser's own on-device model, named plainly and only where the
   machine itself is the subject: the thing downloaded, switched on, and reported
   on. Not "the model" in UI copy, not "Gemini", not "smart".

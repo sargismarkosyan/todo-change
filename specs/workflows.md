@@ -40,6 +40,14 @@ book to pick, a quantity split into a number and a unit, a save button. Silent
 failure is worse — a recipe that does not appear is one nobody finds out about
 until they go looking for it a month later.
 
+**The box lives in a book, and since 0013 the app has a front door that is not
+one.** The three seconds are unchanged for the way this app is actually opened: a
+pinned tab holds the address of the book it was left on, so reopening it lands in
+that book with the box under the cursor. What did move is the cost of arriving at
+`#/` instead — one click into a book before there is anywhere to type. That is the
+trade this file warns about most, taken deliberately and only for the arrival
+case; see `features/home/spec.md` for why the home cannot hold the box.
+
 **Specs.** `features/recipes/writing.feature`,
 `features/recipes/ingredients.feature`, `features/recipes/method.feature`,
 `features/books/switching.feature`, `features/suggesting/drafting.feature`,
@@ -60,6 +68,13 @@ throughout, because that is what says which book is being looked at.
 **Switching books lives here**, and nowhere else. It is the deliberate version
 of browsing: "show me the other book".
 
+**When there is nothing in mind at all**, it starts before the first step. The
+trigger is the fridge door, and "open a book" already assumes an answer — which
+book, and therefore roughly what for. The home is the version with no assumption
+in it: three recipes from any book, each saying which book it is in, arrived at by
+opening the app and nothing else. It reaches into a book nobody has opened since
+March, which is the one thing neither browsing nor searching does.
+
 **When the book is not known**, this runs the other way round. The recipe is
 somewhere and the book is the missing piece, so the steps are: type part of the
 name, or part of something it takes → read the matches, each one saying which
@@ -76,7 +91,8 @@ open all of them to find one thing — which is what searching is for.
 **Specs.** `features/recipes/reading.feature`,
 `features/books/switching.feature`, `features/books/creating.feature`,
 `features/recipes/empty-state.feature`, `features/finding/searching.feature`,
-`features/finding/leaving-a-search.feature`
+`features/finding/leaving-a-search.feature`,
+`features/home/starting-from.feature`, `features/home/routes.feature`
 
 ---
 
@@ -144,7 +160,10 @@ crash.
 **Steps.** Open the app. Look.
 
 **Done well.** Everything is exactly as it was left — same recipes, same order,
-same ingredients, same method, and the same book open. A draft nobody accepted
+same ingredients, same method, and the same book open. Since 0013 **the address
+is part of where you were**: a pinned tab on `#/book/<id>` reopens on that book
+rather than on whatever storage was last told, and one opened at the root reopens
+on the front door. A draft nobody accepted
 is not among them: proposals are never written down. Nothing to restore,
 nothing to confirm. Recipes saved as todos by an earlier version open as
 recipes.
@@ -158,7 +177,7 @@ is not a list of today's errands.
 
 **Specs.** `features/storage/persistence.feature`,
 `features/storage/recovery.feature`,
-`features/storage/books-migration.feature`
+`features/storage/books-migration.feature`, `features/home/routes.feature`
 
 ---
 

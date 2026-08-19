@@ -10,7 +10,7 @@
   <main class="app">
     <header class="app__header">
       <div class="app__heading">
-        <h1 class="app__title">Recipes</h1>
+        <h1 class="app__title"><a class="app__home" href="#/">Recipes</a></h1>
         <p class="app__tagline">A recipe book built one spec at a time.</p>
         <p class="app__ai" id="ai-status" hidden></p>
       </div>
@@ -45,6 +45,7 @@
              aria-label="Find a recipe in any book" autocomplete="off">
     </div>
 
+    <ul class="picks" id="picks" hidden></ul>
     <ul class="contents" id="contents"></ul>
     <ul class="results" id="results" hidden></ul>
     <p class="empty" id="empty">No recipes in this book yet.</p>

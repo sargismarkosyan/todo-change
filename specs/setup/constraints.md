@@ -142,15 +142,42 @@ different reason — it is plausible rather than correct. Nothing it proposes is
 stored until a person accepts it, and it reaches the page as text, never as
 markup.
 
-## Single page
+## One page, two addresses
 
-`index.html` is the entire app. No routing, no second page, no view layer that
-implies one.
+`index.html` is the entire app. One file, one document, no second page, no build
+step.
 
-**Popovers are not pages.** The book menu and the AI settings both open over the
-contents and shut on the next click; nothing is navigated to and nothing is
-navigated back from. A "settings page" would break this constraint and
-`../persona.md` at once, which is why neither of them is one.
+**This section said "no routing" until version 0013, and now allows it.** The
+amendment is [change 0013](../changes/0013-a-front-door.md) and it is narrow:
+
+- **Hash routes only** — `#/` is the home and `#/book/<id>` is one book. The
+  browser's `location.hash` and its `hashchange` event, which are already there.
+- **No router library**, no History API rewriting, no path the server has to know
+  about. Pages serves the repo root as static files (`ci.yml`), and a hash never
+  reaches it, so the deploy is untouched and a refresh cannot 404.
+- **No second file.** The one document renders whichever of the two the address
+  names. Nothing is fetched, nothing is code-split, nothing loads.
+
+**Why it was worth amending.** The app grew a second thing to look at — a front
+door that is not a book — and something has to say which one is on screen. An
+in-page toggle would have said it in less code and thrown away the reason to want
+it: [`../workflows.md`](../workflows.md) workflow 5 is a pinned tab reopened
+months later, a pinned tab remembers a URL, and an address is what makes
+reopening land where it was left rather than where storage guesses. Back and
+forward then work for free, which is otherwise a thing to be built.
+
+**What stays ruled out.** A view layer that implies a second page — a component
+tree, a template language, a framework. A route for every piece of screen state:
+which recipe is open is still not in the address, for the reason in
+[`../features/recipes/spec.md`](../features/recipes/spec.md). And an address
+whose absence breaks anything — every unknown address opens the front door, in
+the same posture this file takes to a stored string.
+
+**Popovers are still not pages.** The book menu and the AI settings both open
+over the contents and shut on the next click; nothing is navigated to and nothing
+is navigated back from, and neither gets an address. A "settings page" would
+break this constraint and `../persona.md` at once, which is why neither of them
+is one.
 
 ## Logic stays out of the DOM where it can
 
