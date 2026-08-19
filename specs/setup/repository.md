@@ -89,48 +89,43 @@ The protection is the same gate as `npm run verify`, moved somewhere it cannot
 be skipped in a hurry. If it ever needs lifting, that is a settings change and a
 deliberate one — not a `--force`.
 
-### Every pull request carries a picture
+### Every pull request carries a moving picture
 
 **A pull request that changes what the app looks like shows it, in the body.**
 The deliverable here is a series of pictures — a description of a screen is not
 one, and a reviewer should not have to check the branch out to see what a
 version did.
 
-One still per version, in `docs/screenshots/`, named for the change spec the way
-the clip is: `v008-one-box-every-book.png` beside `v008-one-box-every-book.gif`.
-The still is taken and committed on the branch, before the pull request is
-opened; the clip is recorded after the version ships, by the
-[`record-clip`](skills.md) skill.
-They are the same series in two forms — the still is what can be looked at in a
-pull request and a diff, the clip is what shows the workflow moving.
+**One animated GIF per version**, in `docs/screenshots/`, named for the change
+spec: `v008-one-box-every-book.gif`. A still is not enough and is no longer
+taken — half of what this app does is a thing *happening* (a recipe unfolding, a
+line landing where it was dropped, a draft arriving a proposal at a time), and a
+frozen frame of it is the part that does not carry.
 
-How:
+It is recorded **on the branch, before the pull request is opened**, by the
+[`record-clip`](skills.md) skill. That skill owns the how — viewport, frames,
+stitching, what to put on screen — and this file does not repeat it.
 
-1. `npm run serve`, then drive the app with the Playwright browser tools at
-   **900×760** — the same viewport the clip skill records at, so the series
-   stays one size.
-2. Put the app in the state that *is* the change, with enough real content that
-   the point is visible without a caption. A search feature shows results from
-   books that are not open; an empty box shows nothing.
-3. Screenshot to `docs/screenshots/vNNN-<slug>.png`, then crop the ground below
-   the page and quantize it to a palette. It lives in git forever, and a flat
-   design over a grain compresses far better as a palette than as truecolour —
-   the same argument `tools/clip.py` makes for halving the clip. Aim under
-   ~200 KB.
-4. Commit it, push, and embed it with a **permanent** raw URL pinned to the
-   commit rather than the branch:
+Embed it with a **permanent** raw URL pinned to the commit rather than the
+branch:
 
-   ```sh
-   sha=$(git rev-parse HEAD)
-   echo "![...](https://raw.githubusercontent.com/<owner>/<repo>/$sha/docs/screenshots/vNNN-<slug>.png)"
-   ```
+```sh
+sha=$(git rev-parse HEAD)
+echo "![...](https://raw.githubusercontent.com/<owner>/<repo>/$sha/docs/screenshots/vNNN-<slug>.gif)"
+```
 
-   A branch URL is the obvious thing and it rots: branches are deleted on merge,
-   and the image in the pull request goes with them. Relative paths do not work
-   at all — GitHub does not resolve them in a pull request body.
+A branch URL is the obvious thing and it rots: branches are deleted on merge,
+and the image in the pull request goes with them. Relative paths do not work at
+all — GitHub does not resolve them in a pull request body. A raw `.gif` animates
+in a pull request body, which is the whole reason this is the format.
+
+**The PNGs already in `docs/screenshots/` stay.** Versions 8 to 12 shipped before
+this rule and their stills are the record of those versions; nothing is
+regenerated to match a convention that came later. Version 13's still went,
+because it had not shipped yet — one version, one picture.
 
 A change with nothing to see — tooling, a doc, a refactor — says so in a line
-instead. That is the only exemption, and "it is hard to screenshot" is not it.
+instead. That is the only exemption, and "it is hard to record" is not it.
 
 ## Commits
 

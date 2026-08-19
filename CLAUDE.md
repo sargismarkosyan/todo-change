@@ -50,9 +50,11 @@ working here.**
 - **`main` is protected.** Branch, then land it by pull request — direct pushes
   are rejected for everyone. The `Verify` check must be green to merge.
 - **A pull request shows what changed.** If the app looks different, the body
-  carries a still from `docs/screenshots/`, embedded by a raw URL pinned to the
-  commit. The deliverable is pictures; a description of a screen is not one.
-  See [repository.md](specs/setup/repository.md#every-pull-request-carries-a-picture).
+  carries an animated GIF from `docs/screenshots/`, recorded on the branch by the
+  `record-clip` skill and embedded by a raw URL pinned to the commit. The
+  deliverable is moving pictures; a description of a screen is not one, and
+  neither is a frozen frame of something happening.
+  See [repository.md](specs/setup/repository.md#every-pull-request-carries-a-moving-picture).
 
 ## Commands
 
@@ -74,7 +76,7 @@ tests/                unit/ and behaviour/
 tools/                gherkin.mjs, trace.mjs, test.mjs
 .claude/skills/       refine-spec, feedback
 .github/workflows/    CI and Pages deploy
-docs/screenshots/     the series — a still and a clip per version
+docs/screenshots/     the series — one animated GIF per version
 ```
 
 Live: <https://sargismarkosyan.github.io/todo-change/> · Issues on
