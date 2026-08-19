@@ -66,14 +66,21 @@ Switching books clears it, because another book is another contents page.
 
 ## What this is not
 
-- **Not a home page.** The contents is still the interface and the search box
-  sits above it, not in front of it. Making search the front door, with books
-  behind it, is issue #10 and a different argument — it takes on
-  `setup/constraints.md` ("Single page. No routing, no second page") and
-  `spec.md` ("the contents is the interface") together.
+- **The front door as well, since 0013.** This said searching was *not a home
+  page* — the contents is the interface, the box sits above it, and making search
+  the front door was issue #10 and a different argument. That argument was made,
+  in [change 0013](../../changes/0013-a-front-door.md), and it went the other
+  way: the home is a search box with three recipes under it, and a book is where
+  the contents lives. See `../home/spec.md`.
+
+  **Nothing here changed.** The same box, the same matching, the same results, in
+  two places now. What differs is only what comes back when it is emptied — the
+  picks on the home, the contents in a book — because that is what was there
+  before it was typed into.
 - **Not ranked.** Results sit in book order, then contents order. Relevance
   scoring is a guess about intent, and this app has never rearranged anything
-  under the cursor.
+  under the cursor. The picks on the home are arbitrary rather than ranked, which
+  is a different thing and held still for a day precisely so it stays one.
 - **Not an index.** No stored search index, no precomputed tokens. A few books of
   a few dozen recipes is a scan over text already in memory, and anything else
   is a cache that can disagree with the data.
