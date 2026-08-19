@@ -555,6 +555,10 @@ body {
   align-items: center;
   gap: 0.3rem;
   height: 1.4rem;
+  /* Stated rather than left to the default: the grip draws the step's number,
+     so a grip that faded until hovered would take the numbering with it, and
+     features/look/spec.md keeps the method numbered. Only the dots fade. */
+  opacity: 1;
   padding: 0;
   border: 0;
   background: none;
@@ -571,15 +575,57 @@ body {
    file warns about. */
 .line-handle svg {
   flex: none;
-  width: 0.65rem;
+  width: 0.8rem;
   height: auto;
-  opacity: 0;
+  /* Faint rather than absent. 0010 hid it until hover, which made a ten-pixel
+     target you had to find first — the single worst part of the drag. */
+  opacity: 0.35;
 }
 
 .ingredient:hover .line-handle svg,
 .step:hover .line-handle svg,
 .line-handle:focus-visible svg {
   opacity: 1;
+}
+
+/* What SortableJS puts on the gap the line will land in — the drop indicator
+   0010 never had, and the reason a drop used to feel like it went somewhere at
+   random. */
+.line--landing {
+  background: var(--page);
+  box-shadow: inset 0 0 0 1px var(--red);
+}
+
+.line--landing > * {
+  visibility: hidden;
+}
+
+/* The line itself, in the air under the pointer. Sortable puts a copy of the
+   row on the body, where it inherits none of the card it came from, so it is
+   dressed here as the piece of paper it is meant to be. */
+.line--moving {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 4px 14px rgb(62 42 20 / 22%);
+  color: var(--ink);
+  font-size: 1rem;
+  list-style: none;
+}
+
+/* A step's number counts its place in a list, and while it is in the air it has
+   none — so it shows nothing rather than something untrue. */
+.line--moving .line-handle::after {
+  content: "";
+}
+
+.line--moving .ingredient__delete,
+.line--moving .step__delete {
+  visibility: hidden;
 }
 
 /* Reaching for it firms it up. Focus gets the same treatment as hover, or the
@@ -593,21 +639,14 @@ body {
   cursor: grabbing;
 }
 
-/* The line being dragged. Faded rather than lifted: features/look/spec.md
-   allows the thing under the finger to move, and nothing else — no shadow
-   growing, no neighbours sliding, no rest of the page reflowing. */
-.ingredient:has(.line-handle:active),
-.step:has(.line-handle:active) {
-  opacity: 0.55;
+/* A bigger target than the dots alone, so the grip can be hit without aiming. */
+.line-handle {
+  padding: 0 0.15rem;
+  cursor: grab;
 }
 
-/* Reduce motion takes the dragging away and leaves the outcome: the line is
-   simply somewhere else, by the same gesture. */
-@media (prefers-reduced-motion: reduce) {
-  .ingredient:has(.line-handle:active),
-  .step:has(.line-handle:active) {
-    opacity: 1;
-  }
+.line-handle:active {
+  cursor: grabbing;
 }
 
 /* One box per group, at the bottom of it, left open the whole time the recipe

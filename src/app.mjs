@@ -27,6 +27,9 @@ import {
 } from './books.mjs';
 import { isEmptyDraft, usableDraft } from './suggesting.mjs';
 import { readStore, writeStore } from './storage.mjs';
+// The one library this app ships. Vendored, not installed — see
+// vendor/sortable/README.md and specs/setup/constraints.md.
+import Sortable from '../vendor/sortable/sortable.core.esm.js';
 
 /** The two groups inside a recipe, in the order they are read. */
 const GROUPS = [
@@ -135,10 +138,17 @@ export function mountApp(doc, storage, model = null) {
   let drafted = null;
   let note = null;
 
-  // The line being dragged, and which handle to put focus back on after a
-  // repaint. Screen state: where a hand is, not what anybody owns.
-  let dragging = null;
+  // Which grip to put focus back on after a repaint. Screen state: where a hand
+  // is, not what anybody owns.
   let focusedHandle = null;
+
+  // The Sortable instances currently attached, one per group on screen. They
+  // are thrown away and remade on every repaint, because render() rebuilds the
+  // lists and the elements they were watching no longer exist.
+  let sorting = [];
+
+  // The lists built during a repaint, waiting to be handed over once it lands.
+  let sortable = [];
 
   // Which recipe the model is currently writing for, if any. Screen state, and
   // the reason the control cannot be pressed twice: a second press would be a
@@ -262,25 +272,29 @@ export function mountApp(doc, storage, model = null) {
     return setGroup(recipes(), recipe.id, spec.key, next);
   }
 
-  /** Move an entry — line or proposal — and put focus back on its handle. */
-  const move = (recipe, spec, entryId, targetId, before) => {
-    const entries = entriesOf(recipe, spec);
-    const moved = entries.find((entry) => entry.id === entryId);
-    const target = entries.find((entry) => entry.id === targetId);
-    if (!moved || !target || moved === target) return;
-
-    const rest = entries.filter((entry) => entry !== moved);
-    const at = rest.indexOf(target) + (before ? 0 : 1);
-    const next = [...rest.slice(0, at), moved, ...rest.slice(at)];
-
-    focusedHandle = entryId;
+  /**
+   * Put a group into a new order.
+   *
+   * The one place an order changes, whichever hand did it. Storage takes the
+   * line order out of the new view, so moving a proposal writes nothing at all:
+   * no line changed places.
+   */
+  const reorder = (recipe, spec, next, focus) => {
+    focusedHandle = focus;
     typingIn = null;
     withEntries(recipe, spec, next);
-    // Storage takes the line order out of the new view. Moving a proposal
-    // therefore writes nothing: no line changed places.
     commitRecipes(
       setGroup(recipes(), recipe.id, spec.key, linesFrom(next, linesOf(recipe, spec.key))),
     );
+  };
+
+  /** Move one entry to sit at a position, which is what a dropped row gives. */
+  const moveTo = (recipe, spec, from, to) => {
+    const entries = entriesOf(recipe, spec);
+    const moved = entries[from];
+    if (!moved || from === to) return;
+    const rest = entries.filter((entry, at) => at !== from);
+    reorder(recipe, spec, [...rest.slice(0, to), moved, ...rest.slice(to)], moved.id);
   };
 
   /**
@@ -292,7 +306,6 @@ export function mountApp(doc, storage, model = null) {
     const grip = doc.createElement('button');
     grip.type = 'button';
     grip.className = 'line-handle';
-    grip.draggable = true;
     grip.dataset.handle = id;
     grip.setAttribute('aria-label', `Move ${label}`);
 
@@ -310,22 +323,15 @@ export function mountApp(doc, storage, model = null) {
     }
     grip.append(dots);
 
-    grip.addEventListener('dragstart', () => {
-      dragging = { id, group: spec.key, recipeId: recipe.id };
-    });
-    grip.addEventListener('dragend', () => {
-      dragging = null;
-    });
-
     grip.addEventListener('keydown', (event) => {
       const step = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
       if (step === 0) return;
       event.preventDefault();
       const entries = entriesOf(recipe, spec);
-      const next = entries[entries.findIndex((entry) => entry.id === id) + step];
+      const from = entries.findIndex((entry) => entry.id === id);
       // The ends hold: nothing above the first, nothing below the last.
-      if (next === undefined) return;
-      move(recipe, spec, id, next.id, step === -1);
+      if (entries[from + step] === undefined) return;
+      moveTo(recipe, spec, from, from + step);
     });
 
     return grip;
@@ -334,35 +340,15 @@ export function mountApp(doc, storage, model = null) {
   /**
    * The shell every row in a group shares — a line's and a proposal's alike,
    * because both are moved the same way and both sit in the same numbering.
+   *
+   * It carries no drag handling of its own. That belongs to SortableJS now,
+   * which is attached to the list rather than to each row; all a row owes it is
+   * an id to be identified by afterwards.
    */
   function rowFrame(recipe, spec, id, className) {
     const item = doc.createElement('li');
     item.className = className;
     item.dataset.id = id;
-
-    /** Which half of the row the pointer is over decides above or below. */
-    const edgeAt = (event) => {
-      const box = item.getBoundingClientRect();
-      return event.clientY < box.top + box.height / 2;
-    };
-
-    // Only something from this recipe's own same group can land here.
-    const takes = () =>
-      dragging !== null && dragging.group === spec.key && dragging.recipeId === recipe.id;
-
-    item.addEventListener('dragover', (event) => {
-      if (!takes()) return;
-      event.preventDefault();
-    });
-
-    item.addEventListener('drop', (event) => {
-      if (!takes()) return;
-      event.preventDefault();
-      const dropped = dragging;
-      dragging = null;
-      move(recipe, spec, dropped.id, id, edgeAt(event));
-    });
-
     return item;
   }
 
@@ -448,6 +434,8 @@ export function mountApp(doc, storage, model = null) {
     const held = new Map(linesOf(recipe, spec.key).map((line) => [line.id, line]));
     const lines = doc.createElement('ul');
     lines.className = `recipe__${spec.key}-lines`;
+    // Picked up after the repaint, when this list is actually in the document.
+    sortable.push({ list: lines, recipe, spec });
     lines.append(
       ...entriesOf(recipe, spec).map((entry) =>
         entry.kind === 'line'
@@ -953,7 +941,53 @@ export function mountApp(doc, storage, model = null) {
   const offering = () =>
     couldRunAi() && store.suggestions === 'unasked' && recipes().length > 0;
 
+  /**
+   * Hand the lists on screen to SortableJS, and take back what it did.
+   *
+   * Remade on every repaint rather than kept: `render()` rebuilds each list with
+   * `replaceChildren`, so an instance from last time is watching elements that
+   * are no longer in the document. Destroying first is what stops two of them
+   * fighting over one row.
+   *
+   * The library moves the elements itself and then tells us where the row came
+   * from and went to; the app puts its own state right and repaints, which is
+   * what makes the DOM and the state agree again.
+   *
+   * A group name of its own per recipe and per group is what keeps an
+   * ingredient out of the method: there is no other list to drop into.
+   */
+  function renderSorting() {
+    for (const instance of sorting) instance.destroy();
+    sorting = sortable.map(({ list, recipe, spec }) =>
+      Sortable.create(list, {
+        // The grip and nothing else. The words belong to a click.
+        handle: '.line-handle',
+        group: `${recipe.id}:${spec.key}`,
+        animation: quiet() ? 0 : 150,
+        ghostClass: 'line--landing',
+        chosenClass: 'line--held',
+        fallbackClass: 'line--moving',
+        // Sortable's own pointer dragging rather than the browser's native
+        // drag-and-drop. Native never starts here: the grip is a <button>, and
+        // a browser will not begin a drag from a control that handles its own
+        // press. It also puts the moving row back under our styling instead of
+        // the browser's translucent snapshot — see specs/features/look/spec.md.
+        forceFallback: true,
+        // A press is a press until it has travelled. Without this a slow click
+        // on the grip reads as a tiny drag.
+        fallbackTolerance: 4,
+        onEnd: (event) => moveTo(recipe, spec, event.oldIndex, event.newIndex),
+      }),
+    );
+    sortable = [];
+  }
+
+  /** Whether the machine has asked for less movement. */
+  const quiet = () =>
+    doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
   function render() {
+    sortable = [];
     renderMenu();
     renderAi();
     askEl.hidden = !offering();
@@ -980,6 +1014,8 @@ export function mountApp(doc, storage, model = null) {
       doc.querySelector(`[data-handle="${focusedHandle}"]`)?.focus();
       focusedHandle = null;
     }
+
+    renderSorting();
     if (menu.mode === 'renaming') doc.getElementById('rename-book')?.focus();
   }
 

@@ -50,6 +50,16 @@ function open(seed, model = null) {
   for (const [key, value] of Object.entries(seed)) {
     if (value !== undefined && value !== null) window.localStorage.setItem(key, value);
   }
+
+  // SortableJS reaches for the global `window` and `document`, where this app
+  // takes its document as an argument. Pointing the globals at this jsdom before
+  // mounting is what lets the library attach and tear down at all — and that is
+  // worth exercising, because a wrong option or a markup change would otherwise
+  // only be found by hand. The gesture itself still cannot run here: jsdom has
+  // no layout. See specs/changes/0012-somebody-elses-drag.md.
+  globalThis.window = window;
+  globalThis.document = doc;
+
   mountApp(doc, window.localStorage, model);
 
   const recipeEls = () => [...doc.querySelectorAll('.recipe')];
@@ -218,41 +228,26 @@ function open(seed, model = null) {
       return grip;
     },
 
-    /**
-     * Drag one line onto another. `before` says which half of the target row it
-     * was dropped on, which is what the app reads out of the pointer position:
-     * every rect is zero-sized in jsdom, so a negative clientY is the top half.
-     */
-    dragOnto(text, targetText, before) {
-      this.handleOf(text).dispatchEvent(new window.Event('dragstart', { bubbles: true }));
-      const target = line(targetText);
-      target.dispatchEvent(new window.MouseEvent('dragover', { bubbles: true, cancelable: true }));
-      target.dispatchEvent(
-        new window.MouseEvent('drop', {
-          bubbles: true,
-          cancelable: true,
-          clientY: before ? -1 : 1,
-        }),
-      );
-    },
-
-    /** Pick a line up and let go of it over nothing at all. */
-    dragAndAbandon(text) {
-      const grip = this.handleOf(text);
-      grip.dispatchEvent(new window.Event('dragstart', { bubbles: true }));
-      grip.dispatchEvent(new window.Event('dragend', { bubbles: true }));
-    },
-
-    dragAbove(text, targetText) {
-      this.dragOnto(text, targetText, true);
-    },
-    dragBelow(text, targetText) {
-      this.dragOnto(text, targetText, false);
-    },
-
-    /** Put focus on a handle, the way tabbing to it does. */
+    /** Put focus on a grip, the way tabbing to it does. */
     focusHandle(text) {
       this.handleOf(text).focus();
+    },
+
+    /**
+     * Move a line one place, the way the arrow keys do.
+     *
+     * The one gesture this app still owns. Dragging belongs to SortableJS since
+     * 0012 and cannot run in jsdom, which has no layout — so the rules about
+     * what a move *does* are driven from here, and the gesture is checked by
+     * hand in a browser.
+     */
+    moveLineUp(text) {
+      this.focusHandle(text);
+      this.pressArrow('ArrowUp');
+    },
+    moveLineDown(text) {
+      this.focusHandle(text);
+      this.pressArrow('ArrowDown');
     },
 
     /** Press an arrow on whatever handle has focus. */
@@ -261,6 +256,40 @@ function open(seed, model = null) {
         new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
       );
     },
+
+    /**
+     * Whether a line can be picked up by its words.
+     *
+     * SortableJS is told `handle: '.line-handle'`, so what is checked is that
+     * the option is set and that the words are not inside a grip — the library
+     * enforcing it is the library's own business.
+     */
+    canBeDraggedByItsWords(text) {
+      const row = line(text);
+      const words = row.querySelector('.ingredient__text, .step__text, .proposal__take');
+      return words !== null && words.closest('.line-handle') !== null;
+    },
+
+    /** Whether it can be picked up by its grip, which is the way in. */
+    canBeDraggedByItsGrip: (text) => line(text).querySelector('.line-handle') !== null,
+
+    /** Whether every row of a group shows a grip without being reached for. */
+    everyRowShowsItsGrip(name, group) {
+      const rows = [...groupEl(name, group).children];
+      return rows.length > 0 && rows.every((el) => el.querySelector('.line-handle') !== null);
+    },
+
+    /**
+     * How solid a grip is drawn, with nothing hovered.
+     *
+     * The number a step shows is drawn by the grip, so a grip that faded until
+     * hovered would take the numbering with it — which features/look/spec.md
+     * does not allow. jsdom cannot compute pseudo-element styles, so the number
+     * itself is checked by hand in the browser; this checks the thing it rides
+     * on.
+     */
+    gripSolidity: (text) =>
+      window.getComputedStyle(line(text).querySelector('.line-handle')).opacity,
 
     /** Whether the handle for this line currently has focus. */
     handleHasFocus(text) {

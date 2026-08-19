@@ -24,7 +24,7 @@ async function book() {
 rule('proposal-can-be-moved', () => {
   test('putting one where the model should have put it', async () => {
     const app = await book();
-    app.dragAbove('Rub the butter into the flour', 'Bake for 45 minutes');
+    app.moveLineUp('Rub the butter into the flour');
 
     assert.deepEqual(app.groupReads('Apple pie', 'steps'), [
       ['Heat the oven to 180C', 'mine'],
@@ -47,7 +47,7 @@ rule('proposal-can-be-moved', () => {
 
   test('moving it does not write it down', async () => {
     const app = await book();
-    app.dragAbove('Rub the butter into the flour', 'Bake for 45 minutes');
+    app.moveLineUp('Rub the butter into the flour');
 
     const back = app.reload();
     back.openRecipe('Apple pie');
@@ -59,7 +59,7 @@ rule('proposal-can-be-moved', () => {
 
   test('moved, then taken, and it stays where it was put', async () => {
     const app = await book();
-    app.dragAbove('Rub the butter into the flour', 'Bake for 45 minutes');
+    app.moveLineUp('Rub the butter into the flour');
     app.acceptProposal('Rub the butter into the flour');
 
     assert.deepEqual(app.method('Apple pie'), [
@@ -71,7 +71,7 @@ rule('proposal-can-be-moved', () => {
 
   test('a line you wrote still moves, with a draft on screen', async () => {
     const app = await book();
-    app.dragAbove('Bake for 45 minutes', 'Heat the oven to 180C');
+    app.moveLineUp('Bake for 45 minutes');
 
     assert.deepEqual(app.method('Apple pie'), [
       'Bake for 45 minutes',

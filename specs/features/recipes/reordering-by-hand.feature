@@ -25,7 +25,7 @@ Feature: Taking hold of a line
       | Heat the oven to 190C |
       | Bake for 45 minutes   |
 
-  @planned @rule:a-line-is-dragged-by-its-grip
+  @rule:a-line-is-dragged-by-its-grip
   Rule: A drag starts on the grip, and nowhere else on the line
 
     Example: the words are not a handle
@@ -46,7 +46,7 @@ Feature: Taking hold of a line
       Then the step "Peel and slice the apples" cannot be dragged by its words
       And the step "Peel and slice the apples" can be dragged by its grip
 
-  @planned @rule:the-grip-does-not-wait-to-be-found
+  @rule:the-grip-does-not-wait-to-be-found
   Rule: The grip is there before it is reached for
 
     Example: reading the method without touching anything

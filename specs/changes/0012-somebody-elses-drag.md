@@ -1,6 +1,6 @@
 # Spec 0012: somebody else's drag
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** none — direct request, correcting version 0010.
 
 ## Who this is for
@@ -165,6 +165,12 @@ of one group, exactly as it did.
 - **Being stuck on a version.** The vendored copy does not get security or bug
   fixes, and nothing in this repo will notice. Mitigated only by writing the
   version and origin beside the file, and by this being the one library.
+- **The library's own dragging, not the browser's.** `forceFallback: true`,
+  found the hard way: a native HTML5 drag never began at all, because the grip
+  is a `<button>` and a browser will not start one from a control that handles
+  its own press. The fallback also puts the moving row back under this app's
+  styling instead of the browser's translucent snapshot, and is the only mode a
+  scripted browser check can drive.
 - **The library mutates the DOM; this app re-renders from state.** SortableJS
   moves the elements itself, and every commit here rebuilds the list with
   `replaceChildren`. The join is `onEnd` → read the new order → change state →

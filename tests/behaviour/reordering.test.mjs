@@ -5,7 +5,13 @@ import assert from 'node:assert/strict';
 import { rule } from '../support/covers.mjs';
 import { openAppWithContents } from '../support/app.mjs';
 
-/** The Background: "Apple pie" open, with three steps in the wrong order. */
+/**
+ * The Background: "Apple pie" open, with three steps in the wrong order.
+ *
+ * Lines are moved with the arrow keys. Since 0012 the dragging is SortableJS's
+ * and cannot run in jsdom; the keyboard is this app's own and reaches the same
+ * state by the same path. See specs/changes/0012-somebody-elses-drag.md.
+ */
 function book() {
   const app = openAppWithContents('Apple pie');
   app.renameBook('Sweets');
@@ -22,7 +28,7 @@ function book() {
 rule('line-moved-within-its-group', () => {
   test('the step that should have come first', () => {
     const app = book();
-    app.dragAbove('Heat the oven to 190C', 'Rub the butter into the flour');
+    app.moveLineUp('Heat the oven to 190C');
     assert.deepEqual(app.method('Apple pie'), [
       'Heat the oven to 190C',
       'Rub the butter into the flour',
@@ -32,7 +38,8 @@ rule('line-moved-within-its-group', () => {
 
   test('sending one to the end', () => {
     const app = book();
-    app.dragBelow('Rub the butter into the flour', 'Bake for 45 minutes');
+    app.moveLineDown('Rub the butter into the flour');
+    app.moveLineDown('Rub the butter into the flour');
     assert.deepEqual(app.method('Apple pie'), [
       'Heat the oven to 190C',
       'Bake for 45 minutes',
@@ -45,18 +52,18 @@ rule('line-moved-within-its-group', () => {
     app.give('Apple pie', 'ingredient', ['3 apples', '200g plain flour']);
     app.openRecipe('Apple pie');
 
-    app.dragAbove('200g plain flour', '3 apples');
+    app.moveLineUp('200g plain flour');
     assert.deepEqual(app.ingredients('Apple pie'), ['200g plain flour', '3 apples']);
   });
 });
 
 rule('line-moves-only-within-its-group', () => {
-  test('dropping a step among the ingredients', () => {
+  test('the last step cannot fall into the ingredients', () => {
     const app = book();
     app.give('Apple pie', 'ingredient', ['3 apples']);
     app.openRecipe('Apple pie');
 
-    app.dragAbove('Bake for 45 minutes', '3 apples');
+    app.moveLineDown('Bake for 45 minutes');
 
     assert.deepEqual(app.ingredients('Apple pie'), ['3 apples']);
     assert.deepEqual(app.method('Apple pie'), [
@@ -66,12 +73,12 @@ rule('line-moves-only-within-its-group', () => {
     ]);
   });
 
-  test('and the other way round', () => {
+  test('and the first ingredient cannot climb into the method', () => {
     const app = book();
     app.give('Apple pie', 'ingredient', ['3 apples', '200g plain flour']);
     app.openRecipe('Apple pie');
 
-    app.dragAbove('3 apples', 'Heat the oven to 190C');
+    app.moveLineUp('3 apples');
 
     assert.deepEqual(app.ingredients('Apple pie'), ['3 apples', '200g plain flour']);
     assert.deepEqual(app.method('Apple pie'), [
@@ -85,48 +92,12 @@ rule('line-moves-only-within-its-group', () => {
 rule('moving-changes-nothing-but-the-order', () => {
   test('the words are the words', () => {
     const app = book();
-    app.dragAbove('Bake for 45 minutes', 'Heat the oven to 190C');
+    app.moveLineUp('Bake for 45 minutes');
     assert.deepEqual(app.method('Apple pie'), [
       'Rub the butter into the flour',
       'Bake for 45 minutes',
       'Heat the oven to 190C',
     ]);
-  });
-
-  test('a line dropped where it already was is not a change', () => {
-    const app = book();
-    app.dragAbove('Heat the oven to 190C', 'Bake for 45 minutes');
-    assert.deepEqual(app.method('Apple pie'), [
-      'Rub the butter into the flour',
-      'Heat the oven to 190C',
-      'Bake for 45 minutes',
-    ]);
-  });
-
-  test('a line dropped on itself is not a change', () => {
-    const app = book();
-    app.dragAbove('Heat the oven to 190C', 'Heat the oven to 190C');
-    assert.deepEqual(app.method('Apple pie'), [
-      'Rub the butter into the flour',
-      'Heat the oven to 190C',
-      'Bake for 45 minutes',
-    ]);
-  });
-
-  test('a line picked up and let go over nothing stays put', () => {
-    const app = book();
-    app.dragAndAbandon('Bake for 45 minutes');
-    app.dragAbove('Bake for 45 minutes', 'Rub the butter into the flour');
-
-    assert.deepEqual(
-      app.method('Apple pie'),
-      [
-        'Bake for 45 minutes',
-        'Rub the butter into the flour',
-        'Heat the oven to 190C',
-      ],
-      'letting go ends the drag, and the next one is a fresh one',
-    );
   });
 
   test('the recipe stays where it is in the contents', () => {
@@ -134,7 +105,7 @@ rule('moving-changes-nothing-but-the-order', () => {
     app.give('Apple pie', 'step', ['Heat the oven to 190C', 'Bake for 45 minutes']);
     app.openRecipe('Apple pie');
 
-    app.dragAbove('Bake for 45 minutes', 'Heat the oven to 190C');
+    app.moveLineUp('Bake for 45 minutes');
     assert.deepEqual(app.contents(), ['Apple pie', 'Lemon drizzle']);
   });
 
@@ -144,7 +115,7 @@ rule('moving-changes-nothing-but-the-order', () => {
     app.give('Apple pie', 'step', ['Heat the oven to 190C', 'Bake for 45 minutes']);
     app.openRecipe('Apple pie');
 
-    app.dragAbove('Bake for 45 minutes', 'Heat the oven to 190C');
+    app.moveLineUp('Bake for 45 minutes');
 
     app.openRecipe('Lemon drizzle');
     assert.deepEqual(app.method('Lemon drizzle'), ['Zest the lemons', 'Beat the sugar in']);
@@ -154,7 +125,7 @@ rule('moving-changes-nothing-but-the-order', () => {
 rule('the-new-order-is-kept', () => {
   test('coming back to it', () => {
     const app = book();
-    app.dragAbove('Heat the oven to 190C', 'Rub the butter into the flour');
+    app.moveLineUp('Heat the oven to 190C');
 
     const back = app.reload();
     back.openRecipe('Apple pie');
