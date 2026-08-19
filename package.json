@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "A browser todo app built by AI, one spec at a time. The app itself ships zero dependencies; everything here is tooling.",
+  "description": "A browser todo app built by AI, one spec at a time. The app ships one vendored library, in vendor/; everything under devDependencies is tooling.",
   "scripts": {
     "trace": "node tools/trace.mjs",
     "test": "node tools/test.mjs",

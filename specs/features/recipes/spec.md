@@ -55,8 +55,15 @@ their own group. A recipe is read top to bottom and a method is a sequence;
 reversing either would fight the thing itself.
 
 **A person can move a line; the app never does.** Since version 0010 a line is
-taken by its handle and dropped elsewhere in its own group, or moved with the
-arrow keys. That is not a contradiction of "nothing rearranges itself" — that
+taken by its grip and dropped elsewhere in its own group, or moved with the
+arrow keys. The dragging is SortableJS's since 0012; the arrow keys are this
+app's, and remain the only way that works without a pointer — the library has
+no keyboard support at all.
+
+**The grip, and only the grip.** A drag starts there and nowhere else on the
+line. The words are left alone deliberately: a row that moves when you press it
+cannot also be a row you press to change, and editing a line is worth more than
+a second place to start a drag. See `reordering-by-hand.feature`. That is not a contradiction of "nothing rearranges itself" — that
 promise is about the app reordering things under somebody's eye, and this is the
 opposite: the only thing that ever changes the order is a person doing it on
 purpose.

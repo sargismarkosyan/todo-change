@@ -51,7 +51,9 @@ exactly what it says breaks it.
 
 **Amended in version 0010, and narrowed rather than dropped.** A line being
 dragged into place moves, and it has to: a thing you are holding that does not
-follow your hand is broken. The distinction is *who caused it and when*.
+follow your hand is broken. Since 0012 the moving is SortableJS's rather than
+this app's, which changes who writes it and not what is allowed. The distinction
+is *who caused it and when*.
 Reading never moves — nobody drags a line with the pan on. Editing moves only
 under a finger that is deliberately moving it, and stops the instant it is let
 go. Everything the original sentence was protecting is still protected.
