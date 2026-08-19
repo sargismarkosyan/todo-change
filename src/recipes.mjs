@@ -139,6 +139,34 @@ export function addStep(recipes, recipeId, text) {
 }
 
 /**
+ * `recipes` with one group replaced wholesale, or `recipes` unchanged when the
+ * group would come out the same.
+ *
+ * The one way the order of a group ever changes. Moving a line, and accepting a
+ * proposal into the middle of one, both come down to "this group now reads like
+ * this" — the view on screen already knows the order, and handing it here is
+ * simpler and harder to get wrong than a set of splices.
+ *
+ * Unchanged is returned as the identical array where the ids come out in the
+ * same order, so a line dropped where it already was writes nothing and
+ * repaints nothing.
+ */
+export function setGroup(recipes, recipeId, group, lines) {
+  return recipes.map((recipe) => {
+    if (recipe.id !== recipeId) return recipe;
+    const before = linesOf(recipe, group);
+    const same =
+      before.length === lines.length && before.every((line, at) => line.id === lines[at].id);
+    return same ? recipe : { ...recipe, [group]: lines };
+  });
+}
+
+/** One line, ready to go into a group. The id is made once and never changes. */
+export function makeLine(text) {
+  return { id: newId(), text: text.trim() };
+}
+
+/**
  * `recipes` without whatever carries `id` — a whole recipe, one ingredient, or
  * one step. Rows are addressed by id, never by index.
  *

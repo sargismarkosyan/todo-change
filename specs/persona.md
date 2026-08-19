@@ -36,6 +36,15 @@ count servings, log what they ate, or fill in a nutrition panel. Photograph the
 food. Read a settings screen. If a feature only pays off for someone who does
 these things, it is not for Nell.
 
+**A settings screen, not a switch.** What that line rules out is a place you go
+to configure the thing before using it — a page, a list of options, a decision
+asked before there is a reason for one. It does not rule out a switch, in a
+popover, holding an answer somebody has already been asked for once. The book
+menu has been exactly that since 0006, and `features/books/spec.md` makes the
+same argument: opened for two seconds and closed is not a screen. If either of
+them ever grows a third line, that is the signal this distinction has stopped
+being honest.
+
 **Their real alternative** is a drawer of loose paper and a phone full of
 screenshots. That is the bar: quicker to find than the drawer, and it survives
 being closed.
@@ -52,7 +61,18 @@ Stating this plainly, because most feature requests drift here:
   conversion. An ingredient is a line of text on purpose — see
   [features/recipes/spec.md](features/recipes/spec.md).
 - **Importing from the web.** No pasting a URL and having it filled in. There is
-  no backend to fetch with, and typing it out is how it ends up in your words.
+  no backend to fetch with, and a recipe fetched from a site is somebody else's,
+  in somebody else's words.
+
+  **"Typing it out is how it ends up in your words" is amended, not deleted.**
+  Version 0009 lets the browser's own model draft a recipe's ingredients and
+  method, accepted a line at a time. What that sentence protected was
+  *provenance* — that the book holds what you decided goes in it — and that is
+  now protected by acceptance rather than by typing. Nobody's recipes are better
+  for having been typed twice. What it did not survive is the claim that the
+  labour itself is the point. See
+  [features/suggesting/spec.md](features/suggesting/spec.md), which also writes
+  down what this costs.
 - **Multi-device life.** One machine, one browser. Sync is a different product.
 
 A request that only makes sense for one of these is not a small feature. It is a

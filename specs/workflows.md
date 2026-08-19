@@ -26,6 +26,15 @@ is.
 is load-bearing: the choice happens rarely, when switching books, and never
 here.
 
+**Where it also breaks, quietly.** The name takes three seconds and the rest
+takes a dozen submissions, so this workflow half-finishes: a book of names with
+nothing under them, which nothing reports because nothing went wrong. Since
+0009, a machine that has a model can draft the ingredients and the method in one
+press, accepted a line at a time — see
+`features/suggesting/spec.md`. It is an accelerator on the long half and it
+changes nothing about the first three seconds: the box still takes a name and
+Enter, and never asks anything else.
+
 **Where it breaks.** Anything that adds a step: a field that must be clicked, a
 book to pick, a quantity split into a number and a unit, a save button. Silent
 failure is worse — a recipe that does not appear is one nobody finds out about
@@ -33,7 +42,8 @@ until they go looking for it a month later.
 
 **Specs.** `features/recipes/writing.feature`,
 `features/recipes/ingredients.feature`, `features/recipes/method.feature`,
-`features/books/switching.feature`
+`features/books/switching.feature`, `features/suggesting/drafting.feature`,
+`features/suggesting/turning-a-draft-down.feature`
 
 ---
 
@@ -102,6 +112,13 @@ makes it the easiest to break without noticing.
 hygiene: nothing accumulates here that has to be cleared, because nothing is
 finished.
 
+**Putting a line right lives here too**, since 0010. A recipe is dictated out of
+order — "cream the butter and sugar, oh, and heat the oven first" — and until
+then the only fix was deleting every line after the mistake and typing them
+again. A line is now dragged into place, or moved with the arrow keys. For the
+method that is a correctness fix rather than a tidiness one: the steps are
+numbered because position is part of what a step says.
+
 **Where it breaks.** Deleting the wrong thing, which has no undo — and the stakes
 are higher than they were, because a recipe may be the only copy of something
 somebody dictated once. Deleting a recipe takes its ingredients and its method
@@ -114,7 +131,8 @@ anything, and it is asked because the number is information rather than
 ceremony.
 
 **Specs.** `features/recipes/deleting.feature`, `features/books/deleting.feature`,
-`features/books/renaming.feature`
+`features/books/renaming.feature`, `features/recipes/reordering.feature`,
+`features/recipes/reordering-by-keyboard.feature`
 
 ---
 
@@ -126,7 +144,8 @@ crash.
 **Steps.** Open the app. Look.
 
 **Done well.** Everything is exactly as it was left — same recipes, same order,
-same ingredients, same method, and the same book open. Nothing to restore,
+same ingredients, same method, and the same book open. A draft nobody accepted
+is not among them: proposals are never written down. Nothing to restore,
 nothing to confirm. Recipes saved as todos by an earlier version open as
 recipes.
 

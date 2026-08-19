@@ -14,6 +14,20 @@ import { isLine, newId, sanitizeLines, sanitizeRecipes } from './recipes.mjs';
  */
 export const DEFAULT_NAME = 'My book';
 
+/**
+ * Whether the AI has been turned on: asked-and-yes, asked-and-no, or not yet
+ * asked. The only thing in the stored shape that is not a recipe.
+ *
+ * It is stored because it is an answer somebody gave, and being asked twice is
+ * being asked once too often. See specs/features/suggesting/spec.md.
+ */
+export const SUGGESTION_STATES = ['unasked', 'on', 'off'];
+
+/** Anything that is not one of the three reads as never having been asked. */
+export function sanitizeSuggestions(value) {
+  return SUGGESTION_STATES.includes(value) ? value : 'unasked';
+}
+
 /** A book with nothing in it. */
 export function makeBook(name) {
   return { id: newId(), name, recipes: [] };
@@ -22,7 +36,7 @@ export function makeBook(name) {
 /** The store an app opens on when nothing usable was found: one empty book. */
 export function emptyStore() {
   const book = makeBook(DEFAULT_NAME);
-  return { books: [book], openId: book.id };
+  return { books: [book], openId: book.id, suggestions: 'unasked' };
 }
 
 /**
@@ -52,10 +66,10 @@ export function isBook(value) {
  * `openId` naming a book that is not there opens the first one — no reachable
  * stored string leaves the app with nothing to draw.
  */
-function openOn(books, openId) {
-  if (books.length === 0) return emptyStore();
+function openOn(books, openId, suggestions = 'unasked') {
+  if (books.length === 0) return { ...emptyStore(), suggestions };
   const open = books.some((book) => book.id === openId);
-  return { books, openId: open ? openId : books[0].id };
+  return { books, openId: open ? openId : books[0].id, suggestions };
 }
 
 /**
@@ -71,7 +85,7 @@ export function sanitizeStore(value) {
   const books = found
     .filter(isBook)
     .map(({ id, name, recipes }) => ({ id, name, recipes: sanitizeRecipes(recipes) }));
-  return openOn(books, value.openId);
+  return openOn(books, value.openId, sanitizeSuggestions(value.suggestions));
 }
 
 /**
@@ -133,7 +147,7 @@ export function migrateNotepads(value) {
  */
 export function migrateList(value) {
   const book = { ...makeBook(DEFAULT_NAME), recipes: migrateTodos(value) };
-  return { books: [book], openId: book.id };
+  return { books: [book], openId: book.id, suggestions: 'unasked' };
 }
 
 /** The book on screen. */
@@ -174,7 +188,7 @@ export function addBook(store, name) {
   const trimmed = name.trim();
   if (trimmed === '') return store;
   const book = makeBook(trimmed);
-  return { books: [...store.books, book], openId: book.id };
+  return { ...store, books: [...store.books, book], openId: book.id };
 }
 
 /** `store` with one book renamed. A blank name is not a rename. */
@@ -201,5 +215,10 @@ export function removeBook(store, id) {
   if (at === -1) return store;
   const books = store.books.filter((book) => book.id !== id);
   if (store.openId !== id) return { ...store, books };
-  return { books, openId: books[Math.max(at - 1, 0)].id };
+  return { ...store, books, openId: books[Math.max(at - 1, 0)].id };
+}
+
+/** `store` with the AI turned on, off, or back to never having been asked. */
+export function setSuggestions(store, value) {
+  return { ...store, suggestions: sanitizeSuggestions(value) };
 }

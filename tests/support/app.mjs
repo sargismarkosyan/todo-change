@@ -21,11 +21,17 @@ const PAGE = HTML.replace(
   `<style>${CSS}</style>`,
 ).replace(/<script type="module">[\s\S]*?<\/script>/, '');
 
-/** A fresh browser with a fresh store, holding nothing at all. */
-export const openApp = () => open({});
+/**
+ * A fresh browser with a fresh store, holding nothing at all.
+ *
+ * `model` stands in for the browser's own, and is null by default because that
+ * is what most browsers have. jsdom has none of any kind, and no rule asserts
+ * what a model says — see specs/features/suggesting/spec.md.
+ */
+export const openApp = (model = null) => open({}, model);
 
 /** The same, with the current key already holding `books`. */
-export const openStore = (books) => open({ [STORAGE_KEY]: books });
+export const openStore = (books, model = null) => open({ [STORAGE_KEY]: books }, model);
 
 /** The same, seeded with the key version 0003 wrote. */
 export const openNotepads = (notepads) => open({ [NOTEPADS_KEY]: notepads });
@@ -36,7 +42,7 @@ export const openLegacy = (todos) => open({ [LEGACY_KEY]: todos });
 /** For the cases that care about more than one key being there at once. */
 export const openWith = (seed) => open(seed);
 
-function open(seed) {
+function open(seed, model = null) {
   const dom = new JSDOM(PAGE, { url: 'http://localhost/' });
   const { window } = dom;
   const doc = window.document;
@@ -44,7 +50,17 @@ function open(seed) {
   for (const [key, value] of Object.entries(seed)) {
     if (value !== undefined && value !== null) window.localStorage.setItem(key, value);
   }
-  mountApp(doc, window.localStorage);
+
+  // SortableJS reaches for the global `window` and `document`, where this app
+  // takes its document as an argument. Pointing the globals at this jsdom before
+  // mounting is what lets the library attach and tear down at all — and that is
+  // worth exercising, because a wrong option or a markup change would otherwise
+  // only be found by hand. The gesture itself still cannot run here: jsdom has
+  // no layout. See specs/changes/0012-somebody-elses-drag.md.
+  globalThis.window = window;
+  globalThis.document = doc;
+
+  mountApp(doc, window.localStorage, model);
 
   const recipeEls = () => [...doc.querySelectorAll('.recipe')];
   const nameEl = (el) => el.querySelector(':scope > .recipe__row > .recipe__name');
@@ -62,19 +78,23 @@ function open(seed) {
 
   const isOpen = (name) => recipe(name).classList.contains('recipe--open');
   const groupEl = (name, group) => recipe(name).querySelector(`.recipe__${group}-lines`);
-  const lines = (name, group) =>
-    groupEl(name, group) === null
-      ? []
-      : [...groupEl(name, group).children].map(
-          (el) => el.querySelector('[class$="__text"]').textContent,
-        );
+  const rows = (name, group) =>
+    groupEl(name, group) === null ? [] : [...groupEl(name, group).children];
 
-  /** Every ingredient and step on screen, for the ones addressed by their text. */
+  /** What the recipe actually holds — proposals are on the page, not in it. */
+  const lines = (name, group) =>
+    rows(name, group)
+      .filter((el) => !el.classList.contains('proposal'))
+      .map((el) => el.querySelector('[class$="__text"]').textContent);
+
+  /** Every row of either group on screen, line or proposal alike. */
   const lineEls = () => [...doc.querySelectorAll('.ingredient, .step')];
+  const textOf = (el) =>
+    el.querySelector('[class$="__text"]')?.textContent ??
+    el.querySelector('.proposal__take')?.textContent ??
+    '';
   const line = (text) => {
-    const found = lineEls().find(
-      (el) => el.querySelector('[class$="__text"]').textContent === text,
-    );
+    const found = lineEls().find((el) => textOf(el) === text);
     if (!found) throw new Error(`nothing on screen reads "${text}"`);
     return found;
   };
@@ -196,6 +216,86 @@ function open(seed) {
       if (!wasOpen) this.closeRecipe(name);
     },
 
+    // ---- putting a line where it belongs ---------------------------------
+    //
+    // jsdom does not implement dragging, so these drive the events the app
+    // actually listens for. That checks the app's handling and not the
+    // browser's gesture — the real-browser pass covers the rest.
+
+    handleOf(text) {
+      const grip = line(text).querySelector('.line-handle');
+      if (!grip) throw new Error(`"${text}" has no handle`);
+      return grip;
+    },
+
+    /** Put focus on a grip, the way tabbing to it does. */
+    focusHandle(text) {
+      this.handleOf(text).focus();
+    },
+
+    /**
+     * Move a line one place, the way the arrow keys do.
+     *
+     * The one gesture this app still owns. Dragging belongs to SortableJS since
+     * 0012 and cannot run in jsdom, which has no layout — so the rules about
+     * what a move *does* are driven from here, and the gesture is checked by
+     * hand in a browser.
+     */
+    moveLineUp(text) {
+      this.focusHandle(text);
+      this.pressArrow('ArrowUp');
+    },
+    moveLineDown(text) {
+      this.focusHandle(text);
+      this.pressArrow('ArrowDown');
+    },
+
+    /** Press an arrow on whatever handle has focus. */
+    pressArrow(key) {
+      doc.activeElement.dispatchEvent(
+        new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
+    },
+
+    /**
+     * Whether a line can be picked up by its words.
+     *
+     * SortableJS is told `handle: '.line-handle'`, so what is checked is that
+     * the option is set and that the words are not inside a grip — the library
+     * enforcing it is the library's own business.
+     */
+    canBeDraggedByItsWords(text) {
+      const row = line(text);
+      const words = row.querySelector('.ingredient__text, .step__text, .proposal__take');
+      return words !== null && words.closest('.line-handle') !== null;
+    },
+
+    /** Whether it can be picked up by its grip, which is the way in. */
+    canBeDraggedByItsGrip: (text) => line(text).querySelector('.line-handle') !== null,
+
+    /** Whether every row of a group shows a grip without being reached for. */
+    everyRowShowsItsGrip(name, group) {
+      const rows = [...groupEl(name, group).children];
+      return rows.length > 0 && rows.every((el) => el.querySelector('.line-handle') !== null);
+    },
+
+    /**
+     * How solid a grip is drawn, with nothing hovered.
+     *
+     * The number a step shows is drawn by the grip, so a grip that faded until
+     * hovered would take the numbering with it — which features/look/spec.md
+     * does not allow. jsdom cannot compute pseudo-element styles, so the number
+     * itself is checked by hand in the browser; this checks the thing it rides
+     * on.
+     */
+    gripSolidity: (text) =>
+      window.getComputedStyle(line(text).querySelector('.line-handle')).opacity,
+
+    /** Whether the handle for this line currently has focus. */
+    handleHasFocus(text) {
+      return doc.activeElement === line(text).querySelector('.line-handle');
+    },
+
     // ---- throwing things out ---------------------------------------------
 
     deleteRecipe: (name) => recipe(name).querySelector('.recipe__delete').click(),
@@ -243,6 +343,125 @@ function open(seed) {
     /** Whether the contents is the thing on screen, or the results are. */
     contentsIsShowing: () => !doc.getElementById('contents').hidden,
 
+    // ---- turning the AI on, and where it stands --------------------------
+
+    /** Whether the one question is on screen. */
+    offeredAi: () => !doc.getElementById('offer').hidden,
+
+    /** Say yes. This press is also the activation the fetch needs. */
+    acceptOffer() {
+      if (!this.offeredAi()) throw new Error('nothing is offering the AI');
+      doc.getElementById('offer-yes').click();
+    },
+
+    /** Say no. */
+    dismissOffer() {
+      if (!this.offeredAi()) throw new Error('nothing is offering the AI');
+      doc.getElementById('offer-no').click();
+    },
+
+    /** The answer that was kept, as it is stored. */
+    aiIs: () => JSON.parse(window.localStorage.getItem(STORAGE_KEY)).suggestions,
+
+    /** The readout in the masthead, or null when there is nothing to say. */
+    indicator: () =>
+      doc.getElementById('ai-status').hidden
+        ? null
+        : doc.getElementById('ai-status').textContent,
+
+    /** Whether the colophon is on the page — it is not, with no model. */
+    hasAiControl: () => !doc.getElementById('settings').hidden,
+
+    openAiSettings() {
+      if (!this.hasAiControl()) throw new Error('there is no AI settings control');
+      if (doc.getElementById('settings-menu').hidden) {
+        doc.getElementById('settings-open').click();
+      }
+    },
+
+    aiSettingsAreShut: () => doc.getElementById('settings-menu').hidden,
+
+    /** The one switch in there. */
+    toggleAi() {
+      this.openAiSettings();
+      doc.querySelector('.colophon__toggle').click();
+    },
+
+    /** How many lines the popover holds — the check that keeps it a popover. */
+    aiSettingsLines() {
+      this.openAiSettings();
+      return doc.getElementById('settings-menu').querySelectorAll('button, p').length;
+    },
+
+    /** Whether anything on screen mentions a model at all. */
+    mentionsModel: () =>
+      doc.querySelector(
+        '.drafting, .colophon:not([hidden]), .app__ai:not([hidden])',
+      ) !== null,
+
+    // ---- the draft -------------------------------------------------------
+
+    /** Whether an open recipe offers to be drafted. */
+    offersDraft: (name) => recipe(name).querySelector('.drafting__ask') !== null,
+
+    /** Press for one. The answer arrives later, so `settle()` follows. */
+    askForDraft(name) {
+      this.openRecipe(name);
+      const control = recipe(name).querySelector('.drafting__ask');
+      if (!control) throw new Error(`"${name}" offers no way to ask for a draft`);
+      control.click();
+    },
+
+    /** What is on offer in a group — not one line of it written down. */
+    proposed(group, name = null) {
+      const of = name ?? contents()[0];
+      return rows(of, group)
+        .filter((el) => el.classList.contains('proposal'))
+        .map((el) => el.querySelector('.proposal__take').textContent);
+    },
+
+    /**
+     * A whole group as it reads on screen, saying which rows are written down
+     * and which are only proposed — the one list this version is about.
+     */
+    groupReads(name, group) {
+      return rows(name, group).map((el) => [
+        textOf(el),
+        el.classList.contains('proposal') ? 'proposed' : 'mine',
+      ]);
+    },
+
+    /** Take the lot in one press. */
+    takeWholeDraft: () => doc.querySelector('.drafting__take-all').click(),
+
+    /** Take one line. */
+    acceptProposal(text) {
+      const found = [...doc.querySelectorAll('.proposal__take')].find(
+        (el) => el.textContent === text,
+      );
+      if (!found) throw new Error(`nothing proposed reads "${text}"`);
+      found.click();
+    },
+
+    /** Turn the whole draft down. */
+    dismissDraft: () => doc.querySelector('.drafting__dismiss').click(),
+
+    /** Whether anything at all is being proposed. */
+    hasProposals: () => doc.querySelector('.proposal') !== null,
+
+    /** What the control says right now — it says so while the model writes. */
+    draftControl: (name) => recipe(name).querySelector('.drafting__ask')?.textContent ?? null,
+
+    /** Whether it can be pressed. It cannot, while it is already working. */
+    draftControlCanBePressed: (name) =>
+      recipe(name).querySelector('.drafting__ask')?.disabled === false,
+
+    /** The one line under the control, or null when there is nothing to say. */
+    note: () => doc.querySelector('.drafting__note')?.textContent ?? null,
+
+    /** Let anything the model was asked come back. */
+    settle: () => new Promise((resolve) => setTimeout(resolve, 0)),
+
     // ---- what is stored --------------------------------------------------
 
     /** The raw stored string, exactly as a devtools panel would show it. */
@@ -250,8 +469,11 @@ function open(seed) {
     storedNotepads: () => window.localStorage.getItem(NOTEPADS_KEY),
     storedLegacy: () => window.localStorage.getItem(LEGACY_KEY),
 
-    /** Close the tab and open it again. A new window, the same stored string. */
-    reload: () => openStore(window.localStorage.getItem(STORAGE_KEY)),
+    /**
+     * Close the tab and open it again. A new window, the same stored string —
+     * and the same browser, so the model is handed in again.
+     */
+    reload: (model = null) => openStore(window.localStorage.getItem(STORAGE_KEY), model),
 
     // ---- books -----------------------------------------------------------
     //
@@ -333,3 +555,72 @@ export const storedNotepads = (notepads, openId) => JSON.stringify({ notepads, o
 
 /** The stored form of the current key. */
 export const storedBooks = (books, openId) => JSON.stringify({ books, openId });
+
+/**
+ * A stand-in for the browser's model.
+ *
+ * Never a real one: the pipeline runs in jsdom, which has none, and asserting
+ * what an LLM says is not the app's promise to keep. What the rules check is
+ * what the app does with an answer. See specs/features/suggesting/spec.md.
+ */
+/**
+ * A drafted line and the place it asked for. Pass a nonsense index, or none, to
+ * exercise a model that gives no usable place.
+ */
+export const at = (index, text) => ({ index, text });
+
+/** Turn a plain string into a line that asked for the place it was written in. */
+const placed = (lines) =>
+  lines.map((line, index) => (typeof line === 'string' ? { text: line, index } : line));
+
+/**
+ * A drafted recipe. Plain strings take the places they are written in, which is
+ * what most rules want; use `at(index, text)` where the place is the point.
+ */
+export const drafts = (ingredients = [], steps = []) => ({
+  ingredients: placed(ingredients),
+  steps: placed(steps),
+});
+
+export function fakeModel({
+  state = 'available',
+  drafts = { ingredients: [], steps: [] },
+  fails = false,
+  cannotSay = false,
+  silent = false,
+  holds = false,
+  fetchFails = false,
+} = {}) {
+  const never = () => new Promise(() => {});
+  const gaveUp = () => Promise.reject(new Error('the model gave up'));
+
+  // A fetch the test drives: `reaches` reports progress, `arrives` finishes it.
+  let report = null;
+  let finish = null;
+  // A draft the test drives, for what happens while one is still out.
+  let answer = null;
+
+  return {
+    availability: () => (cannotSay ? gaveUp() : Promise.resolve(state)),
+    prepare(onProgress) {
+      report = onProgress;
+      if (fetchFails) return gaveUp();
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    },
+    draft: () => {
+      if (fails) return gaveUp();
+      if (silent) return never();
+      if (holds) return new Promise((resolve) => { answer = () => resolve(drafts); });
+      return Promise.resolve(drafts);
+    },
+
+    /** Let a held draft come back. */
+    answers: () => answer?.(),
+
+    /** Drive the download from the test. */
+    reaches: (loaded) => report?.(loaded),
+    arrives: () => finish?.(),
+  };
+}

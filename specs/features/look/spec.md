@@ -19,6 +19,9 @@ is not allowed to cost.
   hairline under every ingredient and every step, square corners rather than
   rounded ones.
 - **A numbered method**, because a step's position is part of what it says.
+  Since 0010 the number is also what the step is taken hold of by, with the grip
+  just left of it: the thing that most obviously belongs to a step's position is
+  the thing that moves it. The number itself never fades — only the grip does.
 - **A cover that says what this is.** The masthead reads *Recipes*. The
   repository is called `todo-change` and says so where it is the repository
   being named — the URL, the README, the storage key — but not on the cover,
@@ -41,10 +44,24 @@ and from a step back. A warm palette is where that quietly goes: cream on cream
 is the most natural mistake in this direction. Every colour a recipe is read in
 clears 4.5 to 1 against what it sits on, and that is checked rather than judged.
 
-**Nothing moves.** No rotated cards that straighten when opened, no lift on
-hover, no transition on a recipe unfolding. Workflow 3 is reading with your
-hands full, and anything that moves while being read is exactly what it says
-breaks it.
+**Nothing moves while it is being read.** No rotated cards that straighten when
+opened, no lift on hover, no transition on a recipe unfolding. Workflow 3 is
+reading with your hands full, and anything that moves while being read is
+exactly what it says breaks it.
+
+**Amended in version 0010, and narrowed rather than dropped.** A line being
+dragged into place moves, and it has to: a thing you are holding that does not
+follow your hand is broken. Since 0012 the moving is SortableJS's rather than
+this app's, which changes who writes it and not what is allowed. The distinction
+is *who caused it and when*.
+Reading never moves — nobody drags a line with the pan on. Editing moves only
+under a finger that is deliberately moving it, and stops the instant it is let
+go. Everything the original sentence was protecting is still protected.
+
+Two limits keep that honest. The rest of the page stays still while a line is
+dragged — no reflow, no lift on anything not being held. And
+`prefers-reduced-motion` removes the sliding entirely: the line is simply
+somewhere else, which is the same outcome by the same gesture.
 
 **Texture never gets under text.** The grain is on the ground and stops there.
 The page and the cards are flat, because texture behind words is the fastest way
