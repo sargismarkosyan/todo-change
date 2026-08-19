@@ -56,35 +56,58 @@ const SHAPE = {
   expectedOutputs: [{ type: 'text', languages: ['en'] }],
 };
 
+/**
+ * What the model is asked to do.
+ *
+ * **Asked for what is missing, not for the recipe.** The first version of this
+ * asked for the whole thing and then forbade repeats — produce everything, then
+ * suppress most of it — and a part-written recipe answered that reliably with
+ * nothing at all. Completing something is a task a small model can do; writing
+ * a whole recipe and then subtracting is not.
+ *
+ * **The position is not part of the line.** Saying only "give each line an
+ * index" got the number written into the text as well, so a method came out
+ * reading "1 Preheat the oven", "10 Serve immediately". The text is what goes
+ * on the card; the position is a field beside it, and the prompt now says so.
+ */
 const DRAFTING = [
-  'You write down recipes somebody already knows how to cook.',
-  'Given a recipe name, answer with the ingredients it takes and the steps to make it.',
-  'One ingredient per line, written the way it is said out loud, with the amount in the line.',
-  'One step per line, in plain sentences.',
-  'Give each line the index it should take in the list it belongs to,',
-  'counting the lines that are already there: 0 puts it first, and an index',
-  'equal to the number of existing lines puts it last.',
-  'Do not repeat a line that is already there, and do not move one.',
-  'No headings, no numbering, no commentary.',
+  'You help somebody finish writing a recipe down.',
+  'You are given the recipe name and whatever has been written so far,',
+  'each line shown with the position it sits at in square brackets.',
+  'Answer with the lines that are missing, and only those.',
+  'Never repeat a line that is already there, and never move one.',
+  'A part-written recipe is usually missing several lines: add what a cook',
+  'would still need in order to make it.',
+  'Give each line the position it should take, counting the lines already in',
+  'that list: 0 puts it first, and the number of lines already there puts it last.',
+  'The position is separate from the text — never write a number, a bullet or',
+  '"Step 3" into the text itself.',
+  'One ingredient per line, the amount in the line, written the way it is said',
+  'out loud. One step per line, in plain sentences. No headings, no commentary.',
 ].join(' ');
 
 /**
- * A recipe as the model reads it: its name, and anything already written down —
- * numbered, so the index it answers with means something.
+ * A recipe as the model reads it: its name, and what is written so far with the
+ * position of each line.
+ *
+ * Positions are bracketed so they cannot be mistaken for part of the line —
+ * "[0] 1 Preheat the oven" is legible where "0: 1 Preheat the oven" is two
+ * numbering systems fighting. Both groups are always named, empty or not, so
+ * that a missing one reads as "nothing here yet" rather than as an omission.
  */
 function asPrompt(recipe) {
   const lines = [`Recipe: ${recipe.name}`];
-  const numbered = (group) =>
-    (recipe[group] ?? []).map((line, at) => `${at}: ${line.text}`);
   const say = (heading, group) => {
-    const shown = numbered(group);
-    lines.push(shown.length > 0 ? `${heading}` : `${heading} nothing yet`);
-    lines.push(...shown);
+    const held = recipe[group] ?? [];
+    if (held.length === 0) {
+      lines.push(`${heading}: nothing written down yet.`);
+      return;
+    }
+    lines.push(`${heading}:`);
+    lines.push(...held.map((line, at) => `[${at}] ${line.text}`));
   };
-  if ((recipe.ingredients ?? []).length > 0 || (recipe.steps ?? []).length > 0) {
-    say('It already takes:', 'ingredients');
-    say('The method so far:', 'steps');
-  }
+  say('Ingredients so far', 'ingredients');
+  say('Method so far', 'steps');
   return lines.join('\n');
 }
 

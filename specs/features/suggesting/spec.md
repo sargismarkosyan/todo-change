@@ -96,6 +96,34 @@ written into the middle of the group, not appended — which is the whole reason
 the model was asked where things go. Version 0009 appended, and that was wrong:
 it made the app discard what it had just been told.
 
+## Asked for what is missing, not for the recipe
+
+The first version of this asked the model for the whole recipe and then told it
+not to repeat anything already written down. On a bare recipe that works. On a
+part-written one — four ingredients, four steps, obviously incomplete — it
+answered reliably with **nothing at all**, and the app dutifully reported
+"Nothing drafted."
+
+The instruction was subtractive: produce everything, then suppress most of it.
+Completing something is a task a small on-device model can do; writing a whole
+recipe and then subtracting the parts it can already see is not. It is asked to
+**finish** the recipe now, and told that a part-written one is usually missing
+several lines.
+
+**The position is not part of the line.** Saying only "give each line an index"
+got the number written into the text as well, so a method came back reading
+"1 Preheat the oven" and "10 Serve immediately" — the model's numbering baked
+into what goes on the card, and it survives into the book once accepted. The
+prompt now says the position is a field beside the text and never inside it, and
+what is written so far is shown with bracketed positions so that a number
+already in a line cannot be mistaken for one.
+
+**Nothing strips numbering out of a proposal**, and that is deliberate. "2 large
+eggs" is an ingredient whose first character is a digit; a rule that took the
+number off the front of a line would quietly ruin it. Guessing which digits are
+the model's and which are the cook's is the parser `../recipes/spec.md` refuses,
+and the prompt is the right lever.
+
 ## Which model, and why that is allowed
 
 The browser's own: the **Prompt API**, `LanguageModel` in the global scope.

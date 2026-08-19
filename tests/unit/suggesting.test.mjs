@@ -100,13 +100,47 @@ test('draft asks about the name and anything already written down', async () => 
   assert.equal(api.destroyed(), 1);
 });
 
-test('a bare recipe is asked about without inventing sections', async () => {
+test('a bare recipe says both lists are empty rather than leaving them out', async () => {
   const api = fakeApi();
   const model = createModel({ LanguageModel: api });
   await model.draft({ id: 'r', name: 'Apple pie' });
 
-  const prompt = api.asked.at(-1);
-  assert.equal(prompt.text, 'Recipe: Apple pie');
+  const { text } = api.asked.at(-1);
+  assert.match(text, /Ingredients so far: nothing written down yet\./);
+  assert.match(text, /Method so far: nothing written down yet\./);
+});
+
+test('every line is shown with the position the model answers against', async () => {
+  const api = fakeApi();
+  const model = createModel({ LanguageModel: api });
+  await model.draft(recipe('Lava cake', [line('2 large eggs')], [line('1 Preheat the oven')]));
+
+  const { text } = api.asked.at(-1);
+  assert.match(text, /\[0\] 2 large eggs/);
+  assert.match(
+    text,
+    /\[0\] 1 Preheat the oven/,
+    'bracketed, so a number already in the line cannot be mistaken for the position',
+  );
+});
+
+test('it is asked for what is missing, not for the recipe', async () => {
+  const api = fakeApi();
+  const model = createModel({ LanguageModel: api });
+  await model.draft(recipe('Lava cake', [line('2 large eggs')], []));
+
+  const { created } = api.asked[0];
+  const system = created.initialPrompts[0].content;
+  assert.match(
+    system,
+    /lines that are missing/,
+    'asking for the whole recipe and then forbidding repeats answered with nothing',
+  );
+  assert.match(
+    system,
+    /never write a number, a bullet/,
+    'or the numbering ends up inside the line',
+  );
 });
 
 let n = 0;
