@@ -58,6 +58,19 @@ decision asked before there is a reason for one. The moment either popover asks 
 question instead of offering a press, this distinction *has* stopped being
 honest, and no line count will be needed to notice.
 
+**A mark you make, not one you are asked for.** "Asked to be marked as anything"
+is amended by version 0014 in the same way, and the word carrying it is *asked*.
+A recipe may now be starred as one of the handful actually cooked — see
+[features/recipes/favourites.feature](features/recipes/favourites.feature) — and
+nothing about that is a question. Nobody is prompted, a recipe nobody stars
+behaves exactly as it always has, and the front door of a browser that has never
+starred anything is the one version 0013 shipped. "Rate one" survives intact and
+is the boundary this must not cross: one bit, no scale, no second star, nothing
+about whether a recipe is any *good*, and nothing ordered by it. A tick means
+finished and can go away, and this points the other way — come back to this one.
+If the star ever grows a number, a second state, or a prompt, that is the signal
+this distinction has stopped being honest.
+
 **Their real alternative** is a drawer of loose paper and a phone full of
 screenshots. That is the bar: quicker to find than the drawer, and it survives
 being closed.

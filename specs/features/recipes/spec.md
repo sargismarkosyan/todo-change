@@ -118,6 +118,32 @@ The cost of all this — that a wrong quantity is worse than a wrong word, and
 that months later nothing distinguishes what was checked from what was waved
 through — is written down in `../suggesting/spec.md` rather than left implied.
 
+## Favourites
+
+Since version 0014 a recipe may carry **one bit**: whether it is one of the
+handful actually cooked. It is set by pressing **the star** on its row in the
+contents, and unset by pressing it again.
+
+**It is the only state a recipe has, and it is not the state 0004 removed.** A
+tick meant *finished, and now it can go away*; a star means *come back to this*,
+which is the direction a recipe book runs in. There is no scale, no second star,
+and nothing about whether a recipe is any good — `persona.md` still rules out
+rating one, and the paragraph there is what this is answerable to.
+
+**Nothing on this page changes because of it.** The contents does not reorder,
+the recipe does not open or close, and a favourite is edited, dragged, searched
+and deleted like anything else. The whole payoff is on the home — see
+`../home/spec.md` — which is deliberate: floating starred recipes to the top of
+their book would spend versions 0010 to 0012 to save a scroll.
+
+**The star is drawn on every row, marked or not.** A mark invisible where it was
+made is a mark that stops being trusted, and reading down the contents is how you
+see which ones carry it.
+
+Stored as `favourite: true`, present only when true, and anything else read as
+not one. A recipe from any earlier version has no key and is not a favourite,
+which is correct rather than merely safe.
+
 ## The method
 
 One line per step, in the order typed. A step is a step of exactly one recipe

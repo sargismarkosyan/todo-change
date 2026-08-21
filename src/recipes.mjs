@@ -92,6 +92,10 @@ export function sanitizeRecipes(value) {
   return value.filter(isRecipe).map((recipe) => ({
     id: recipe.id,
     name: recipe.name,
+    // Exactly `true` or it is not a star. Present only when it is one, so a
+    // recipe nobody has starred stores nothing — the same way one with no
+    // method has no `steps`, and the reason no earlier version needs migrating.
+    ...(recipe.favourite === true && { favourite: true }),
     ingredients: sanitizeLines(recipe.ingredients),
     steps: sanitizeLines(recipe.steps),
   }));
@@ -164,6 +168,25 @@ export function setGroup(recipes, recipeId, group, lines) {
 /** One line, ready to go into a group. The id is made once and never changes. */
 export function makeLine(text) {
   return { id: newId(), text: text.trim() };
+}
+
+/**
+ * `recipes` with one recipe's star flipped.
+ *
+ * The only state a recipe carries, and not the one 0004 removed: a tick meant
+ * *finished, and now it can go away*, and this means *come back to this*. It is
+ * dropped rather than set to `false` when it goes, so what is stored says
+ * nothing about a recipe nobody has starred.
+ *
+ * Nothing else moves. The contents does not reorder — see
+ * specs/features/recipes/spec.md — and this returns the same order it was given.
+ */
+export function toggleFavourite(recipes, id) {
+  return recipes.map((recipe) => {
+    if (recipe.id !== id) return recipe;
+    const { favourite, ...rest } = recipe;
+    return favourite === true ? rest : { ...rest, favourite: true };
+  });
 }
 
 /**
