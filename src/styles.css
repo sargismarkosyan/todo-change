@@ -72,7 +72,12 @@ body {
   background-color: var(--paper);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E");
   color: var(--ink);
-  font: 17px/1.6 var(--reading);
+  /* 1.0625rem is 17px at a browser left alone, which is what every version
+     before 0017 said outright — and unlike `17px` it is still 17px *of the
+     reader's own*, so somebody who told their browser to write larger has told
+     this app too. Everything else on the page was already relative; this was
+     the one place the setting stopped at. */
+  font: 1.0625rem/1.6 var(--reading);
 }
 
 /* The page of the book, lying on the paper ground. The gradient is the crease
@@ -837,6 +842,37 @@ body {
   cursor: grabbing;
 }
 
+/* The three small marks answer a press over 24 pixels each way, which is what
+   0017 found them short of: the grip is drawn 18 wide and a line's cross 22.
+   The area is grown *under* the mark rather than around it — an absolutely
+   positioned box centred on the control, hit-tested as part of it, so nothing
+   on the card is drawn one pixel bigger and nothing moves. Padding would have
+   pushed the words along the line.
+
+   In pixels, and the one place in this file that should be: 24 is a floor for a
+   fingertip, not a size of type. It must not shrink with a reader who has set
+   their text smaller — which is exactly what `no-text-is-sized-in-pixels` keeps
+   every other measure here free to do.
+
+   `::before` because the grip's `::after` already draws the step's number. */
+.line-handle,
+.ingredient__delete,
+.step__delete {
+  position: relative;
+}
+
+.line-handle::before,
+.ingredient__delete::before,
+.step__delete::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+
 /* One box per group, at the bottom of it, left open the whole time the recipe
    is — a recipe is typed in one sitting, six ingredients at a time. */
 .ingredient-composer,
@@ -1281,6 +1317,24 @@ body {
 .shelf__heading[hidden],
 .contents[hidden] {
   display: none;
+}
+
+/* The announcer: one line saying what just changed, for whatever reads the page
+   aloud. Off screen rather than `display: none` or `hidden` — either of those
+   takes it out of the accessibility tree entirely, and a live region nothing
+   can reach announces nothing. It is a pixel in the corner instead, which is
+   the one thing on this page deliberately not drawn.
+   See specs/features/look/within-reach.feature. */
+.announcer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* An empty book says it is empty. A blank panel reads as "broken", not "new". */

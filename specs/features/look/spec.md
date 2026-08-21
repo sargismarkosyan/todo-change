@@ -119,6 +119,32 @@ ingredients and its method are all set in the book face, and
 `handwriting-labels-but-is-not-read` enforces it. Handwriting is legible in
 four words and tiring in forty, and workflow 3 is the forty.
 
+## Within reach
+
+Version 0017 audited the look whole, with fresh eyes, against the checkable
+accessibility standards rather than against taste. Most of it held, because
+most of it was already a rule: every colour a recipe is read in is
+contrast-gated by `ink-reads-on-paper`, the six bindings by
+`every-book-colour-shows-on-paper`, every control has a visible
+`:focus-visible` ring, every icon control carries a spoken name,
+`prefers-reduced-motion` removes the one motion the app has, and an automated
+audit (axe-core, on the home, a book, and an open recipe) comes back clean.
+That record is in [change 0017](../../changes/0017-within-reach.md), so the
+next revisit starts from evidence rather than from zero.
+
+What the audit found missing is in `within-reach.feature`, and none of it is
+visible: the small marks on a line offer less than a fingertip to hit, nothing
+announces what a search found or a press deleted to anything reading the page
+aloud, deleting by keyboard drops focus on the floor, and the base size is a
+fixed pixel count the reader's browser setting cannot reach.
+
+**The announcer** is the shape the second of those takes: one line, off
+screen, `role="status"`, saying what just changed — never visible, never
+two of them, and never carrying anything not already shown on screen. It is
+the page's own voice, not a notification system; the moment it grows a
+second line or a border it has become a toast, which is chrome nothing here
+has earned.
+
 ## What is still deliberately plain
 
 The header still says `todo-change`, because that is the repository's name and

@@ -180,6 +180,20 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
   // a delete. Screen state too — none of it is worth storing.
   const menu = ref({ open: false, mode: 'list' });
 
+  /**
+   * What just changed, for whatever reads the page aloud.
+   *
+   * One line, overwritten rather than added to, and never saying anything the
+   * screen does not already show — a search redraws a list nobody reading by
+   * ear can glance at, and a delete takes away the very thing that was in hand.
+   * Screen state, and not even that: it is on the page and nowhere else.
+   * See specs/features/look/within-reach.feature.
+   */
+  const announcement = ref('');
+
+  /** "2 found", or the words the screen itself shows when nothing matched. */
+  const countFound = (n) => (n === 0 ? NO_MATCHES : `${n} found`);
+
   const shutMenu = () => {
     menu.value = { open: false, mode: 'list' };
   };
@@ -228,6 +242,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
   // state — the same as the box a recipe name is typed into.
   const stopFinding = () => {
     finding.value = '';
+    announcement.value = '';
     const findEl = doc.getElementById('find-recipe');
     if (findEl !== null) findEl.value = '';
   };
@@ -264,6 +279,27 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
    */
   const refocusHandle = (id) => {
     nextTick(() => doc.querySelector(`[data-handle="${id}"]`)?.focus());
+  };
+
+  /**
+   * Where the keyboard goes when the thing it was standing on is deleted.
+   *
+   * A pressed cross takes its whole line with it, and the browser's own answer
+   * to "what now" is the top of the document — which charges a keyboard user
+   * the walk back down the page for every line they throw out. Focus lands on
+   * the cross that took the deleted one's place, and in the box that writes the
+   * next line when there was nothing below it.
+   *
+   * Read out of the page after the repaint rather than worked out in advance:
+   * the row that ends up at that position is the answer, whatever it turned out
+   * to be. Called after the commit for the same reason `refocusHandle` is.
+   */
+  const focusAfterDelete = (listSelector, index, boxId) => {
+    nextTick(() => {
+      const rows = doc.querySelector(listSelector)?.children ?? [];
+      const cross = rows[index]?.querySelector('[class$="__delete"]');
+      (cross ?? doc.getElementById(boxId))?.focus();
+    });
   };
 
   // ---- an open recipe ------------------------------------------------------
@@ -484,14 +520,28 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
     );
   }
 
-  function deleteButton(block, id, label) {
+  /**
+   * The cross that throws one thing out.
+   *
+   * `placeOf` says which list this sits in and where, so the keyboard can be
+   * left on whatever takes its place. It is asked *before* the delete — after
+   * it, the row whose position we want is the one thing no longer there to be
+   * found — and the focus is moved after, so the repaint it waits on is the one
+   * the commit causes.
+   */
+  function deleteButton(block, id, label, placeOf) {
     return h(
       'button',
       {
         type: 'button',
         class: `${block}__delete`,
         'aria-label': `Delete ${label}`,
-        onClick: () => commitRecipes(removeFrom(recipes(), id)),
+        onClick: () => {
+          const place = placeOf();
+          announcement.value = `Deleted ${label}`;
+          commitRecipes(removeFrom(recipes(), id));
+          focusAfterDelete(...place);
+        },
       },
       '×',
     );
@@ -501,7 +551,11 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
     return h('li', { class: spec.block, 'data-id': line.id, key: line.id }, [
       handle(recipe, spec, line.id, line.text),
       h('span', { class: `${spec.block}__text` }, line.text),
-      deleteButton(spec.block, line.id, line.text),
+      deleteButton(spec.block, line.id, line.text, () => [
+        `.recipe__${spec.key}-lines`,
+        entriesOf(recipe, spec).findIndex((entry) => entry.id === line.id),
+        `${spec.block}-box-${recipe.id}`,
+      ]),
     ]);
   }
 
@@ -742,7 +796,11 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
           recipe.name,
         ),
         starButton(recipe),
-        deleteButton('recipe', recipe.id, recipe.name),
+        deleteButton('recipe', recipe.id, recipe.name, () => [
+          '.contents',
+          recipes().findIndex((each) => each.id === recipe.id),
+          'new-recipe',
+        ]),
       ]),
     ];
 
@@ -1240,6 +1298,13 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
         // own — the masthead beside it says the same thing in the name.
         h('div', { class: 'ribbon', id: 'ribbon', 'aria-hidden': 'true', hidden: home }),
 
+        // The announcer: what just changed, said once, to the only reader who
+        // could not see it happen. Always on the page and never visible —
+        // a live region added at the moment it has something to say is a live
+        // region nothing announces. `role="status"` is the polite one: it waits
+        // for a gap rather than cutting across what is being read.
+        h('p', { class: 'announcer', id: 'announcer', role: 'status' }, announcement.value),
+
         h('header', { class: 'app__header' }, [
           h('div', { class: 'app__heading' }, [
             h('h1', { class: 'app__title' }, [
@@ -1321,6 +1386,12 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
             autocomplete: 'off',
             onInput: (event) => {
               finding.value = event.target.value;
+              // The results appear in place of the contents, which is a change
+              // nobody reading by ear can glance at. How many is what the
+              // glance would have got.
+              announcement.value = searching()
+                ? countFound(findRecipes(store.value.books, finding.value).length)
+                : '';
             },
           }),
         ]),
