@@ -180,9 +180,44 @@ merges, so you can see it is wired up rather than hope.
 
 Write it in both if you like. Only the description is the mechanism.
 
-Nothing is closed by hand. If an issue turns out to be mistaken rather than
-fixed, close it with a comment saying which — a tracker that does not
-distinguish "fixed" from "wasn't real" stops being worth reading.
+**The keyword has to sit immediately before the reference.** `Closes #12` links;
+`Closes the structural half of #12` does not — GitHub reads that as a plain
+mention, nothing fires on merge, and the line still *reads* like a link, which is
+how it goes unnoticed. Version 13 shipped that way. Check before merging rather
+than after:
+
+```sh
+gh pr view <n> --json closingIssuesReferences
+```
+
+An empty list means no issue will close, whatever the description says.
+
+### Closing an issue by hand
+
+Two cases, and both need a comment before the close.
+
+**The work shipped, but the resolution is not what was asked for.** Close it
+anyway, as completed. An issue tracks a *job*, not a feature list, and the job
+can be answered by something other than the thing requested. The comment is the
+part that matters: **what was asked, what shipped, and why they differ.** A part
+of the request that was dropped is recorded there with its reasoning — and if it
+is still wanted later it gets a fresh issue, rather than living on as the stale
+half of a finished one. Half-open issues rot, and nobody reads a tracker of
+them.
+
+This is the case the keyword cannot serve, and the reason to leave the keyword
+out on purpose: a pull request that answers half of what an issue asked should
+not close it silently on merge, before anybody has written down what happened.
+
+**The issue turns out to be mistaken rather than fixed.** Close it with a comment
+saying which — a tracker that does not distinguish "fixed" from "wasn't real"
+stops being worth reading.
+
+**Sweep the siblings.** A shipped change often answers more than the issue it was
+written for. When one closes, read the others it touched: version 13 was written
+for one issue and answered three, and the other two would have sat open for
+nothing. Where it only half-answers one, say exactly what did not change and
+invite a reopen.
 
 ## Screenshots
 

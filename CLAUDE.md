@@ -32,7 +32,10 @@ working here.**
    `@planned`, plus a numbered change spec in `specs/changes/`.
 4. **Human** approves it.
 5. **AI** implements, drops the `@planned` tags, writes the tests, commits green.
-6. **Human** screenshots the new version. Back to 1.
+6. **AI** records the version's GIF — the `record-clip` skill — and opens the PR
+   with it in the body.
+7. **Human** merges and uses it.
+8. **AI** closes the issue, saying what was decided and why. Back to 1.
 
 ## Rules
 
@@ -49,6 +52,11 @@ working here.**
 - **Never touch `src/` from a skill.** Both skills stop at the spec.
 - **`main` is protected.** Branch, then land it by pull request — direct pushes
   are rejected for everyone. The `Verify` check must be green to merge.
+- **Close the issue when the job is answered**, not when its literal request is
+  built — those differ more often than not. Comment what was asked, what shipped
+  and why they differ, then close; a dropped half goes in the comment and gets a
+  fresh issue if it is still wanted, never a stale open one. Check the `Closes
+  #N` link fired: the keyword only works immediately before the reference.
 - **A pull request shows what changed.** If the app looks different, the body
   carries an animated GIF from `docs/screenshots/`, recorded on the branch by the
   `record-clip` skill and embedded by a raw URL pinned to the commit. The

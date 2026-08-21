@@ -37,11 +37,23 @@ thing that fixes it.
 4. **Human approves** the spec, or asks for changes.
 5. **AI implements.** Removes the `@planned` tags, writes the tests referencing
    those rules, makes `npm run verify` green, commits.
-6. **Human screenshots** the new version. Back to 1.
+6. **AI records the version** using the [`record-clip`](skills.md) skill — one
+   animated GIF of the change, on the branch — and opens the pull request with it
+   in the body.
+7. **Human merges**, and uses the new version.
+8. **AI closes the issue**, with a comment saying what was asked, what shipped,
+   and why they differ. Back to 1.
 
 Steps 2 and 3 are separate on purpose. Filing and specifying are different jobs
 and get done badly when merged — filing wants breadth and evidence, specifying
 wants focus and a decision.
+
+**Step 6 used to be "human screenshots the new version",** and it moved when the
+picture became an animated GIF recorded from the change spec's own shot list —
+see [repository.md](repository.md#every-pull-request-carries-a-moving-picture).
+The human still uses the version, which is step 7 and where the next round of
+feedback comes from; what they stopped doing is producing the deliverable by
+hand.
 
 ## The rules
 
@@ -58,6 +70,12 @@ wants focus and a decision.
   and must pass `npm run verify`.
 - **Specs commit separately from implementations.** `spec 0004: <title>` lands
   first and is approved; the implementation follows in its own commit.
+- **An issue is closed when its job is answered, not when its request is built.**
+  The two are often different — a request is one proposed shape for a job, and
+  `refine-spec` exists to tell them apart. Comment what was asked, what shipped,
+  and why they differ; then close. Anything dropped goes in that comment, and
+  gets a fresh issue if it is still wanted. See
+  [repository.md](repository.md#closing-an-issue-by-hand).
 
 ## Versions
 
