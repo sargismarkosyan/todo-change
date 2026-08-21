@@ -45,6 +45,8 @@ A screenshot is evidence; get it into the issue if you can.
   `docs/feedback/<issue-slug>-<n>.png`, then commit and push it. In the issue
   body, embed it with the raw URL:
   `![description](https://raw.githubusercontent.com/sargismarkosyan/todo-change/main/docs/feedback/<file>)`
+  The file is temporary: it gets `git rm`'d when the issue closes, which is why
+  the written description below is the part that has to survive.
 - **If the image was pasted straight into chat**, you can see it but you cannot
   write it to disk. Ask for a path if the image is load-bearing; otherwise
   describe it precisely in the issue and note that no file was attached.
