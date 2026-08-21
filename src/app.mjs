@@ -13,9 +13,10 @@ import {
   newId,
   removeFrom,
   setGroup,
+  toggleFavourite,
 } from './recipes.mjs';
 import { findRecipes } from './finding.mjs';
-import { HOME, addressOf, dayOf, picksForDay, routeOf } from './home.mjs';
+import { HOME, addressOf, dayOf, favouritesIn, picksForDay, routeOf } from './home.mjs';
 import {
   addBook,
   openBook,
@@ -91,6 +92,9 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
   const emptyEl = doc.getElementById('empty');
   const findEl = doc.getElementById('find-recipe');
   const picksEl = doc.getElementById('picks');
+  const picksHeadingEl = doc.getElementById('picks-heading');
+  const favouritesEl = doc.getElementById('favourites');
+  const favouritesHeadingEl = doc.getElementById('favourites-heading');
   const homeEl = doc.querySelector('.app__home');
   const booksEl = doc.getElementById('books');
   const openEl = doc.getElementById('book-open');
@@ -235,6 +239,45 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
 
   /** The same, for a change to the contents of the open book. */
   const commitRecipes = (next) => commit(withOpenRecipes(store, next));
+
+  /** The star itself, drawn once and filled or not by a class. */
+  const starShape = () => {
+    const svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    const path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute(
+      'd',
+      'M8 1.8 9.62 6.18 14.28 6.36 10.62 9.25 11.88 13.74 8 11.15 ' +
+        '4.12 13.74 5.38 9.25 1.72 6.36 6.38 6.18Z',
+    );
+    svg.append(path);
+    return svg;
+  };
+
+  /**
+   * The star on a row of the contents: marks a recipe as one of the handful
+   * actually cooked, and unmarks it.
+   *
+   * Drawn on every row, starred or not. A mark you cannot see where you made it
+   * is a mark that stops being trusted, and reading down the contents is how you
+   * see which ones carry it. `aria-pressed` rather than a tick box, because it
+   * is a toggle and there is no tick box anywhere in this product.
+   */
+  function starButton(recipe) {
+    const marked = recipe.favourite === true;
+    const star = doc.createElement('button');
+    star.type = 'button';
+    star.className = marked ? 'recipe__star recipe__star--on' : 'recipe__star';
+    star.setAttribute('aria-pressed', String(marked));
+    star.setAttribute('aria-label', `Favourite ${recipe.name}`);
+    star.append(starShape());
+    // Nothing else moves: the contents keeps its order and the recipe stays as
+    // open or shut as it was. See specs/features/recipes/favourites.feature.
+    star.addEventListener('click', () => commitRecipes(toggleFavourite(recipes(), recipe.id)));
+    return star;
+  }
 
   function deleteButton(block, id, label) {
     const remove = doc.createElement('button');
@@ -639,7 +682,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
       render();
     });
 
-    main.append(name, deleteButton('recipe', recipe.id, recipe.name));
+    main.append(name, starButton(recipe), deleteButton('recipe', recipe.id, recipe.name));
     item.append(main);
 
     if (reading) {
@@ -1066,21 +1109,32 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
     askEl.hidden = !offering();
 
     const found = searching() ? findRecipes(store.books, finding) : [];
+    const showing = home && !searching();
+    // The handful somebody starred, leading the front door. Nothing starred
+    // gives nothing, and the home is then the one 0013 shipped.
+    const favourites = showing ? favouritesIn(store.books) : [];
     // Worked out from the day, so the same three hold still through every
     // repaint — and this repaints on each letter typed into the search box.
-    const picks = home && !searching() ? picksForDay(store.books, dayOf(now())) : [];
+    const picks = showing ? picksForDay(store.books, dayOf(now())) : [];
 
     // The box writes into the open book, and the home is not in one. What is on
     // screen there comes from every book at once, so there is no book for a name
     // typed at the front door to belong to — see specs/features/home/spec.md.
     form.hidden = home;
     contentsEl.hidden = home || searching();
-    picksEl.hidden = !home || searching();
+    picksEl.hidden = !showing;
+    favouritesEl.hidden = favourites.length === 0;
+    // Both headings or neither: one unlabelled list is a front door, and two
+    // stacked unlabelled ones are a puzzle. With nothing starred there is only
+    // the one, and it is the screen 0013 shipped.
+    favouritesHeadingEl.hidden = favouritesEl.hidden;
+    picksHeadingEl.hidden = favouritesEl.hidden;
     resultsEl.hidden = !searching();
 
     contentsEl.replaceChildren(...(home ? [] : recipes().map(row)));
-    // A pick is the shape of a result, so the same row draws it: a name, the
-    // book it is in, and a way to get there.
+    // A favourite and a pick are both the shape of a result, so the same row
+    // draws all three: a name, the book it is in, and a way to get there.
+    favouritesEl.replaceChildren(...favourites.map(resultRow));
     picksEl.replaceChildren(...picks.map(resultRow));
     resultsEl.replaceChildren(...found.map(resultRow));
 
@@ -1093,7 +1147,9 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
       emptyEl.hidden = found.length > 0;
     } else if (home) {
       emptyEl.textContent = NOTHING_YET;
-      emptyEl.hidden = picks.length > 0;
+      // Anything at all on the shelf, starred or not, and there is something to
+      // start from — so this speaks only for a browser holding no recipes.
+      emptyEl.hidden = favourites.length + picks.length > 0;
     } else {
       emptyEl.textContent = NO_RECIPES;
       emptyEl.hidden = recipes().length > 0;

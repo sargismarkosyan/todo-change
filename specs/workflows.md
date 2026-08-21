@@ -75,6 +75,13 @@ in it: three recipes from any book, each saying which book it is in, arrived at 
 opening the app and nothing else. It reaches into a book nobody has opened since
 March, which is the one thing neither browsing nor searching does.
 
+**When it is one of the usual**, it is shorter than either. Most of what gets
+cooked comes from a handful of recipes, and since 0014 those are starred in their
+books and lead the home: open the app, and they are the first thing on it, each
+saying which book it is in. No book to remember and no name to spell — the two
+kinds of recall this workflow otherwise charges. Nobody is asked to star
+anything, and a browser that never has sees the home 0013 shipped.
+
 **When the book is not known**, this runs the other way round. The recipe is
 somewhere and the book is the missing piece, so the steps are: type part of the
 name, or part of something it takes → read the matches, each one saying which
@@ -92,7 +99,8 @@ open all of them to find one thing — which is what searching is for.
 `features/books/switching.feature`, `features/books/creating.feature`,
 `features/recipes/empty-state.feature`, `features/finding/searching.feature`,
 `features/finding/leaving-a-search.feature`,
-`features/home/starting-from.feature`, `features/home/routes.feature`
+`features/home/starting-from.feature`, `features/home/routes.feature`,
+`features/home/favourites.feature`, `features/recipes/favourites.feature`
 
 ---
 

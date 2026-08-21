@@ -169,6 +169,7 @@ function open(seed, model = null, at = 'book', day = null) {
   // two must never be read for each other.
   const resultEls = () => [...doc.querySelectorAll('#results .result')];
   const pickEls = () => [...doc.querySelectorAll('#picks .result')];
+  const favouriteEls = () => [...doc.querySelectorAll('#favourites .result')];
   const rowReads = (el) => [
     el.querySelector('.result__name').textContent,
     el.querySelector('.result__book').textContent,
@@ -364,6 +365,51 @@ function open(seed, model = null, at = 'book', day = null) {
     /** Whether the handle for this line currently has focus. */
     handleHasFocus(text) {
       return doc.activeElement === line(text).querySelector('.line-handle');
+    },
+
+    // ---- one of the usual ------------------------------------------------
+
+    /** Press the star on a row of the contents. */
+    star(name) {
+      recipe(name).querySelector('.recipe__star').click();
+    },
+
+    /** Whether a recipe carries the star, read the way a reader sees it. */
+    isFavourite: (name) =>
+      recipe(name).querySelector('.recipe__star').getAttribute('aria-pressed') === 'true',
+
+    /** Whether every row of the contents offers the star at all. */
+    everyRecipeOffersTheStar: () =>
+      recipeEls().length > 0 &&
+      recipeEls().every((el) => el.querySelector('.recipe__star') !== null),
+
+    /** The favourites at the front door, read as the results are. */
+    favourites: () => favouriteEls().map(rowReads),
+
+    /** Whether the favourites are drawn above the picks. */
+    favouritesComeFirst() {
+      const lists = [...doc.querySelectorAll('#favourites, #picks')].filter((el) => !el.hidden);
+      return lists.length === 2 && lists[0].id === 'favourites';
+    },
+
+    /** The headings over the two lists, or none when there is only one list. */
+    headings: () =>
+      [...doc.querySelectorAll('.shelf__heading')]
+        .filter((el) => !el.hidden)
+        .map((el) => el.textContent),
+
+    /** Start from a favourite — the book it lives in opens, with it open. */
+    openFavourite(name) {
+      const found = favouriteEls().find(
+        (el) => el.querySelector('.result__name').textContent === name,
+      );
+      if (!found) {
+        throw new Error(
+          `nothing starred reads "${name}" — the favourites read: ` +
+            favouriteEls().map((el) => el.querySelector('.result__name').textContent).join(', '),
+        );
+      }
+      found.querySelector('.result__open').click();
     },
 
     // ---- throwing things out ---------------------------------------------
