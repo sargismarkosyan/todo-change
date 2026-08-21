@@ -1,6 +1,6 @@
 # Spec 0015: a ribbon of its own
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** [#14](https://github.com/sargismarkosyan/todo-change/issues/14) —
   "Allow to colorize and customize the book theme, so that every book can have
   it's own color and if I go to my recepies books library I can quickly glance
@@ -74,14 +74,24 @@ March.
 
 The page tells you which book you are in from a step back, without being read.
 Open the book menu and the books are told apart by colour before their names are.
-Nothing else about the app changes, and a book nobody colours is drawn exactly as
-version 0014 left it.
+Nothing else about the app changes, and a book nobody colours reads as the page
+0014 left it, with a red ribbon in it.
 
 **How we would know it worked:** cover the masthead and you can still say which
 book is on screen. Today that is impossible — every book renders identically, and
-the name is the only thing that differs. And the check that keeps it honest: with
-nothing coloured, every page is byte-for-byte the page before this change, so the
-feature costs a fresh install nothing.
+the name is the only thing that differs.
+
+**Every book has a ribbon, including the ones nobody has coloured.** The first
+draft of this section promised a fresh install would be unchanged down to the
+pixel, and that turned out to be a promise this shape cannot keep: red is the
+absence of a choice rather than a third state, so an uncoloured book and a book
+somebody chose red for are the same book and must draw the same. A ribbon that
+appeared only once a colour had been picked would put that state back, and would
+make "the ribbon says which book you are in" false of exactly the books nobody
+has got round to yet. So the ribbon is always there and it is red until somebody
+says otherwise — which is what every book's binding has been since 0005. What a
+fresh install still costs is nothing to *answer*: no question, no empty state, and
+no colour anybody has to choose before the app works.
 
 ## What changes
 

@@ -23,7 +23,6 @@ Feature: Telling one book from another without reading
       | Dinner |
     And the open book is named "Sweets"
 
-  @planned
   @rule:the-open-book-wears-its-colour
   Rule: The ribbon and the stitching are the open book's colour, and carry no words
 
@@ -41,7 +40,6 @@ Feature: Telling one book from another without reading
       When I open the book "Sweets"
       Then the ribbon is "green"
 
-  @planned
   @rule:every-book-in-the-menu-wears-its-colour
   Rule: Each book in the book menu is marked in its own colour, beside its name
 
@@ -54,7 +52,6 @@ Feature: Telling one book from another without reading
         | Sweets | green |
         | Dinner | plum  |
 
-  @planned
   @rule:colour-is-never-the-only-thing-saying-which-book
   Rule: Every place a colour says which book, the name says it too
 
@@ -66,7 +63,6 @@ Feature: Telling one book from another without reading
         | Sweets |
         | Dinner |
 
-  @planned
   @rule:every-book-colour-shows-on-paper
   Rule: All six colours clear 3 to 1 against the page and against the ground
 
@@ -74,7 +70,6 @@ Feature: Telling one book from another without reading
       Then each of the six book colours clears 3 to 1 against the page
       And each of the six book colours clears 3 to 1 against the ground
 
-  @planned
   @rule:the-front-door-has-no-ribbon
   Rule: At the home no book is open, so there is no ribbon
 

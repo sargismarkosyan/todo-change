@@ -17,7 +17,11 @@ import {
 import { findRecipes } from './finding.mjs';
 import { HOME, addressOf, dayOf, picksForDay, routeOf } from './home.mjs';
 import {
+  BOOK_COLOURS,
+  DEFAULT_COLOUR,
   addBook,
+  colourBook,
+  colourOf,
   openBook,
   openRecipes,
   removeBook,
@@ -95,6 +99,8 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
   const booksEl = doc.getElementById('books');
   const openEl = doc.getElementById('book-open');
   const menuEl = doc.getElementById('book-menu');
+  const appEl = doc.querySelector('.app');
+  const ribbonEl = doc.getElementById('ribbon');
   const statusEl = doc.getElementById('ai-status');
   const settingsEl = doc.getElementById('settings');
   const settingsOpenEl = doc.getElementById('settings-open');
@@ -722,6 +728,51 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
     return button;
   }
 
+  /**
+   * What the book on screen is bound in: the ribbon down the binding edge and
+   * the stitching beside it, in one colour, because a book is bound in one.
+   *
+   * The name goes on the element and the stylesheet knows what it looks like —
+   * so the six hexes live in one file and no stored book has to be touched to
+   * retune them. At the front door there is no open book, so there is no ribbon
+   * and the thread is the red it has been since 0005: the binding says which
+   * book this is, and at the home there is not one.
+   */
+  function renderBinding() {
+    const home = atHome();
+    appEl.dataset.colour = home ? DEFAULT_COLOUR : colourOf(openBook(store));
+    ribbonEl.hidden = home;
+  }
+
+  /**
+   * The strip of six, under the books and above making, renaming and deleting.
+   *
+   * The swatches themselves rather than a line of text leading to a picker: this
+   * offers a press, not a question, which is what persona.md's rule about
+   * popovers now rests on.
+   */
+  function swatchStrip() {
+    const strip = doc.createElement('div');
+    strip.className = 'books__colours';
+    const chosen = colourOf(openBook(store));
+
+    strip.append(
+      ...BOOK_COLOURS.map((colour) => {
+        const swatch = menuButton('books__colour', '', () =>
+          commit(colourBook(store, store.openId, colour)),
+        );
+        swatch.dataset.colour = colour;
+        // Named for anything reading the page aloud, and the chosen one is
+        // marked by standing proud and ringed as well as by being this colour —
+        // a mark made in colour alone is no mark to somebody who cannot see it.
+        swatch.setAttribute('aria-label', `Bind this book in ${colour}`);
+        swatch.setAttribute('aria-pressed', String(colour === chosen));
+        return swatch;
+      }),
+    );
+    return strip;
+  }
+
   function switchRow(book) {
     const item = doc.createElement('li');
     const button = menuButton('books__switch', book.name, () => {
@@ -731,6 +782,9 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
       stopFinding();
       goToBook(book.id);
     });
+    // Every book wears its own colour here, which is the one place all of them
+    // are seen at once. Beside its name, never instead of it.
+    button.dataset.colour = colourOf(book);
     if (book.id === store.openId) button.setAttribute('aria-current', 'true');
     item.append(button);
     return item;
@@ -832,6 +886,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
     const actions = doc.createElement('div');
     actions.className = 'books__actions';
     actions.append(
+      swatchStrip(),
       newBookForm(),
       menuButton('books__rename-open', 'Rename this book', () => {
         menu = { open: true, mode: 'renaming' };
@@ -1061,6 +1116,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
     const home = atHome();
 
     sortable = [];
+    renderBinding();
     renderMenu();
     renderAi();
     askEl.hidden = !offering();

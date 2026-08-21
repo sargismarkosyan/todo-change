@@ -656,6 +656,73 @@ function open(seed, model = null, at = 'book', day = null) {
 
     /** Whether the menu is on screen. */
     menuIsOpen: () => !menu().hidden,
+
+    // ---- what a book is bound in -----------------------------------------
+    //
+    // The colour is a name on an element and the six hexes are in the
+    // stylesheet, so what is read back here is the name — which is also what is
+    // stored, and the whole reason the palette can be retuned without touching a
+    // book. See src/books.mjs.
+
+    /**
+     * What the page is bound in: the ribbon down the binding edge and the
+     * stitching beside it, which are one colour because a book is.
+     *
+     * Read off the element that sets it. jsdom computes no pseudo-element
+     * styles, so that the thread and the ribbon both *draw* from it is checked
+     * against the stylesheet itself — see `ruleFor` in ./palette.mjs.
+     */
+    binding: () => doc.querySelector('.app').dataset.colour,
+
+    /** Whether there is a ribbon at all. There is not, at the front door. */
+    ribbonIsShowing: () => !doc.getElementById('ribbon').hidden,
+
+    /** Bind the book on screen in one of the six — one press, once the menu is open. */
+    colourBook(colour) {
+      openMenu();
+      const swatch = menu().querySelector(`.books__colour[data-colour="${colour}"]`);
+      if (!swatch) {
+        throw new Error(
+          `no swatch for "${colour}" — the strip offers: ` +
+            [...menu().querySelectorAll('.books__colour')]
+              .map((el) => el.dataset.colour)
+              .join(', '),
+        );
+      }
+      swatch.click();
+    },
+
+    /** The strip, left to right. */
+    swatches() {
+      openMenu();
+      return [...menu().querySelectorAll('.books__colour')].map((el) => el.dataset.colour);
+    },
+
+    /** The one marked as this book's, or null when the strip is not on screen. */
+    chosenSwatch() {
+      openMenu();
+      const found = [...menu().querySelectorAll('.books__colour')].find(
+        (el) => el.getAttribute('aria-pressed') === 'true',
+      );
+      return found?.dataset.colour ?? null;
+    },
+
+    /** How the swatches read to anything reading the page aloud. */
+    swatchLabels() {
+      openMenu();
+      return [...menu().querySelectorAll('.books__colour')].map((el) =>
+        el.getAttribute('aria-label'),
+      );
+    },
+
+    /** The books in the menu as the Gherkin reads them: the name, and its colour. */
+    bookColours() {
+      openMenu();
+      return [...menu().querySelectorAll('.books__switch')].map((el) => [
+        el.textContent,
+        el.dataset.colour,
+      ]);
+    },
   };
 }
 

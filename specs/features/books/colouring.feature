@@ -27,7 +27,6 @@ Feature: Giving a book a colour
     And the contents reads:
       | Apple cake |
 
-  @planned
   @rule:a-book-takes-a-colour
   Rule: Pressing a swatch colours the open book, and pressing another changes it
 
@@ -46,7 +45,6 @@ Feature: Giving a book a colour
       Then the open book's colour is "red"
       And the swatch "red" is the chosen one
 
-  @planned
   @rule:a-colour-belongs-to-one-book
   Rule: Colouring one book leaves every other book the colour it was
 
@@ -58,7 +56,6 @@ Feature: Giving a book a colour
       And I open the book "Sweets"
       Then the open book's colour is "green"
 
-  @planned
   @rule:a-books-colour-is-kept
   Rule: A colour survives being closed and come back to
 
@@ -67,7 +64,6 @@ Feature: Giving a book a colour
       When the app is opened again
       Then the open book's colour is "teal"
 
-  @planned
   @rule:colouring-changes-nothing-else
   Rule: A colour is all that changes — same name, same recipes, same order
 
@@ -83,7 +79,6 @@ Feature: Giving a book a colour
       And no recipe is open
       And the book menu is still open
 
-  @planned
   @rule:an-unknown-colour-is-the-red-it-always-was
   Rule: A stored colour that is not one of the six reads as the red
 
