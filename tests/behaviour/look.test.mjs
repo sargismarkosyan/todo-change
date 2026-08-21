@@ -20,7 +20,7 @@ const READING = resolve(token('reading'));
 const LABELLING = resolve(token('hand'));
 
 rule('paper-under-everything', () => {
-  test('the ground, the page and the card are all warm', () => {
+  test('the ground, the page and the card are all warm', async () => {
     for (const name of ['paper', 'page', 'card']) {
       assert.ok(
         warmth(token(name)) > 5,
@@ -29,14 +29,14 @@ rule('paper-under-everything', () => {
     }
   });
 
-  test('each one is lighter than the one it sits on', () => {
+  test('each one is lighter than the one it sits on', async () => {
     const [ground, page, card] = ['paper', 'page', 'card'].map((n) => lightness(token(n)));
     assert.ok(ground < page, 'the page must be lighter than the ground it lies on');
     assert.ok(page < card, 'a card must be lighter than the page it lies on');
   });
 
-  test('the ground really is the page background', () => {
-    const app = openApp();
+  test('the ground really is the page background', async () => {
+    const app = await openApp();
     const body = app.window.getComputedStyle(app.document.body);
     assert.equal(resolve(body.backgroundColor), token('paper'));
   });
@@ -61,8 +61,8 @@ rule('ink-reads-on-paper', () => {
     });
   }
 
-  test('the label on the Add button clears 4.5 to 1', () => {
-    const app = openApp();
+  test('the label on the Add button clears 4.5 to 1', async () => {
+    const app = await openApp();
     const label = app.window.getComputedStyle(
       app.document.querySelector('.composer__add'),
     ).color;
@@ -72,17 +72,17 @@ rule('ink-reads-on-paper', () => {
 });
 
 rule('the-masthead-names-the-book', () => {
-  test('the cover', () => {
-    const app = openApp();
-    assert.equal(app.masthead(), 'Recipes');
+  test('the cover', async () => {
+    const app = await openApp();
+    assert.equal(await app.masthead(), 'Recipes');
   });
 
-  test('it does not say what the repository is called', () => {
+  test('it does not say what the repository is called', async () => {
     // The repository is still todo-change, and still says so where it is the
     // repository being named. The cover is not one of those places.
-    const app = openApp();
+    const app = await openApp();
     assert.ok(
-      !app.masthead().includes('todo-change'),
+      !await (await app.masthead()).includes('todo-change'),
       'the masthead names the book, not the repo it lives in',
     );
   });
@@ -90,28 +90,28 @@ rule('the-masthead-names-the-book', () => {
 
 rule('handwriting-labels-but-is-not-read', () => {
   /** One recipe, open, with something in both of its groups. */
-  function open() {
-    const app = openAppWithContents('Apple cake');
-    app.give('Apple cake', 'ingredient', ['200g plain flour']);
-    app.give('Apple cake', 'step', ['Heat the oven to 180C']);
-    app.openRecipe('Apple cake');
+  async function open() {
+    const app = await openAppWithContents('Apple cake');
+    await app.give('Apple cake', 'ingredient', ['200g plain flour']);
+    await app.give('Apple cake', 'step', ['Heat the oven to 180C']);
+    await app.openRecipe('Apple cake');
     return app;
   }
 
-  test('the title and the group headings are set in the labelling face', () => {
-    const app = open();
+  test('the title and the group headings are set in the labelling face', async () => {
+    const app = await open();
     assert.equal(faceOf(app, '.app__title'), LABELLING);
     assert.equal(faceOf(app, '.recipe__heading'), LABELLING);
   });
 
-  test('the recipe, its ingredients and its method are set in the reading face', () => {
-    const app = open();
+  test('the recipe, its ingredients and its method are set in the reading face', async () => {
+    const app = await open();
     for (const selector of ['.recipe__name', '.ingredient__text', '.step__text']) {
       assert.equal(faceOf(app, selector), READING, `${selector} is read, not glanced at`);
     }
   });
 
-  test('the labelling face falls back to a book face, never to whatever cursive is', () => {
+  test('the labelling face falls back to a book face, never to whatever cursive is', async () => {
     // `cursive` always matches something, and where nothing handwritten is
     // installed that something is the default sans — beside a serif body it
     // reads as a mistake rather than a choice. See features/look/spec.md.
@@ -129,7 +129,7 @@ rule('nothing-is-fetched-from-elsewhere', () => {
     readFileSync(path, 'utf8'),
   ]);
 
-  test('the page asks for nothing over http', () => {
+  test('the page asks for nothing over http', async () => {
     for (const [path, source] of sources) {
       const found = source.match(/https?:\/\/[^\s"')]+/g) ?? [];
       // A link in a comment is a reference, not a request; anything in an
@@ -140,7 +140,7 @@ rule('nothing-is-fetched-from-elsewhere', () => {
     }
   });
 
-  test('every font it uses is one of this app own files', () => {
+  test('every font it uses is one of this app own files', async () => {
     const [, css] = sources.find(([path]) => path === 'src/styles.css');
     const faces = [...css.matchAll(/@font-face\s*\{([\s\S]*?)\}/g)].map((m) => m[1]);
     assert.ok(faces.length > 0, 'the labelling face is shipped, not borrowed');

@@ -8,21 +8,21 @@ import { contrast, resolve, ruleFor, token } from '../support/palette.mjs';
 import { BOOK_COLOURS } from '../../src/books.mjs';
 
 /** The Background: "Sweets" open, beside "Dinner". */
-function open() {
-  const app = openApp();
-  app.renameBook('Sweets');
-  app.makeBook('Dinner');
-  app.openBookNamed('Sweets');
+async function open() {
+  const app = await openApp();
+  await app.renameBook('Sweets');
+  await app.makeBook('Dinner');
+  await app.openBookNamed('Sweets');
   return app;
 }
 
 rule('the-open-book-wears-its-colour', () => {
-  test('opening the green book', () => {
-    const app = open();
-    app.colourBook('green');
+  test('opening the green book', async () => {
+    const app = await open();
+    await app.colourBook('green');
 
-    assert.equal(app.ribbonIsShowing(), true);
-    assert.equal(app.binding(), 'green');
+    assert.equal(await app.ribbonIsShowing(), true);
+    assert.equal(await app.binding(), 'green');
     // Nothing is read in a book's colour, which is the whole reason it can be
     // one at full strength. The ribbon holds no words and nothing is drawn on
     // top of it.
@@ -30,7 +30,7 @@ rule('the-open-book-wears-its-colour', () => {
     assert.equal(app.document.getElementById('ribbon').children.length, 0);
   });
 
-  test('the ribbon and the stitching cannot drift apart', () => {
+  test('the ribbon and the stitching cannot drift apart', async () => {
     // jsdom computes no pseudo-element styles, so the guarantee that both draw
     // from the one token the book sets is checked against the stylesheet the
     // browser is served. Which colour that token holds is checked above.
@@ -38,36 +38,36 @@ rule('the-open-book-wears-its-colour', () => {
     assert.match(ruleFor('.app::before'), /var\(--thread\)/);
   });
 
-  test('switching to a book of another colour', () => {
-    const app = open();
-    app.colourBook('green');
+  test('switching to a book of another colour', async () => {
+    const app = await open();
+    await app.colourBook('green');
 
-    app.openBookNamed('Dinner');
-    app.colourBook('blue');
-    assert.equal(app.binding(), 'blue');
+    await app.openBookNamed('Dinner');
+    await app.colourBook('blue');
+    assert.equal(await app.binding(), 'blue');
 
-    app.openBookNamed('Sweets');
-    assert.equal(app.binding(), 'green');
+    await app.openBookNamed('Sweets');
+    assert.equal(await app.binding(), 'green');
   });
 });
 
 rule('every-book-in-the-menu-wears-its-colour', () => {
-  test('the shelf, at a glance', () => {
-    const app = open();
-    app.colourBook('green');
-    app.openBookNamed('Dinner');
-    app.colourBook('plum');
+  test('the shelf, at a glance', async () => {
+    const app = await open();
+    await app.colourBook('green');
+    await app.openBookNamed('Dinner');
+    await app.colourBook('plum');
 
-    assert.deepEqual(app.bookColours(), [
+    assert.deepEqual(await app.bookColours(), [
       ['Sweets', 'green'],
       ['Dinner', 'plum'],
     ]);
   });
 
-  test('every row wears one, coloured or not', () => {
-    const app = open();
+  test('every row wears one, coloured or not', async () => {
+    const app = await open();
 
-    assert.deepEqual(app.bookColours(), [
+    assert.deepEqual(await app.bookColours(), [
       ['Sweets', 'red'],
       ['Dinner', 'red'],
     ]);
@@ -75,18 +75,18 @@ rule('every-book-in-the-menu-wears-its-colour', () => {
 });
 
 rule('colour-is-never-the-only-thing-saying-which-book', () => {
-  test('the name is on screen either way', () => {
-    const app = open();
-    app.colourBook('teal');
+  test('the name is on screen either way', async () => {
+    const app = await open();
+    await app.colourBook('teal');
 
-    assert.equal(app.openBook(), 'Sweets');
-    assert.deepEqual(app.books(), ['Sweets', 'Dinner']);
+    assert.equal(await app.openBook(), 'Sweets');
+    assert.deepEqual(await app.books(), ['Sweets', 'Dinner']);
   });
 
-  test('a book read aloud is read by its name', () => {
-    const app = open();
-    app.colourBook('teal');
-    app.openBookNamed('Sweets');
+  test('a book read aloud is read by its name', async () => {
+    const app = await open();
+    await app.colourBook('teal');
+    await app.openBookNamed('Sweets');
 
     assert.equal(
       app.document.getElementById('book-open').getAttribute('aria-label'),
@@ -94,12 +94,12 @@ rule('colour-is-never-the-only-thing-saying-which-book', () => {
     );
     // Nothing on a row says its colour: the mark is drawn, and the name is what
     // the row reads. A colour said twice is a colour somebody has to hear.
-    assert.deepEqual(app.bookColours().map(([name]) => name), ['Sweets', 'Dinner']);
+    assert.deepEqual(await (await app.bookColours()).map(([name]) => name), ['Sweets', 'Dinner']);
   });
 });
 
 rule('every-book-colour-shows-on-paper', () => {
-  test('the six a book can be bound in', () => {
+  test('the six a book can be bound in', async () => {
     const page = resolve(token('page'));
     const ground = resolve(token('paper'));
 
@@ -116,7 +116,7 @@ rule('every-book-colour-shows-on-paper', () => {
     }
   });
 
-  test('every one of the six is a colour this stylesheet declares', () => {
+  test('every one of the six is a colour this stylesheet declares', async () => {
     for (const colour of BOOK_COLOURS) {
       assert.match(resolve(token(`book-${colour}`)), /^#[0-9a-f]{6}$/i, colour);
     }
@@ -124,25 +124,25 @@ rule('every-book-colour-shows-on-paper', () => {
 });
 
 rule('the-front-door-has-no-ribbon', () => {
-  test('arriving at the front door', () => {
-    const app = openHome(
+  test('arriving at the front door', async () => {
+    const app = await openHome(
       storedBooks([{ id: 'b1', name: 'Sweets', colour: 'plum', recipes: [] }], 'b1'),
     );
 
-    assert.equal(app.atHome(), true);
-    assert.equal(app.ribbonIsShowing(), false);
-    assert.equal(app.binding(), 'red');
+    assert.equal(await app.atHome(), true);
+    assert.equal(await app.ribbonIsShowing(), false);
+    assert.equal(await app.binding(), 'red');
   });
 
-  test('and it comes back on the way into a book', () => {
-    const app = openStore(
+  test('and it comes back on the way into a book', async () => {
+    const app = await openStore(
       storedBooks([{ id: 'b1', name: 'Sweets', colour: 'plum', recipes: [] }], 'b1'),
     );
-    assert.equal(app.ribbonIsShowing(), true);
-    assert.equal(app.binding(), 'plum');
+    assert.equal(await app.ribbonIsShowing(), true);
+    assert.equal(await app.binding(), 'plum');
 
-    app.pressCover();
-    assert.equal(app.ribbonIsShowing(), false);
-    assert.equal(app.binding(), 'red');
+    await app.pressCover();
+    assert.equal(await app.ribbonIsShowing(), false);
+    assert.equal(await app.binding(), 'red');
   });
 });

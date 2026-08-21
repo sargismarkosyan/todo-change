@@ -128,8 +128,9 @@ and the prompt is the right lever.
 
 The browser's own: the **Prompt API**, `LanguageModel` in the global scope.
 
-`../../setup/constraints.md` says the app ships zero dependencies, and this adds
-none. The model belongs to the browser the way `localStorage` and `crypto` do.
+`../../setup/constraints.md` holds the app to almost no dependencies — two
+vendored libraries, and nothing installed — and this adds neither. The model
+belongs to the browser the way `localStorage` and `crypto` do.
 There is nothing to install, nothing to keep current, nothing fetched from
 anyone else's machine, and `index.html` is still the whole app.
 

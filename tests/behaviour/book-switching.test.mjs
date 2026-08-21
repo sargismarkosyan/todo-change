@@ -6,48 +6,48 @@ import { rule } from '../support/covers.mjs';
 import { openApp } from '../support/app.mjs';
 
 /** The Background: two books, "Sweets" open. */
-function shelf() {
-  const app = openApp();
-  app.renameBook('Sweets');
-  app.makeBook('Dinner');
-  app.openBookNamed('Sweets');
+async function shelf() {
+  const app = await openApp();
+  await app.renameBook('Sweets');
+  await app.makeBook('Dinner');
+  await app.openBookNamed('Sweets');
   return app;
 }
 
 rule('switch-shows-only-that-notepad', () => {
-  test('two books, one visible at a time', () => {
-    const app = shelf();
-    app.writeDown('Apple cake');
+  test('two books, one visible at a time', async () => {
+    const app = await shelf();
+    await app.writeDown('Apple cake');
 
-    app.openBookNamed('Dinner');
-    assert.deepEqual(app.contents(), []);
+    await app.openBookNamed('Dinner');
+    assert.deepEqual(await app.contents(), []);
 
-    app.writeDown('Roast chicken');
-    assert.deepEqual(app.contents(), ['Roast chicken']);
+    await app.writeDown('Roast chicken');
+    assert.deepEqual(await app.contents(), ['Roast chicken']);
 
-    app.openBookNamed('Sweets');
-    assert.deepEqual(app.contents(), ['Apple cake']);
-    assert.equal(app.openBook(), 'Sweets');
+    await app.openBookNamed('Sweets');
+    assert.deepEqual(await app.contents(), ['Apple cake']);
+    assert.equal(await app.openBook(), 'Sweets');
   });
 
-  test('the books are listed in the order they were made', () => {
-    assert.deepEqual(shelf().books(), ['Sweets', 'Dinner']);
+  test('the books are listed in the order they were made', async () => {
+    assert.deepEqual(await (await shelf()).books(), ['Sweets', 'Dinner']);
   });
 });
 
 rule('capture-goes-to-the-open-notepad', () => {
-  test('typing into the box while "Dinner" is open', () => {
-    const app = shelf();
-    app.openBookNamed('Dinner');
-    app.writeDown('Roast chicken');
-    assert.deepEqual(app.contents(), ['Roast chicken']);
+  test('typing into the box while "Dinner" is open', async () => {
+    const app = await shelf();
+    await app.openBookNamed('Dinner');
+    await app.writeDown('Roast chicken');
+    assert.deepEqual(await app.contents(), ['Roast chicken']);
 
-    app.openBookNamed('Sweets');
-    assert.deepEqual(app.contents(), []);
+    await app.openBookNamed('Sweets');
+    assert.deepEqual(await app.contents(), []);
   });
 
-  test('the box never asks which book was meant', () => {
-    const app = shelf();
+  test('the box never asks which book was meant', async () => {
+    const app = await shelf();
     assert.equal(
       app.document.getElementById('composer').querySelectorAll('select, [role="listbox"]').length,
       0,

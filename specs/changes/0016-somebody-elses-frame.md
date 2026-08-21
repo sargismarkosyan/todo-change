@@ -1,6 +1,6 @@
 # Spec 0016: somebody else's frame
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** [#15](https://github.com/sargismarkosyan/todo-change/issues/15) —
   "Let's rebuild using Vue.js" · "After this one I need a recording of working
   every workflow every feature to make sure no regression"
@@ -126,12 +126,12 @@ Nothing on screen. What changes is underneath it.
   components need a build step, which is ruled out and stays ruled out; runtime
   template strings need Vue's compiler in the browser, which is a bigger
   vendored file to do a job `h()` already does.
-- **`index.html` keeps its markup.** The static shell — masthead, box, search
-  box, colophon — stays in the one page, and Vue mounts over it. The document is
-  still the whole app and still readable as HTML.
-- **`typingIn` and `focusedHandle` go**, along with the two focus-restoring
-  blocks at the end of `render()`. A keyed diff keeps the node the caret is in,
-  so there is nothing to put back.
+- **`index.html` becomes the mount point** — see *What came out different*
+  below. It is still the one page and still the whole app.
+- **`typingIn` goes**, along with its focus-restoring block at the end of
+  `render()`. A keyed diff keeps the node the caret is in, so there is nothing
+  to put back.
+- **`focusedHandle` stays** — see *What came out different* below.
 - **`constraints.md` is amended in three places**: *The app ships almost no
   dependencies*, *A vendored library* — which becomes two, with a second bar to
   clear — and *One page, two addresses*, whose "what stays ruled out" list names
@@ -154,6 +154,40 @@ make the change look substantial would put an implementation detail in spec
 costume — the exact thing [`specs/README.md`](../README.md) warns about. The 106
 existing rules are the contract this change is measured against, and they are
 measured unchanged.
+
+## What came out different
+
+Two things this spec promised turned out to be wrong once it was built. Both are
+recorded here rather than quietly delivered, because a change whose whole claim
+is *nothing moved* has to be exact about what did.
+
+**`focusedHandle` stays, and the reasoning above it was half right.** The claim
+was that a keyed diff keeps the node the caret is in, so nothing has to be put
+back. That holds for a repaint *around* an element — the box an ingredient is
+typed into keeps its node, its text and its focus, so `typingIn` really is gone.
+It does not hold for an element the diff **moves**: a browser blurs a node taken
+out of the document and put back elsewhere, and moving a line is exactly that.
+Dropping `focusedHandle` would have broken
+`@rule:line-moved-by-keyboard` — *the handle keeps focus, so it can be pressed
+again* — which is the rule that lets a line be walked up a list with repeated
+presses. It is kept, and it is now three lines rather than six: the node is the
+same one, so it is found again by its id after the repaint lands.
+
+**`index.html` does not keep the static shell.** The spec said the shell would
+stay in the page with Vue mounting over it. Vue clears the element it mounts
+into, so what that would actually have produced is two copies of the same
+markup — one served, one drawn over the top of it a moment later — that no gate
+reads and nothing keeps in step. That is a silent drift waiting to happen, and
+it is worse than either alternative. `<main class="app">` is now empty in the
+document and the page is described once, in `src/app.mjs`. What the constraint
+was protecting survives: one file, one page, no build step, and what the browser
+runs is byte for byte what is in the repo.
+
+**One thing was added that this spec did not ask for**, and it is a test rather
+than behaviour: a new `Example:` under the existing `@rule:line-moved-within-its-group`
+that drops a line instead of walking it with the arrow keys. Nothing exercised
+the end of a drag before — it was one line of delegation and now it is the app
+undoing what the library did to the page. It adds no rule and changes none.
 
 ## What we are not doing
 

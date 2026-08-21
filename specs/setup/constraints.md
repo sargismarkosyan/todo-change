@@ -4,6 +4,11 @@ These are decisions, not defaults. Each one closes off options on purpose.
 Changing any of them needs a numbered change spec arguing for it — "it would be
 easier with a framework" is not that argument.
 
+**That sentence survives version 0016, which added one.** It was not accepted on
+the grounds it rules out, and the section that added it says on whose grounds it
+was. A constraint that has been overruled once is not thereby open; it is a
+constraint with a recorded exception, and the exception names its price.
+
 ## No backend
 
 No server, no API, no database, no accounts, no sync.
@@ -43,12 +48,18 @@ text only. Each needs its own spec if it ever becomes real.
 ## The app ships almost no dependencies
 
 Plain HTML, CSS, and ES modules, served as static files. No bundler, no
-framework, no transpiler, no build step. `index.html` is the whole app.
+transpiler, no build step. `index.html` is the whole app.
 
-**One exception, added in version 0012: SortableJS**, vendored in `vendor/`.
-The heading used to read "zero dependencies" and it no longer honestly can. The
-argument for the exception, and the three questions any future one has to
-answer, are under *A vendored library* below.
+**Two exceptions, both vendored in `vendor/`: SortableJS since 0012, and Vue
+since 0016.** The heading used to read "zero dependencies" and it no longer
+honestly can. **"No framework" has gone from the line above**, because version
+0016 added one and a constraint that describes something other than the repo is
+worse than no constraint at all. What did not go is *no build step*, and that
+is now the load-bearing half: it is what keeps the browser running byte for byte
+what is in the repo.
+
+The argument for each exception, and the questions a third would have to answer,
+are under *Two vendored libraries* below.
 
 **Why.** Diffs stay readable, which matters when the deliverable is a series of
 screenshots with commits between them. There is no build output to explain, and
@@ -68,10 +79,11 @@ runtime fetch to anyone else's machine, and nothing to keep current — which is
 what this constraint is actually protecting. A `<link>` to a font host would
 fail all three and is ruled out; see `../features/look/spec.md`.
 
-## A vendored library
+## Two vendored libraries
 
-**SortableJS**, MIT, no dependencies of its own, at `vendor/sortable/`. It is
-the only one, and the bar for a second is this section.
+**SortableJS**, MIT, at `vendor/sortable/`, and **Vue 3**, MIT, at
+`vendor/vue/`. Neither has dependencies of its own. The bar for a third is this
+section — and the second one did not clear it, which is the part worth reading.
 
 **Why the rule bent.** Reordering a line was written by hand in 0011 because
 this file forbade the alternative, and it was quietly broken: no
@@ -100,10 +112,46 @@ wrote. `src/**` is held at 95%, and a minified bundle inside it would either
 sink the gate or force it to be gamed; neither is worth doing to code nobody
 here is testing.
 
-**What this does not open.** Not a framework, not a bundler, not a build step,
-not a package installed at deploy time, and not a second library for something
-that can be written in twenty lines. The test a candidate has to pass is the one
-above: pre-built ESM, committed here, and worth being stuck on a version of.
+**What this does not open.** Not a bundler, not a build step, not a package
+installed at deploy time, and not a second library for something that can be
+written in twenty lines. The test a candidate has to pass is the one above:
+pre-built ESM, committed here, and worth being stuck on a version of.
+
+## The second exception, which was not argued for on its merits
+
+**Vue 3.5.41**, MIT, runtime-only ESM, at `vendor/vue/`. Added by
+[change 0016](../changes/0016-somebody-elses-frame.md).
+
+**It fails the test above, and it was taken anyway.** The paragraph over this
+one says a candidate has to be worth being stuck on a version of, and says a
+library is not added for something already written. Vue is the second: the whole
+of what it does here was working, hand-written, in `src/app.mjs` — one `render()`
+rebuilding the page from state, forty functions each returning a piece of it.
+Swapping that for Vue changed no screen, no keystroke and no stored byte, and
+0016 says so in its own first section.
+
+**Why it is here.** The organisation that owns this code standardised on Vue.
+That is a decision about who can work on the code, not about what the code does,
+and it was taken outside this repository. It is written down here in those terms
+rather than dressed up as a technical argument, because the next person reading
+this file deserves to know which of the two exceptions was reasoned and which
+was complied with.
+
+**What it costs, quoted rather than softened.** Everything the section above
+says about a vendored library receiving no fixes, only more so — Vue is bigger,
+more exposed, and released far more often than SortableJS. Nothing will remind
+anybody. `vendor/vue/README.md` holds the version and the source.
+
+**What it did buy, in fairness.** A keyed diff, so a repaint keeps the box
+somebody is typing into instead of rebuilding it and putting the caret back by
+hand. That was six lines of code and they are gone. It is the whole of the
+technical gain and it is not why this is here.
+
+**What it still does not open.** No build step, no bundler, no single-file
+components, no template compiler in the browser, no Vue Router — the two
+addresses are `location.hash` and stay that way — and no store library, because
+the store is one `localStorage` key. Each of those is a fresh decision needing
+its own spec, and "we already have Vue" is not the argument for any of them.
 
 **Dev tooling is a different thing.** `jsdom` is a devDependency, used by tests
 only. Node's own test runner and coverage provide the rest, so there is no test
@@ -166,8 +214,12 @@ months later, a pinned tab remembers a URL, and an address is what makes
 reopening land where it was left rather than where storage guesses. Back and
 forward then work for free, which is otherwise a thing to be built.
 
-**What stays ruled out.** A view layer that implies a second page — a component
-tree, a template language, a framework. A route for every piece of screen state:
+**What stays ruled out.** A second page: another document, a route the server
+has to know about, anything fetched or code-split to render one. **This
+paragraph used to rule out "a component tree, a template language, a framework"
+as well, and 0016 took that clause out** — the app is drawn by a component tree
+now and is still one document at two hash addresses, which is what this
+constraint was actually protecting. A route for every piece of screen state:
 which recipe is open is still not in the address, for the reason in
 [`../features/recipes/spec.md`](../features/recipes/spec.md). And an address
 whose absence breaks anything — every unknown address opens the front door, in

@@ -12,12 +12,12 @@ import { at, drafts, fakeModel, openApp } from '../support/app.mjs';
  * model says. What is asserted is what the app does with an answer.
  */
 async function book(model) {
-  const app = openApp(model);
-  app.renameBook('Sweets');
-  app.writeDown('Apple pie');
+  const app = await openApp(model);
+  await app.renameBook('Sweets');
+  await app.writeDown('Apple pie');
   await app.settle();
-  if (app.offeredAi()) app.acceptOffer();
-  app.openRecipe('Apple pie');
+  if (await app.offeredAi()) await app.acceptOffer();
+  await app.openRecipe('Apple pie');
   return app;
 }
 
@@ -28,30 +28,30 @@ rule('draft-proposes-both-groups', () => {
       fakeModel({ drafts: drafts(['200g plain flour', '3 apples'], ['Heat the oven to 180C']) }),
     );
 
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
 
-    assert.deepEqual(app.proposed('ingredients'), ['200g plain flour', '3 apples']);
-    assert.deepEqual(app.proposed('steps'), ['Heat the oven to 180C']);
-    assert.deepEqual(app.ingredients('Apple pie'), [], 'not one line is written down');
-    assert.deepEqual(app.method('Apple pie'), []);
+    assert.deepEqual(await app.proposed('ingredients'), ['200g plain flour', '3 apples']);
+    assert.deepEqual(await app.proposed('steps'), ['Heat the oven to 180C']);
+    assert.deepEqual(await app.ingredients('Apple pie'), [], 'not one line is written down');
+    assert.deepEqual(await app.method('Apple pie'), []);
   });
 
   test('a proposal is not written down, so it does not survive the tab', async () => {
     const app = await book(fakeModel({ drafts: drafts(['3 apples']) }));
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
 
-    const back = app.reload();
-    back.openRecipe('Apple pie');
-    assert.deepEqual(back.ingredients('Apple pie'), []);
+    const back = await app.reload();
+    await back.openRecipe('Apple pie');
+    assert.deepEqual(await back.ingredients('Apple pie'), []);
   });
 
   test('a line the model repeats is offered once', async () => {
     const app = await book(fakeModel({ drafts: drafts(['3 apples', '3 apples', ' 3 apples ']) }));
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
-    assert.deepEqual(app.proposed('ingredients'), ['3 apples']);
+    assert.deepEqual(await app.proposed('ingredients'), ['3 apples']);
   });
 });
 
@@ -59,26 +59,26 @@ rule('draft-accepted-line-by-line', () => {
   test('taking one of two', async () => {
     const app = await book(fakeModel({ drafts: drafts(['200g plain flour', '3 apples']) }));
 
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
-    app.acceptProposal('3 apples');
+    await app.acceptProposal('3 apples');
 
-    assert.deepEqual(app.ingredients('Apple pie'), ['3 apples']);
-    assert.deepEqual(app.proposed('ingredients'), ['200g plain flour']);
+    assert.deepEqual(await app.ingredients('Apple pie'), ['3 apples']);
+    assert.deepEqual(await app.proposed('ingredients'), ['200g plain flour']);
   });
 
   test('taking one out of the middle leaves it in the middle', async () => {
     const app = await book(
       fakeModel({ drafts: drafts([], [at(1, 'Peel and slice the apples')]) }),
     );
-    app.give('Apple pie', 'step', ['Heat the oven to 180C', 'Bake for 45 minutes']);
-    app.openRecipe('Apple pie');
+    await app.give('Apple pie', 'step', ['Heat the oven to 180C', 'Bake for 45 minutes']);
+    await app.openRecipe('Apple pie');
 
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
-    app.acceptProposal('Peel and slice the apples');
+    await app.acceptProposal('Peel and slice the apples');
 
-    assert.deepEqual(app.method('Apple pie'), [
+    assert.deepEqual(await app.method('Apple pie'), [
       'Heat the oven to 180C',
       'Peel and slice the apples',
       'Bake for 45 minutes',
@@ -90,12 +90,12 @@ rule('draft-accepted-line-by-line', () => {
       fakeModel({ drafts: drafts([], ['Heat the oven to 180C', 'Peel and slice the apples']) }),
     );
 
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
-    app.acceptProposal('Peel and slice the apples');
-    app.acceptProposal('Heat the oven to 180C');
+    await app.acceptProposal('Peel and slice the apples');
+    await app.acceptProposal('Heat the oven to 180C');
 
-    assert.deepEqual(app.method('Apple pie'), [
+    assert.deepEqual(await app.method('Apple pie'), [
       'Heat the oven to 180C',
       'Peel and slice the apples',
     ]);
@@ -103,22 +103,22 @@ rule('draft-accepted-line-by-line', () => {
 
   test('once taken it is an ordinary line, and goes the ordinary way', async () => {
     const app = await book(fakeModel({ drafts: drafts(['3 apples']) }));
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
-    app.acceptProposal('3 apples');
+    await app.acceptProposal('3 apples');
 
-    app.deleteLine('3 apples');
-    assert.deepEqual(app.ingredients('Apple pie'), []);
+    await app.deleteLine('3 apples');
+    assert.deepEqual(await app.ingredients('Apple pie'), []);
   });
 
   test('an accepted line is written down, not just shown', async () => {
     const app = await book(fakeModel({ drafts: drafts(['3 apples']) }));
-    app.askForDraft('Apple pie');
+    await app.askForDraft('Apple pie');
     await app.settle();
-    app.acceptProposal('3 apples');
+    await app.acceptProposal('3 apples');
 
-    const back = app.reload();
-    back.openRecipe('Apple pie');
-    assert.deepEqual(back.ingredients('Apple pie'), ['3 apples']);
+    const back = await app.reload();
+    await back.openRecipe('Apple pie');
+    assert.deepEqual(await back.ingredients('Apple pie'), ['3 apples']);
   });
 });

@@ -7,74 +7,19 @@
   <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
-  <main class="app">
-    <!-- The ribbon: the open book's colour, down the binding edge. It says which
-         book this is without being read, so it carries no words of its own — the
-         masthead beside it says the same thing in the name. -->
-    <div class="ribbon" id="ribbon" aria-hidden="true" hidden></div>
+  <!-- The whole app, drawn into here.
 
-    <header class="app__header">
-      <div class="app__heading">
-        <h1 class="app__title"><a class="app__home" href="#/">Recipes</a></h1>
-        <p class="app__tagline">A recipe book built one spec at a time.</p>
-        <p class="app__ai" id="ai-status" hidden></p>
-      </div>
+       This element used to hold the page's static shell — the masthead, the
+       box, the search box, the colophon — with the app filling in the parts
+       that moved. Since 0016 the drawing is Vue's and the shell is drawn with
+       everything else, so it is described in one place (src/app.mjs) instead of
+       two. Two copies of the same markup, one of them overwritten on load, is a
+       drift nothing in the pipeline could have caught.
 
-      <div class="books" id="books">
-        <button class="books__open" id="book-open" type="button"
-                aria-haspopup="true" aria-expanded="false"></button>
-        <div class="books__menu" id="book-menu" hidden></div>
-      </div>
-    </header>
-
-    <form class="composer" id="composer">
-      <input class="composer__box" id="new-recipe" type="text"
-             placeholder="What are we cooking?" aria-label="New recipe"
-             autocomplete="off" autofocus>
-      <button class="composer__add" type="submit">Add</button>
-    </form>
-
-    <div class="offer" id="offer" hidden>
-      <p class="offer__question">Let the AI draft your recipes?</p>
-      <p class="offer__note">It writes the ingredients and the method for a
-        recipe you have named, and you take the lines you want. It runs on this
-        machine — nothing leaves it. The first use downloads the model, which is
-        large.</p>
-      <button class="offer__yes" id="offer-yes" type="button">Yes, fetch it</button>
-      <button class="offer__no" id="offer-no" type="button">No thanks</button>
-    </div>
-
-    <div class="finder">
-      <input class="finder__box" id="find-recipe" type="search"
-             placeholder="Find a recipe in any book"
-             aria-label="Find a recipe in any book" autocomplete="off">
-    </div>
-
-    <h2 class="shelf__heading" id="favourites-heading" hidden>Favourites</h2>
-    <ul class="picks" id="favourites" hidden></ul>
-    <h2 class="shelf__heading" id="picks-heading" hidden>Somewhere to start</h2>
-    <ul class="picks" id="picks" hidden></ul>
-    <ul class="contents" id="contents"></ul>
-    <ul class="results" id="results" hidden></ul>
-    <p class="empty" id="empty">No recipes in this book yet.</p>
-
-    <div class="colophon" id="settings" hidden>
-      <button class="colophon__open" id="settings-open" type="button"
-              aria-haspopup="true" aria-expanded="false">
-        <svg class="colophon__gear" viewBox="0 0 16 16" aria-hidden="true"
-             focusable="false" fill="none" stroke="currentColor"
-             stroke-width="1.25" stroke-linecap="round">
-          <circle cx="8" cy="8" r="2.5"/>
-          <circle cx="8" cy="8" r="5.4"/>
-          <path d="M8 .9v1.7M8 13.4v1.7M15.1 8h-1.7M2.6 8H.9
-                   M13.02 2.98l-1.2 1.2M4.18 11.82l-1.2 1.2
-                   M13.02 13.02l-1.2-1.2M4.18 4.18l-1.2-1.2"/>
-        </svg>
-        <span class="colophon__label">AI settings</span>
-      </button>
-      <div class="colophon__menu" id="settings-menu" hidden></div>
-    </div>
-  </main>
+       There is still no build step and still only this page: what the browser
+       runs is byte for byte what is in the repo, and the module below is the
+       whole of the loading. See specs/setup/constraints.md. -->
+  <main class="app"></main>
 
   <script type="module">
     import { mountApp } from './src/app.mjs';

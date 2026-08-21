@@ -8,8 +8,36 @@
 
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
-import { mountApp } from '../../src/app.mjs';
 import { LEGACY_KEY, NOTEPADS_KEY, STORAGE_KEY } from '../../src/storage.mjs';
+
+/**
+ * The window every one of these globals starts out pointing at.
+ *
+ * Vue binds its node operations to whatever `document` is global the first time
+ * it is imported, and a browser always has one — so in a browser there is
+ * nothing here to arrange. Node has none until jsdom makes one, and a static
+ * import would load the app before any test had run. Hence a window first, and
+ * the app module after it: the import below is dynamic for that reason and no
+ * other.
+ *
+ * Each test still gets a window of its own. jsdom adopts a node into whichever
+ * document it is inserted into, so the tree the app draws belongs to the test
+ * that asked for it. See specs/changes/0016-somebody-elses-frame.md.
+ */
+const BOOTSTRAP = new JSDOM('', { url: 'http://localhost/' });
+
+/** Point the globals a library reaches for at one window. */
+const globalsFor = (window) => {
+  globalThis.window = window;
+  globalThis.document = window.document;
+  for (const name of ['Element', 'SVGElement', 'MathMLElement', 'Document', 'ShadowRoot', 'Node']) {
+    if (window[name] !== undefined) globalThis[name] = window[name];
+  }
+};
+
+globalsFor(BOOTSTRAP.window);
+
+const { mountApp } = await import('../../src/app.mjs');
 
 const HTML = readFileSync('index.html', 'utf8');
 const CSS = readFileSync('src/styles.css', 'utf8');
@@ -62,7 +90,7 @@ export const openLegacy = (todos) => open({ [LEGACY_KEY]: todos });
 /** For the cases that care about more than one key being there at once. */
 export const openWith = (seed) => open(seed);
 
-function open(seed, model = null, at = 'book', day = null) {
+async function open(seed, model = null, at = 'book', day = null) {
   const dom = new JSDOM(PAGE, { url: 'http://localhost/' });
   const { window } = dom;
   const doc = window.document;
@@ -77,8 +105,7 @@ function open(seed, model = null, at = 'book', day = null) {
   // worth exercising, because a wrong option or a markup change would otherwise
   // only be found by hand. The gesture itself still cannot run here: jsdom has
   // no layout. See specs/changes/0012-somebody-elses-drag.md.
-  globalThis.window = window;
-  globalThis.document = doc;
+  globalsFor(window);
 
   /**
    * Go to an address the way the bar does, and draw it now.
@@ -113,17 +140,21 @@ function open(seed, model = null, at = 'book', day = null) {
 
   if (at !== 'book') goTo(at === 'home' ? '#/' : at);
 
-  mountApp(
+  const { settled } = mountApp(
     doc,
     window.localStorage,
     model,
     day === null ? () => new Date() : () => new Date(`${day}T12:00:00`),
   );
+  await settled();
 
   // The open book's address is only knowable once the app has read the store and
   // said which book that is — so this goes there after mounting, and without
   // touching storage on the way.
-  if (at === 'book') goTo(`#/book/${doc.getElementById('book-open').dataset.book}`);
+  if (at === 'book') {
+    goTo(`#/book/${doc.getElementById('book-open').dataset.book}`);
+    await settled();
+  }
 
   const recipeEls = () => [...doc.querySelectorAll('.recipe')];
   const nameEl = (el) => el.querySelector(':scope > .recipe__row > .recipe__name');
@@ -188,8 +219,11 @@ function open(seed, model = null, at = 'book', day = null) {
   };
 
   const menu = () => doc.getElementById('book-menu');
-  const openMenu = () => {
-    if (menu().hidden) doc.getElementById('book-open').click();
+  const openMenu = async () => {
+    if (menu().hidden) {
+      doc.getElementById('book-open').click();
+      await settled();
+    }
   };
   const switchControl = (name) => {
     const found = [...menu().querySelectorAll('.books__switch')].find(
@@ -204,21 +238,21 @@ function open(seed, model = null, at = 'book', day = null) {
     return found;
   };
 
-  return {
+  const driver = {
     window,
     document: doc,
 
     // ---- writing a recipe down ------------------------------------------
 
     /** Type a name into the box and press Enter — the whole of workflow 1. */
-    writeDown(name) {
-      this.type(name);
-      this.submit();
+    async writeDown(name) {
+      await this.type(name);
+      await this.submit();
     },
-    type(name) {
+    async type(name) {
       doc.getElementById('new-recipe').value = name;
     },
-    submit() {
+    async submit() {
       doc.getElementById('composer').requestSubmit();
     },
     /** What the box currently holds. */
@@ -233,11 +267,11 @@ function open(seed, model = null, at = 'book', day = null) {
     // ---- reading one -----------------------------------------------------
 
     /** Click a recipe's name, unless it is already open. */
-    openRecipe(name) {
+    async openRecipe(name) {
       if (!isOpen(name)) nameEl(recipe(name)).click();
     },
     /** The same click, the other way. */
-    closeRecipe(name) {
+    async closeRecipe(name) {
       if (isOpen(name)) nameEl(recipe(name)).click();
     },
     isOpen,
@@ -247,7 +281,7 @@ function open(seed, model = null, at = 'book', day = null) {
     method: (name) => lines(name, 'steps'),
 
     /** Whether the ingredients are drawn above the method, which is the point. */
-    ingredientsComeFirst(name) {
+    async ingredientsComeFirst(name) {
       const groups = [...recipe(name).querySelectorAll('.recipe__group')];
       return (
         groups.length === 2 &&
@@ -260,31 +294,31 @@ function open(seed, model = null, at = 'book', day = null) {
     offersTickBox: () => doc.querySelector('input[type="checkbox"]') !== null,
 
     /** Whether a step or ingredient offers anything to type under it. */
-    offersAnythingUnder(text) {
+    async offersAnythingUnder(text) {
       const el = line(text);
       return el.querySelector('form') !== null || el.querySelector('input') !== null;
     },
 
     // ---- filling one in --------------------------------------------------
 
-    addIngredient(name, text) {
-      this.submitLine(name, 'ingredient', text);
+    async addIngredient(name, text) {
+      await this.submitLine(name, 'ingredient', text);
     },
-    addStep(name, text) {
-      this.submitLine(name, 'step', text);
+    async addStep(name, text) {
+      await this.submitLine(name, 'step', text);
     },
     /** Kept separate for the rules about text that is not a line. */
-    submitLine(name, block, text) {
-      this.openRecipe(name);
+    async submitLine(name, block, text) {
+      await this.openRecipe(name);
       composer(name, block).querySelector(`.${block}-composer__box`).value = text;
       composer(name, block).requestSubmit();
     },
 
     /** Setup: a recipe that already holds these, left closed as it was found. */
-    give(name, block, texts) {
+    async give(name, block, texts) {
       const wasOpen = isOpen(name);
-      for (const text of texts) this.submitLine(name, block, text);
-      if (!wasOpen) this.closeRecipe(name);
+      for (const text of texts) await this.submitLine(name, block, text);
+      if (!wasOpen) await this.closeRecipe(name);
     },
 
     // ---- putting a line where it belongs ---------------------------------
@@ -293,15 +327,15 @@ function open(seed, model = null, at = 'book', day = null) {
     // actually listens for. That checks the app's handling and not the
     // browser's gesture — the real-browser pass covers the rest.
 
-    handleOf(text) {
+    async handleOf(text) {
       const grip = line(text).querySelector('.line-handle');
       if (!grip) throw new Error(`"${text}" has no handle`);
       return grip;
     },
 
     /** Put focus on a grip, the way tabbing to it does. */
-    focusHandle(text) {
-      this.handleOf(text).focus();
+    async focusHandle(text) {
+      (await this.handleOf(text)).focus();
     },
 
     /**
@@ -312,17 +346,36 @@ function open(seed, model = null, at = 'book', day = null) {
      * what a move *does* are driven from here, and the gesture is checked by
      * hand in a browser.
      */
-    moveLineUp(text) {
-      this.focusHandle(text);
-      this.pressArrow('ArrowUp');
+    async moveLineUp(text) {
+      await this.focusHandle(text);
+      await this.pressArrow('ArrowUp');
     },
-    moveLineDown(text) {
-      this.focusHandle(text);
-      this.pressArrow('ArrowDown');
+    async moveLineDown(text) {
+      await this.focusHandle(text);
+      await this.pressArrow('ArrowDown');
+    },
+
+    /**
+     * Drop a line at a position, the way a finished drag does.
+     *
+     * The gesture cannot run here — jsdom has no layout — but what the app does
+     * when one *ends* is the app's own code, and since 0016 it is the code that
+     * has to undo what the library did to the page before drawing the new order
+     * out of state. So this does what SortableJS does before it calls back: it
+     * moves the row itself, then reports where the row came from and went to.
+     * See specs/changes/0016-somebody-elses-frame.md.
+     */
+    async dropLine(text, to) {
+      const item = line(text);
+      const from = item.parentElement;
+      const oldIndex = [...from.children].indexOf(item);
+      item.remove();
+      from.insertBefore(item, from.children[to] ?? null);
+      from.__sortable.options.onEnd({ item, from, to: from, oldIndex, newIndex: to });
     },
 
     /** Press an arrow on whatever handle has focus. */
-    pressArrow(key) {
+    async pressArrow(key) {
       doc.activeElement.dispatchEvent(
         new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
       );
@@ -335,7 +388,7 @@ function open(seed, model = null, at = 'book', day = null) {
      * the option is set and that the words are not inside a grip — the library
      * enforcing it is the library's own business.
      */
-    canBeDraggedByItsWords(text) {
+    async canBeDraggedByItsWords(text) {
       const row = line(text);
       const words = row.querySelector('.ingredient__text, .step__text, .proposal__take');
       return words !== null && words.closest('.line-handle') !== null;
@@ -345,7 +398,7 @@ function open(seed, model = null, at = 'book', day = null) {
     canBeDraggedByItsGrip: (text) => line(text).querySelector('.line-handle') !== null,
 
     /** Whether every row of a group shows a grip without being reached for. */
-    everyRowShowsItsGrip(name, group) {
+    async everyRowShowsItsGrip(name, group) {
       const rows = [...groupEl(name, group).children];
       return rows.length > 0 && rows.every((el) => el.querySelector('.line-handle') !== null);
     },
@@ -363,14 +416,14 @@ function open(seed, model = null, at = 'book', day = null) {
       window.getComputedStyle(line(text).querySelector('.line-handle')).opacity,
 
     /** Whether the handle for this line currently has focus. */
-    handleHasFocus(text) {
+    async handleHasFocus(text) {
       return doc.activeElement === line(text).querySelector('.line-handle');
     },
 
     // ---- one of the usual ------------------------------------------------
 
     /** Press the star on a row of the contents. */
-    star(name) {
+    async star(name) {
       recipe(name).querySelector('.recipe__star').click();
     },
 
@@ -387,7 +440,7 @@ function open(seed, model = null, at = 'book', day = null) {
     favourites: () => favouriteEls().map(rowReads),
 
     /** Whether the favourites are drawn above the picks. */
-    favouritesComeFirst() {
+    async favouritesComeFirst() {
       const lists = [...doc.querySelectorAll('#favourites, #picks')].filter((el) => !el.hidden);
       return lists.length === 2 && lists[0].id === 'favourites';
     },
@@ -399,7 +452,7 @@ function open(seed, model = null, at = 'book', day = null) {
         .map((el) => el.textContent),
 
     /** Start from a favourite — the book it lives in opens, with it open. */
-    openFavourite(name) {
+    async openFavourite(name) {
       const found = favouriteEls().find(
         (el) => el.querySelector('.result__name').textContent === name,
       );
@@ -418,7 +471,7 @@ function open(seed, model = null, at = 'book', day = null) {
     deleteLine: (text) => line(text).querySelector('[class$="__delete"]').click(),
 
     /** The empty-book message if it is on screen, otherwise null. */
-    message() {
+    async message() {
       const el = doc.getElementById('empty');
       return window.getComputedStyle(el).display === 'none' ? null : el.textContent;
     },
@@ -426,15 +479,15 @@ function open(seed, model = null, at = 'book', day = null) {
     // ---- finding one in any book -----------------------------------------
 
     /** Type into the search box. Live, so there is nothing to submit. */
-    search(term) {
+    async search(term) {
       const findBox = doc.getElementById('find-recipe');
       findBox.value = term;
       findBox.dispatchEvent(new window.Event('input', { bubbles: true }));
     },
 
     /** Empty it again, the way the native clear does. */
-    clearSearch() {
-      this.search('');
+    async clearSearch() {
+      await this.search('');
     },
 
     /** What the search box currently holds. */
@@ -480,7 +533,7 @@ function open(seed, model = null, at = 'book', day = null) {
     picks: () => pickEls().map(rowReads),
 
     /** Start from one — the book it lives in opens, with the recipe open in it. */
-    openPick(name) {
+    async openPick(name) {
       const found = pickEls().find(
         (el) => el.querySelector('.result__name').textContent === name,
       );
@@ -518,14 +571,14 @@ function open(seed, model = null, at = 'book', day = null) {
     offeredAi: () => !doc.getElementById('offer').hidden,
 
     /** Say yes. This press is also the activation the fetch needs. */
-    acceptOffer() {
-      if (!this.offeredAi()) throw new Error('nothing is offering the AI');
+    async acceptOffer() {
+      if (!await this.offeredAi()) throw new Error('nothing is offering the AI');
       doc.getElementById('offer-yes').click();
     },
 
     /** Say no. */
-    dismissOffer() {
-      if (!this.offeredAi()) throw new Error('nothing is offering the AI');
+    async dismissOffer() {
+      if (!await this.offeredAi()) throw new Error('nothing is offering the AI');
       doc.getElementById('offer-no').click();
     },
 
@@ -541,8 +594,8 @@ function open(seed, model = null, at = 'book', day = null) {
     /** Whether the colophon is on the page — it is not, with no model. */
     hasAiControl: () => !doc.getElementById('settings').hidden,
 
-    openAiSettings() {
-      if (!this.hasAiControl()) throw new Error('there is no AI settings control');
+    async openAiSettings() {
+      if (!await this.hasAiControl()) throw new Error('there is no AI settings control');
       if (doc.getElementById('settings-menu').hidden) {
         doc.getElementById('settings-open').click();
       }
@@ -551,14 +604,14 @@ function open(seed, model = null, at = 'book', day = null) {
     aiSettingsAreShut: () => doc.getElementById('settings-menu').hidden,
 
     /** The one switch in there. */
-    toggleAi() {
-      this.openAiSettings();
+    async toggleAi() {
+      await this.openAiSettings();
       doc.querySelector('.colophon__toggle').click();
     },
 
     /** How many lines the popover holds — the check that keeps it a popover. */
-    aiSettingsLines() {
-      this.openAiSettings();
+    async aiSettingsLines() {
+      await this.openAiSettings();
       return doc.getElementById('settings-menu').querySelectorAll('button, p').length;
     },
 
@@ -574,15 +627,15 @@ function open(seed, model = null, at = 'book', day = null) {
     offersDraft: (name) => recipe(name).querySelector('.drafting__ask') !== null,
 
     /** Press for one. The answer arrives later, so `settle()` follows. */
-    askForDraft(name) {
-      this.openRecipe(name);
+    async askForDraft(name) {
+      await this.openRecipe(name);
       const control = recipe(name).querySelector('.drafting__ask');
       if (!control) throw new Error(`"${name}" offers no way to ask for a draft`);
       control.click();
     },
 
     /** What is on offer in a group — not one line of it written down. */
-    proposed(group, name = null) {
+    async proposed(group, name = null) {
       const of = name ?? contents()[0];
       return rows(of, group)
         .filter((el) => el.classList.contains('proposal'))
@@ -593,7 +646,7 @@ function open(seed, model = null, at = 'book', day = null) {
      * A whole group as it reads on screen, saying which rows are written down
      * and which are only proposed — the one list this version is about.
      */
-    groupReads(name, group) {
+    async groupReads(name, group) {
       return rows(name, group).map((el) => [
         textOf(el),
         el.classList.contains('proposal') ? 'proposed' : 'mine',
@@ -604,7 +657,7 @@ function open(seed, model = null, at = 'book', day = null) {
     takeWholeDraft: () => doc.querySelector('.drafting__take-all').click(),
 
     /** Take one line. */
-    acceptProposal(text) {
+    async acceptProposal(text) {
       const found = [...doc.querySelectorAll('.proposal__take')].find(
         (el) => el.textContent === text,
       );
@@ -653,43 +706,46 @@ function open(seed, model = null, at = 'book', day = null) {
     openBook: () => doc.getElementById('book-open').textContent,
 
     /** The books in the menu, top to bottom. */
-    books() {
-      openMenu();
+    async books() {
+      await openMenu();
       return [...menu().querySelectorAll('.books__switch')].map((el) => el.textContent);
     },
 
     /** Switch to another book — one click, once the menu is open. */
-    openBookNamed(name) {
-      openMenu();
+    async openBookNamed(name) {
+      await openMenu();
       switchControl(name).click();
     },
 
     /** Name a new book and press Enter. */
-    makeBook(name) {
-      openMenu();
+    async makeBook(name) {
+      await openMenu();
       doc.getElementById('new-book').value = name;
       menu().querySelector('.books__new').requestSubmit();
     },
 
     /** Rename the book on screen. */
-    renameBook(name) {
-      openMenu();
+    async renameBook(name) {
+      await openMenu();
+      // Reaching for the rename is a press of its own: the form it swaps in is
+      // not on the page until the repaint that press causes has landed.
       menu().querySelector('.books__rename-open').click();
+      await settled();
       doc.getElementById('rename-book').value = name;
       menu().querySelector('.books__rename').requestSubmit();
     },
 
     /** Ask to delete the book on screen. */
-    deleteBook() {
-      openMenu();
+    async deleteBook() {
+      await openMenu();
       const control = menu().querySelector('.books__delete');
       if (!control) throw new Error('the menu offers no way to delete this book');
       control.click();
     },
 
     /** Whether the menu offers a delete at all. */
-    offersBookDelete() {
-      openMenu();
+    async offersBookDelete() {
+      await openMenu();
       return menu().querySelector('.books__delete') !== null;
     },
 
@@ -724,8 +780,8 @@ function open(seed, model = null, at = 'book', day = null) {
     ribbonIsShowing: () => !doc.getElementById('ribbon').hidden,
 
     /** Bind the book on screen in one of the six — one press, once the menu is open. */
-    colourBook(colour) {
-      openMenu();
+    async colourBook(colour) {
+      await openMenu();
       const swatch = menu().querySelector(`.books__colour[data-colour="${colour}"]`);
       if (!swatch) {
         throw new Error(
@@ -739,14 +795,14 @@ function open(seed, model = null, at = 'book', day = null) {
     },
 
     /** The strip, left to right. */
-    swatches() {
-      openMenu();
+    async swatches() {
+      await openMenu();
       return [...menu().querySelectorAll('.books__colour')].map((el) => el.dataset.colour);
     },
 
     /** The one marked as this book's, or null when the strip is not on screen. */
-    chosenSwatch() {
-      openMenu();
+    async chosenSwatch() {
+      await openMenu();
       const found = [...menu().querySelectorAll('.books__colour')].find(
         (el) => el.getAttribute('aria-pressed') === 'true',
       );
@@ -754,22 +810,52 @@ function open(seed, model = null, at = 'book', day = null) {
     },
 
     /** How the swatches read to anything reading the page aloud. */
-    swatchLabels() {
-      openMenu();
+    async swatchLabels() {
+      await openMenu();
       return [...menu().querySelectorAll('.books__colour')].map((el) =>
         el.getAttribute('aria-label'),
       );
     },
 
     /** The books in the menu as the Gherkin reads them: the name, and its colour. */
-    bookColours() {
-      openMenu();
+    async bookColours() {
+      await openMenu();
       return [...menu().querySelectorAll('.books__switch')].map((el) => [
         el.textContent,
         el.dataset.colour,
       ]);
     },
   };
+
+  /**
+   * Every call waits for the page to catch up before it returns.
+   *
+   * Vue coalesces a repaint onto a microtask where this app used to redraw on
+   * the spot, so a press and the screen it produces are no longer the same tick.
+   * Wrapping the whole driver here rather than sprinkling waits through the
+   * rules is what keeps a behaviour test reading like the Gherkin it points at:
+   * do the thing, then read the page. Readers are wrapped too, so there is one
+   * rule to remember at the call site and no list of which is which.
+   */
+  return Object.fromEntries(
+    Object.entries(driver).map(([name, value]) =>
+      typeof value !== 'function'
+        ? [name, value]
+        : [
+            name,
+            async function (...args) {
+              // Before as well as after: not every change comes through here.
+              // A model reporting its download reaches the app directly, and a
+              // reader that did not wait first would be reading the page as it
+              // was before that landed.
+              await settled();
+              const answer = await value.apply(this, args);
+              await settled();
+              return answer;
+            },
+          ],
+    ),
+  );
 }
 
 /**
@@ -777,9 +863,9 @@ function open(seed, model = null, at = 'book', day = null) {
  * the mirror of Gherkin's `Given the contents reads:`. Built through the box, so
  * the setup is the same path Nell takes; newest-first means writing in reverse.
  */
-export function openAppWithContents(...names) {
-  const app = openApp();
-  for (const name of [...names].reverse()) app.writeDown(name);
+export async function openAppWithContents(...names) {
+  const app = await openApp();
+  for (const name of [...names].reverse()) await app.writeDown(name);
   return app;
 }
 
