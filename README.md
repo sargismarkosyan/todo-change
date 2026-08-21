@@ -7,7 +7,7 @@ It was a todo app for its first three versions. What it is now, and why it
 stopped being one, is [spec 0004](specs/changes/0004-recipe-book.md).
 
 This repo is a demonstration of spec-driven development: each version of the app
-is one written spec, one implementation step, one commit, one screenshot.
+is one written spec, one implementation step, one commit, one recording.
 
 **Live:** <https://sargismarkosyan.github.io/todo-change/>
 
@@ -23,7 +23,7 @@ and coverage clears 95%.
 - How specs are structured: [specs/README.md](specs/README.md)
 - Who the app is for: [specs/persona.md](specs/persona.md)
 - Problems found while testing: [GitHub Issues](https://github.com/sargismarkosyan/todo-change/issues)
-- The screenshot series: [docs/screenshots/](docs/screenshots/)
+- The series, one animated GIF per version: [docs/screenshots/](docs/screenshots/)
 
 Feedback is given by talking to Claude, not by writing issues by hand — the
 [`feedback` skill](.claude/skills/feedback/SKILL.md) turns a testing session into
