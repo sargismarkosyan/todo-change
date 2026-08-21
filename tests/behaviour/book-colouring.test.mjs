@@ -6,44 +6,44 @@ import { rule } from '../support/covers.mjs';
 import { openAppWithContents, openStore, storedBooks } from '../support/app.mjs';
 
 /** The Background: "Sweets" open beside "Dinner", one recipe in it. */
-function open() {
-  const app = openAppWithContents('Apple cake');
-  app.renameBook('Sweets');
-  app.makeBook('Dinner');
-  app.openBookNamed('Sweets');
+async function open() {
+  const app = await openAppWithContents('Apple cake');
+  await app.renameBook('Sweets');
+  await app.makeBook('Dinner');
+  await app.openBookNamed('Sweets');
   return app;
 }
 
 rule('a-book-takes-a-colour', () => {
-  test('Sweets becomes the green book', () => {
-    const app = open();
-    app.colourBook('green');
+  test('Sweets becomes the green book', async () => {
+    const app = await open();
+    await app.colourBook('green');
 
-    assert.equal(app.binding(), 'green');
-    assert.equal(app.chosenSwatch(), 'green');
+    assert.equal(await app.binding(), 'green');
+    assert.equal(await app.chosenSwatch(), 'green');
   });
 
-  test('changing my mind', () => {
-    const app = open();
-    app.colourBook('green');
-    app.colourBook('plum');
+  test('changing my mind', async () => {
+    const app = await open();
+    await app.colourBook('green');
+    await app.colourBook('plum');
 
-    assert.equal(app.binding(), 'plum');
-    assert.equal(app.chosenSwatch(), 'plum');
+    assert.equal(await app.binding(), 'plum');
+    assert.equal(await app.chosenSwatch(), 'plum');
   });
 
-  test('a book nobody has coloured is red', () => {
-    const app = open();
+  test('a book nobody has coloured is red', async () => {
+    const app = await open();
 
-    assert.equal(app.binding(), 'red');
-    assert.equal(app.chosenSwatch(), 'red');
+    assert.equal(await app.binding(), 'red');
+    assert.equal(await app.chosenSwatch(), 'red');
   });
 
-  test('the strip offers six, and says which is which out loud', () => {
-    const app = open();
+  test('the strip offers six, and says which is which out loud', async () => {
+    const app = await open();
 
-    assert.deepEqual(app.swatches(), ['red', 'ochre', 'green', 'teal', 'blue', 'plum']);
-    assert.deepEqual(app.swatchLabels(), [
+    assert.deepEqual(await app.swatches(), ['red', 'ochre', 'green', 'teal', 'blue', 'plum']);
+    assert.deepEqual(await app.swatchLabels(), [
       'Bind this book in red',
       'Bind this book in ochre',
       'Bind this book in green',
@@ -53,89 +53,89 @@ rule('a-book-takes-a-colour', () => {
     ]);
   });
 
-  test('the red is the absence of a choice, so it is not written down', () => {
-    const app = open();
-    app.colourBook('teal');
-    assert.match(app.stored(), /"colour":"teal"/);
+  test('the red is the absence of a choice, so it is not written down', async () => {
+    const app = await open();
+    await app.colourBook('teal');
+    assert.match(await app.stored(), /"colour":"teal"/);
 
-    app.colourBook('red');
-    assert.doesNotMatch(app.stored(), /"colour"/);
-    assert.equal(app.binding(), 'red');
+    await app.colourBook('red');
+    assert.doesNotMatch(await app.stored(), /"colour"/);
+    assert.equal(await app.binding(), 'red');
   });
 });
 
 rule('a-colour-belongs-to-one-book', () => {
-  test('two books, two colours', () => {
-    const app = open();
-    app.colourBook('green');
+  test('two books, two colours', async () => {
+    const app = await open();
+    await app.colourBook('green');
 
-    app.openBookNamed('Dinner');
-    assert.equal(app.binding(), 'red');
+    await app.openBookNamed('Dinner');
+    assert.equal(await app.binding(), 'red');
 
-    app.colourBook('blue');
-    app.openBookNamed('Sweets');
-    assert.equal(app.binding(), 'green');
+    await app.colourBook('blue');
+    await app.openBookNamed('Sweets');
+    assert.equal(await app.binding(), 'green');
   });
 });
 
 rule('a-books-colour-is-kept', () => {
-  test('reopening tomorrow', () => {
-    const app = open();
-    app.colourBook('teal');
+  test('reopening tomorrow', async () => {
+    const app = await open();
+    await app.colourBook('teal');
 
-    const again = app.reload();
-    assert.equal(again.binding(), 'teal');
+    const again = await app.reload();
+    assert.equal(await again.binding(), 'teal');
   });
 });
 
 rule('colouring-changes-nothing-else', () => {
-  test('the book is otherwise untouched', () => {
-    const app = open();
-    app.give('Apple cake', 'ingredient', ['200g plain flour']);
-    app.writeDown('Lemon drizzle');
+  test('the book is otherwise untouched', async () => {
+    const app = await open();
+    await app.give('Apple cake', 'ingredient', ['200g plain flour']);
+    await app.writeDown('Lemon drizzle');
 
-    app.colourBook('ochre');
+    await app.colourBook('ochre');
 
-    assert.equal(app.openBook(), 'Sweets');
-    assert.deepEqual(app.contents(), ['Lemon drizzle', 'Apple cake']);
-    assert.equal(app.isOpen('Apple cake'), false);
-    assert.equal(app.isOpen('Lemon drizzle'), false);
+    assert.equal(await app.openBook(), 'Sweets');
+    assert.deepEqual(await app.contents(), ['Lemon drizzle', 'Apple cake']);
+    assert.equal(await app.isOpen('Apple cake'), false);
+    assert.equal(await app.isOpen('Lemon drizzle'), false);
     // A press on a swatch is not a way out of the menu: the next one is one
     // press away, which is what makes trying two of them cost two presses.
-    assert.equal(app.menuIsOpen(), true);
+    assert.equal(await app.menuIsOpen(), true);
   });
 
-  test('what was written down is still there afterwards', () => {
-    const app = open();
-    app.give('Apple cake', 'ingredient', ['200g plain flour']);
+  test('what was written down is still there afterwards', async () => {
+    const app = await open();
+    await app.give('Apple cake', 'ingredient', ['200g plain flour']);
 
-    app.colourBook('ochre');
-    app.openRecipe('Apple cake');
+    await app.colourBook('ochre');
+    await app.openRecipe('Apple cake');
 
-    assert.deepEqual(app.ingredients('Apple cake'), ['200g plain flour']);
+    assert.deepEqual(await app.ingredients('Apple cake'), ['200g plain flour']);
   });
 });
 
 rule('an-unknown-colour-is-the-red-it-always-was', () => {
-  test('a colour nobody offered', () => {
-    const app = openStore(
+  test('a colour nobody offered', async () => {
+    const app = await openStore(
       storedBooks(
         [{ id: 'b1', name: 'Sweets', colour: 'chartreuse', recipes: [{ id: 'r1', name: 'Apple cake' }] }],
         'b1',
       ),
     );
 
-    assert.equal(app.binding(), 'red');
-    assert.equal(app.chosenSwatch(), 'red');
-    assert.deepEqual(app.contents(), ['Apple cake']);
+    assert.equal(await app.binding(), 'red');
+    assert.equal(await app.chosenSwatch(), 'red');
+    assert.deepEqual(await app.contents(), ['Apple cake']);
   });
 
-  test('and it does not survive the next write', () => {
-    const app = openStore(
+  test('and it does not survive the next write', async () => {
+    const app = await openStore(
       storedBooks([{ id: 'b1', name: 'Sweets', colour: 'chartreuse', recipes: [] }], 'b1'),
     );
-    app.writeDown('Apple cake');
+    await app.writeDown('Apple cake');
 
-    assert.doesNotMatch(app.stored(), /chartreuse/);
+    assert.doesNotMatch(await app.stored(), /chartreuse/);
   });
 });

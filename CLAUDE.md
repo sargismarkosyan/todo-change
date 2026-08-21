@@ -16,7 +16,7 @@ working here.**
 |---|---|
 | The loop, and the rules | [specs/setup/process.md](specs/setup/process.md) |
 | What lives where, git and GitHub conventions | [specs/setup/repository.md](specs/setup/repository.md) |
-| No backend, localStorage, zero dependencies — and why | [specs/setup/constraints.md](specs/setup/constraints.md) |
+| No backend, localStorage, no build step — and why | [specs/setup/constraints.md](specs/setup/constraints.md) |
 | The gates, and what each failure means | [specs/setup/pipeline.md](specs/setup/pipeline.md) |
 | How to write a test the pipeline accepts | [specs/setup/testing.md](specs/setup/testing.md) |
 | The `refine-spec` and `feedback` skills | [specs/setup/skills.md](specs/setup/skills.md) |

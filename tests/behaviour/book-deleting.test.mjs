@@ -9,72 +9,72 @@ import { rule } from '../support/covers.mjs';
 import { openApp } from '../support/app.mjs';
 
 /** "Sweets" and "Dinner", with "Dinner" open — the Gherkin Background. */
-function shelf() {
-  const app = openApp();
-  app.renameBook('Sweets');
-  app.makeBook('Dinner');
+async function shelf() {
+  const app = await openApp();
+  await app.renameBook('Sweets');
+  await app.makeBook('Dinner');
   return app;
 }
 
 rule('delete-empty-notepad-goes-without-asking', () => {
-  test('a book started by mistake', () => {
-    const app = shelf();
-    assert.deepEqual(app.contents(), []);
+  test('a book started by mistake', async () => {
+    const app = await shelf();
+    assert.deepEqual(await app.contents(), []);
 
-    app.deleteBook();
+    await app.deleteBook();
 
-    assert.equal(app.askedAbout(), null, 'nothing was at stake, so nothing was asked');
-    assert.deepEqual(app.books(), ['Sweets']);
-    assert.equal(app.openBook(), 'Sweets');
+    assert.equal(await app.askedAbout(), null, 'nothing was at stake, so nothing was asked');
+    assert.deepEqual(await app.books(), ['Sweets']);
+    assert.equal(await app.openBook(), 'Sweets');
   });
 
-  test('it stays deleted', () => {
-    const app = shelf();
-    app.deleteBook();
-    assert.deepEqual(app.reload().books(), ['Sweets']);
+  test('it stays deleted', async () => {
+    const app = await shelf();
+    await app.deleteBook();
+    assert.deepEqual(await (await app.reload()).books(), ['Sweets']);
   });
 });
 
 rule('delete-notepad-with-todos-asks-first', () => {
-  test('agreeing to lose three recipes', () => {
-    const app = shelf();
-    app.writeDown('Lentil soup');
-    app.writeDown('Fish pie');
-    app.writeDown('Roast chicken');
+  test('agreeing to lose three recipes', async () => {
+    const app = await shelf();
+    await app.writeDown('Lentil soup');
+    await app.writeDown('Fish pie');
+    await app.writeDown('Roast chicken');
 
-    app.deleteBook();
-    assert.equal(app.askedAbout(), 'Delete "Dinner" and its 3 recipes?');
+    await app.deleteBook();
+    assert.equal(await app.askedAbout(), 'Delete "Dinner" and its 3 recipes?');
 
-    app.agree();
-    assert.deepEqual(app.books(), ['Sweets']);
-    assert.equal(app.openBook(), 'Sweets');
+    await app.agree();
+    assert.deepEqual(await app.books(), ['Sweets']);
+    assert.equal(await app.openBook(), 'Sweets');
   });
 
-  test('the question counts one recipe as one', () => {
-    const app = shelf();
-    app.writeDown('Roast chicken');
-    app.deleteBook();
-    assert.equal(app.askedAbout(), 'Delete "Dinner" and its 1 recipe?');
+  test('the question counts one recipe as one', async () => {
+    const app = await shelf();
+    await app.writeDown('Roast chicken');
+    await app.deleteBook();
+    assert.equal(await app.askedAbout(), 'Delete "Dinner" and its 1 recipe?');
   });
 
-  test('changing my mind leaves everything where it was', () => {
-    const app = shelf();
-    app.writeDown('Roast chicken');
+  test('changing my mind leaves everything where it was', async () => {
+    const app = await shelf();
+    await app.writeDown('Roast chicken');
 
-    app.deleteBook();
-    app.decline();
+    await app.deleteBook();
+    await app.decline();
 
-    assert.deepEqual(app.books(), ['Sweets', 'Dinner']);
-    assert.equal(app.openBook(), 'Dinner');
-    assert.deepEqual(app.contents(), ['Roast chicken']);
+    assert.deepEqual(await app.books(), ['Sweets', 'Dinner']);
+    assert.equal(await app.openBook(), 'Dinner');
+    assert.deepEqual(await app.contents(), ['Roast chicken']);
   });
 });
 
 rule('last-notepad-cannot-be-deleted', () => {
-  test('down to one', () => {
-    const app = openApp();
-    app.renameBook('Sweets');
-    assert.deepEqual(app.books(), ['Sweets']);
-    assert.equal(app.offersBookDelete(), false);
+  test('down to one', async () => {
+    const app = await openApp();
+    await app.renameBook('Sweets');
+    assert.deepEqual(await app.books(), ['Sweets']);
+    assert.equal(await app.offersBookDelete(), false);
   });
 });
