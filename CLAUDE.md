@@ -56,7 +56,9 @@ working here.**
   built — those differ more often than not. Comment what was asked, what shipped
   and why they differ, then close; a dropped half goes in the comment and gets a
   fresh issue if it is still wanted, never a stale open one. Check the `Closes
-  #N` link fired: the keyword only works immediately before the reference.
+  #N` link fired: the keyword only works immediately before the reference. Then
+  `git rm` any `docs/feedback/` image the issue embedded — that folder holds
+  evidence for open questions, not history.
 - **A pull request shows what changed.** If the app looks different, the body
   carries an animated GIF from `docs/screenshots/`, recorded on the branch by the
   `record-clip` skill and embedded by a raw URL pinned to the commit. The

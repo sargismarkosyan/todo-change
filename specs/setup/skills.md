@@ -84,9 +84,11 @@ noticed should be lost between their chat message and the tracker.
    mental model), and what they were actually trying to accomplish. Then splits
    it — one issue = one change someone could spec.
 2. **Handles screenshots.** Given a file path, it copies the image into
-   `docs/feedback/`, pushes it, and embeds the raw URL. Images pasted straight
-   into chat can be seen but not written to disk, so those get described
-   precisely in the issue instead, with a note saying no file was attached.
+   `docs/feedback/`, pushes it, and embeds the raw URL — a file that gets removed
+   again when the issue closes. Images pasted straight into chat can be seen but
+   not written to disk, so those get described precisely in the issue instead,
+   with a note saying no file was attached. Either way the description is written
+   down, because it outlives the image.
 3. **Investigates before filing.** Finds the responsible file and line, finds the
    spec that introduced the behaviour, and decides whether the app *violates* its
    spec or *faithfully implements a bad one* — those lead to different fixes.

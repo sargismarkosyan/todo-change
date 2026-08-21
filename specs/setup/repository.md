@@ -213,6 +213,10 @@ not close it silently on merge, before anybody has written down what happened.
 saying which — a tracker that does not distinguish "fixed" from "wasn't real"
 stops being worth reading.
 
+**Take its screenshot out.** If the body embeds a `docs/feedback/` image, `git rm`
+it in the same change that closes the issue. Evidence for a settled question is
+just weight.
+
 **Sweep the siblings.** A shipped change often answers more than the issue it was
 written for. When one closes, read the others it touched: version 13 was written
 for one issue and answered three, and the other two would have sat open for
@@ -227,6 +231,13 @@ rather than product.
 
 Images pasted directly into chat cannot be written to disk. For a screenshot to
 end up in either folder it has to be handed over as a **file path**.
+
+**Feedback images live exactly as long as their issue.** A committed file is the
+only thing a GitHub issue can render, so the image goes in while the issue is
+open — and comes out with `git rm` when it closes. What the screenshot *showed*
+is written into the issue body, so the closed issue still says what happened
+after the picture is gone. `docs/screenshots/` is the opposite: it is never
+deleted.
 
 ## Local setup
 
