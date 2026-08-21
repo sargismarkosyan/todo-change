@@ -470,6 +470,43 @@ async function open(seed, model = null, at = 'book', day = null) {
     deleteRecipe: (name) => recipe(name).querySelector('.recipe__delete').click(),
     deleteLine: (text) => line(text).querySelector('[class$="__delete"]').click(),
 
+    // ---- what just changed, for whatever reads the page aloud -------------
+
+    /**
+     * What the announcer currently says. Always on the page, so this reads its
+     * text rather than asking whether it is there.
+     */
+    announcement: () => doc.getElementById('announcer').textContent,
+
+    /** Whether it is a live region at all, and the polite kind. */
+    announcerRole: () => doc.getElementById('announcer').getAttribute('role'),
+
+    /** How many of them there are. One, or it is not a live region worth having. */
+    announcers: () => doc.querySelectorAll('#announcer, [role="status"]').length,
+
+    /** Whether the announcer is drawn. It is not — it is a pixel in the corner. */
+    announcerIsVisible: () => {
+      const style = window.getComputedStyle(doc.getElementById('announcer'));
+      return style.display !== 'none' && style.width !== '1px';
+    },
+
+    // ---- where the keyboard is left ---------------------------------------
+
+    /** Whether focus is on the cross that throws this line out. */
+    focusIsOnLineCross: (text) =>
+      doc.activeElement === line(text).querySelector('[class$="__delete"]'),
+
+    /** The same, for a recipe's own cross on the contents. */
+    focusIsOnRecipeCross: (name) =>
+      doc.activeElement === recipe(name).querySelector('.recipe__delete'),
+
+    /** Whether focus is in the box that writes the next line of a group. */
+    focusIsInLineBox: (name, block) =>
+      doc.activeElement === composer(name, block).querySelector(`.${block}-composer__box`),
+
+    /** Whether focus is in the box a recipe name is typed into. */
+    focusIsInTheBox: () => doc.activeElement === doc.getElementById('new-recipe'),
+
     /** The empty-book message if it is on screen, otherwise null. */
     async message() {
       const el = doc.getElementById('empty');

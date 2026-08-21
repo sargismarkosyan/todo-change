@@ -15,7 +15,6 @@ Feature: Within reach — the same book for every hand
     Given the app is open
     And the open book is named "Sweets"
 
-  @planned
   @rule:small-marks-hit-big
   Rule: A control drawn small still offers a fingertip's worth to hit
 
@@ -32,7 +31,6 @@ Feature: Within reach — the same book for every hand
       Then the grip on a line offers at least 24 pixels each way
       And the cross on a line offers at least 24 pixels each way
 
-  @planned
   @rule:what-just-happened-is-announced
   Rule: What just changed off screen is said aloud, off screen
 
@@ -61,7 +59,6 @@ Feature: Within reach — the same book for every hand
       And I delete the ingredient "3 apples" from "Apple cake"
       Then the announcer says "Deleted 3 apples"
 
-  @planned
   @rule:deleting-keeps-the-keyboards-place
   Rule: Deleting by keyboard leaves the keyboard on the next thing, not nowhere
 
@@ -96,13 +93,13 @@ Feature: Within reach — the same book for every hand
       When I delete the recipe "Apple cake"
       Then focus is on the cross of the recipe "Lemon drizzle"
 
-  @planned
   @rule:no-text-is-sized-in-pixels
   Rule: Every size on the page is relative, so the browser's own setting reaches every word
 
     A reader who has told their browser to write larger has told this app
-    too. A pixel size anywhere in the stylesheet is a place that stops
-    listening.
+    too. Type sized in pixels is a place that stops listening. A *target*
+    sized in pixels is the opposite and is left alone: 24 is a floor for a
+    fingertip, and a fingertip does not get smaller with the text.
 
     Example: the stylesheet's sizes
       Then no text is sized in pixels
