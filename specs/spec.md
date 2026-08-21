@@ -7,7 +7,8 @@ down, keep them in named **books** — Sweets, Dinner, Chicken — and open one 
 read what it takes and how to make it. That is the whole product.
 
 One page, two addresses since version 0013: `#/` is **the home**, a search box
-with three recipes to start from, and `#/book/<id>` is one book's contents. See
+with the recipes you starred and three more to start from, and `#/book/<id>` is
+one book's contents. See
 [features/home/spec.md](features/home/spec.md).
 
 The repository is still called `todo-change`, and so is the storage namespace.
@@ -33,7 +34,7 @@ sync between machines.
 - **Legible at a glance, and from a step back.** The contents is the interface of
   a book, and an open recipe is read with your hands full. Chrome around either
   earns its place or it goes. The home is the one other thing to look at, and it
-  holds three names and a box for the same reason.
+  holds a box and a short column of names for the same reason.
 - **Kept, not cleared.** Nothing is finished, expires, or ages out. There is no
   tick box anywhere in this product.
 
@@ -59,6 +60,7 @@ open:
         {
           "id": "1739827200000-9f2c41ab7e0d5c83",
           "name": "Apple cake",
+          "favourite": true,
           "ingredients": [
             { "id": "1739827210000-77c3e5b0d9124fae", "text": "200g plain flour" },
             { "id": "1739827220000-2ad1f9c40b6e8735", "text": "3 apples" }
@@ -83,10 +85,18 @@ Since 0013 **the address is what puts a book on screen**, and going to one sets
 `openId` — the two never disagree, because one follows the other. On the home no
 book is on screen and `openId` is simply the last one that was.
 
-A recipe has a non-empty `id` and a non-empty `name`. `ingredients` and `steps`
-are optional arrays, each ordered oldest first; an entry without the key has
-none. An ingredient and a step have the same shape as each other — a non-empty
-`id` and a non-empty `text` — and neither holds anything of its own.
+A recipe has a non-empty `id` and a non-empty `name`. `favourite` is optional
+and present only when it is `true`: a recipe nobody has starred has no key, and
+anything that is not exactly `true` reads as not a favourite. It is the only
+state a recipe carries, added in 0014, and it points the opposite way to the
+`done` below it — a star means come back to this, not this can go away. Every
+recipe written by every earlier version reads as not a favourite, so there is
+nothing to migrate.
+
+`ingredients` and `steps` are optional arrays, each ordered oldest first; an
+entry without the key has none. An ingredient and a step have the same shape as
+each other — a non-empty `id` and a non-empty `text` — and neither holds
+anything of its own.
 
 **There is no `done` anywhere in this shape.** A recipe is not finished, so
 there is no state to store. A `done` found in stored data is ignored on read and
@@ -138,7 +148,9 @@ Used consistently in specs, code, and UI copy:
   Not "instruction", not "sub-recipe", not "sub-todo".
 - **open / closed** — the two states of a *recipe on screen*, meaning whether it
   is being read. Never "done", "unfinished", "complete", or "checked": those
-  described a state a thing carried, and nothing here carries one.
+  described a state a thing carried on the way to being got rid of, and nothing
+  here is got rid of by being done. A favourite is the one thing a recipe does
+  carry, and it runs the other way — see below.
 - **the box** — the text input a recipe name is typed into. Only that one.
 - **the grip** — what a line is taken hold of by, to move it within its group.
   Dragged with a pointer or moved with the arrow keys; the same control either
@@ -149,9 +161,15 @@ Used consistently in specs, code, and UI copy:
 - **the results** — what a search finds, shown in place of the contents, or of
   the picks, each one naming the book it is in. Not "hits", not "matches", not
   "search results".
-- **the home** — the front door at `#/`: the search box and the picks, with no
-  contents and no box. Not "the dashboard", not "the landing page", not "the
-  start page", and never "the index".
+- **the home** — the front door at `#/`: the search box, the favourites and the
+  picks, with no contents and no box. Not "the dashboard", not "the landing
+  page", not "the start page", and never "the index".
+- **a favourite** — a recipe marked as one of the handful actually cooked. Not
+  "starred" as a noun, not "pinned", not "bookmarked", and never "liked" or
+  "rated". One bit and no scale.
+- **the star** — the control on a row of the contents that marks a recipe and
+  unmarks it. Never "the favourite button", and never a tick — there is still no
+  tick box in this product.
 - **the picks** — the three recipes offered on the home as somewhere to start,
   from any book, the same all day. Not "suggestions" — that word belongs to the
   AI — and never "recommendations", "featured", or "popular".

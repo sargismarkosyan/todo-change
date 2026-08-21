@@ -15,8 +15,8 @@ moment of having nothing in mind, not something in it.
 
 ## Two addresses, one page
 
-- **`#/` — the home.** The masthead, the search box, and the picks. No contents
-  and no box.
+- **`#/` — the home.** The masthead, the search box, the favourites and the
+  picks. No contents and no box.
 - **`#/book/<id>` — one book.** Exactly the page the app has always been: the
   box, the contents, the book menu, an open recipe, and everything drafting
   does.
@@ -53,11 +53,42 @@ book picker beside it — `../books/spec.md` calls that the one thing that must 
 change — the answer is that writing a recipe down happens in a book, one click
 away, and a pinned tab is already there.
 
+## The favourites
+
+Since version 0014 the home leads with **the favourites**: the recipes starred in
+their books, above the picks, each naming the book it is in and opened the same
+way a pick is.
+
+They answer the other half of the fridge-door moment. The picks are for having
+nothing in mind; these are for having *almost* something — it is Tuesday, it is
+one of the four things actually cooked, and the app should not charge the same
+recall for that as for something last seen in March.
+
+**Told, never inferred.** This is the half of issue #10 that
+[change 0013](../../changes/0013-a-front-door.md) left open, arrived at from a
+different issue and answered the cheap way. Every objection 0013 raised to
+counting what gets opened — a write on read, a usage record kept about the
+person, empty on a fresh install — is an objection to *guessing* the answer, and
+none of it survives being told. One press, right on the first day.
+
+**In book order, then contents order**, the order results sit in. Not by when
+they were starred, which would be a stored timestamp and a list that rearranges
+itself; not ranked, because nothing here is.
+
+**Nothing starred means no group and no heading**, and the home is exactly what
+0013 shipped. There is no empty state for favourites: a front door is not where a
+feature nobody has used yet gets advertised.
+
 ## The picks
 
 Three recipes, from any book, each naming the book it is in. They are the reason
 the front door is worth opening: the only place in this app that shows something
 from a book nobody asked for.
+
+**Never one already starred above them.** With favourites on the same screen, a
+pick repeating one is a wasted slot — and the picks' whole value is reaching into
+a book nobody has opened since March, which re-offering a name four lines up does
+not do. Star everything written down and there are simply no picks.
 
 **Picked from the date and nothing else.** The same day gives the same three, all
 day. This is not a nicety — the home repaints on every letter typed into the
@@ -80,7 +111,8 @@ typed.
 ## What this is not
 
 - **Not a dashboard.** No counts, no "recently viewed", no statistics about a
-  recipe book. Three names and a search box.
+  recipe book. A search box, the recipes somebody starred, and three more to
+  start from.
 - **Not a second file.** One `index.html`, as before. An address is not a page.
 - **Not a router library.** Hash and `hashchange`, both of which the browser has
   already. See `setup/constraints.md` on what a dependency has to be worth.
