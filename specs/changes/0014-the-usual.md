@@ -1,6 +1,6 @@
 # Spec 0014: the usual
 
-- **Status:** proposed
+- **Status:** shipped
 - **Issue:** [#13](https://github.com/sargismarkosyan/todo-change/issues/13) —
   "Allow to favoritize certain recepies and access them easier. The favorite
   icon should be an star icon."

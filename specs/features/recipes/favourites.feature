@@ -22,7 +22,6 @@ Feature: Marking a recipe as one of the usual
       | Lemon drizzle |
       | Bakewell tart |
 
-  @planned
   @rule:a-recipe-can-be-starred
   Rule: Pressing the star marks a recipe, and pressing it again unmarks it
 
@@ -40,7 +39,6 @@ Feature: Marking a recipe as one of the usual
       Then every recipe in the contents offers the star
       And no recipe in the contents offers a tick box
 
-  @planned
   @rule:a-star-is-kept
   Rule: A star survives being closed, like everything else written down
 
@@ -57,7 +55,6 @@ Feature: Marking a recipe as one of the usual
       Then "Apple cake" is not a favourite
       And "Lemon drizzle" is a favourite
 
-  @planned
   @rule:starring-moves-nothing
   Rule: Starring changes nothing else about a recipe or the contents
 

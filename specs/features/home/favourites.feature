@@ -28,7 +28,6 @@ Feature: The usual ones, at the front door
       | Lemon chicken      |
       | Thursday casserole |
 
-  @planned
   @rule:favourites-lead-the-home
   Rule: Starred recipes lead the home, naming their book, and open where they live
 
@@ -61,7 +60,6 @@ Feature: The usual ones, at the front door
       Then the favourites read:
         | Roast chicken | Dinner |
 
-  @planned
   @rule:the-picks-do-not-repeat-a-favourite
   Rule: The picks offer something else, never a recipe already starred above them
 
@@ -79,7 +77,6 @@ Feature: The usual ones, at the front door
       And the favourites are on screen
       And I do not see the message "Nothing written down yet."
 
-  @planned
   @rule:nothing-starred-is-the-home-as-it-was
   Rule: With nothing starred the home is the search box and the picks, as before
 
@@ -96,7 +93,6 @@ Feature: The usual ones, at the front door
       Then there are no favourites on screen
       And there are three picks
 
-  @planned
   @rule:a-search-covers-the-favourites-too
   Rule: Searching replaces both, and clearing puts both back unchanged
 

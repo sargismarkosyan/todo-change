@@ -30,6 +30,26 @@ export function routeOf(hash, books) {
     : { at: 'home' };
 }
 
+/**
+ * Every recipe on the shelf, each carrying the book it is in — the shape a
+ * result has, so one row draws all three of these.
+ */
+const onTheShelf = (books) =>
+  books.flatMap((book) => book.recipes.map((recipe) => ({ recipe, book, line: null })));
+
+/**
+ * The recipes somebody starred, in book order then contents order.
+ *
+ * The order results already sit in, and for the same reason: nothing here is
+ * ranked. Not by when they were starred either — that would be a stored
+ * timestamp and a list that rearranges itself as they are made.
+ *
+ * Nothing starred gives nothing, and the home then draws neither this nor a
+ * heading for it. See specs/features/home/spec.md.
+ */
+export const favouritesIn = (books) =>
+  onTheShelf(books).filter(({ recipe }) => recipe.favourite === true);
+
 const pad = (number) => String(number).padStart(2, '0');
 
 /**
@@ -71,11 +91,13 @@ function hash(text) {
  *
  * The day chooses which; the books decide where they sit. Nothing is ranked,
  * and fewer written down than asked for gives what there is.
+ *
+ * **Never one already starred.** Those lead the home a few lines above, and the
+ * whole value of these is reaching into a book nobody has opened since March —
+ * which re-offering a name already on screen does not do.
  */
 export function picksForDay(books, day, count = PICKS) {
-  const pool = books.flatMap((book) =>
-    book.recipes.map((recipe) => ({ recipe, book, line: null })),
-  );
+  const pool = onTheShelf(books).filter(({ recipe }) => recipe.favourite !== true);
   const wanted = new Set(
     pool
       .map((pick, at) => ({ at, by: hash(`${day} ${pick.recipe.id}`) }))
