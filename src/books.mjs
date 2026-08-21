@@ -28,6 +28,39 @@ export function sanitizeSuggestions(value) {
   return SUGGESTION_STATES.includes(value) ? value : 'unasked';
 }
 
+/**
+ * What a book can be bound in, in the order the swatches sit.
+ *
+ * **Names, not values.** The hexes live in the stylesheet, so the palette can be
+ * retuned without touching a single stored book — and a stored colour can never
+ * go stale. See specs/features/books/spec.md.
+ */
+export const BOOK_COLOURS = ['red', 'ochre', 'green', 'teal', 'blue', 'plum'];
+
+/**
+ * The colour of a book nobody has coloured — and the one every book was drawn in
+ * before 0015. It is not a choice, it is the absence of one, which is why it is
+ * never written down.
+ */
+export const DEFAULT_COLOUR = BOOK_COLOURS[0];
+
+/**
+ * A colour as it is *stored*: absent unless it is one of the five that are not
+ * the red.
+ *
+ * Untrusted like every other field — "chartreuse" is not a colour this app
+ * offers, so a book wearing it opens in red rather than not opening. Spreading
+ * the result is what keeps the key off a book that has no colour, so there is
+ * nothing to clear and no third state.
+ */
+const storedColour = (value) =>
+  BOOK_COLOURS.includes(value) && value !== DEFAULT_COLOUR ? { colour: value } : {};
+
+/** What a book is bound in, whatever it turned out to be carrying. */
+export function colourOf(book) {
+  return BOOK_COLOURS.includes(book?.colour) ? book.colour : DEFAULT_COLOUR;
+}
+
 /** A book with nothing in it. */
 export function makeBook(name) {
   return { id: newId(), name, recipes: [] };
@@ -84,7 +117,12 @@ export function sanitizeStore(value) {
   const found = Array.isArray(value.books) ? value.books : [];
   const books = found
     .filter(isBook)
-    .map(({ id, name, recipes }) => ({ id, name, recipes: sanitizeRecipes(recipes) }));
+    .map(({ id, name, colour, recipes }) => ({
+      id,
+      name,
+      ...storedColour(colour),
+      recipes: sanitizeRecipes(recipes),
+    }));
   return openOn(books, value.openId, sanitizeSuggestions(value.suggestions));
 }
 
@@ -198,6 +236,27 @@ export function renameBook(store, id, name) {
   return {
     ...store,
     books: store.books.map((book) => (book.id === id ? { ...book, name: trimmed } : book)),
+  };
+}
+
+/**
+ * `store` with one book bound in another colour.
+ *
+ * A colour this app does not offer changes nothing, the same way an id that is
+ * not there changes nothing — the swatches are the only way in, and they offer
+ * six. Choosing the red takes the key back out rather than writing the default
+ * down: a book with no colour and a book that says "red" would be two ways of
+ * saying one thing, and only one of them survives a palette being retuned.
+ */
+export function colourBook(store, id, colour) {
+  if (!BOOK_COLOURS.includes(colour)) return store;
+  return {
+    ...store,
+    books: store.books.map((book) =>
+      book.id === id
+        ? { id: book.id, name: book.name, ...storedColour(colour), recipes: book.recipes }
+        : book,
+    ),
   };
 }
 

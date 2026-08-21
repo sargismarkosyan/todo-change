@@ -23,6 +23,27 @@
   --red: #a8443a;
   --tape: rgb(228 209 148 / 62%);
 
+  /* What a book can be bound in: the ribbon down the binding edge, the
+     stitching beside it, and the mark on each row of the book menu.
+
+     Nothing is ever *read* in these, so the bar is 3 to 1 against the page and
+     against the ground — the bar for a graphic that carries meaning — rather
+     than the 4.5 every reading colour above clears. Bookbinder's cloth, not web
+     accents. See specs/features/look/spec.md.
+
+     Red is the colour every book was drawn in before 0015, so it is first, it is
+     the same red the card's margin rule uses, and it is never written down. */
+  --book-red: var(--red);
+  --book-ochre: #916412;
+  --book-green: #4e7a3a;
+  --book-teal: #2f6a6b;
+  --book-blue: #3a5573;
+  --book-plum: #7a3f63;
+
+  /* The colour of whatever is being bound here. Set from the book's name, once,
+     on anything wearing a colour — the page, a swatch, a row of the menu. */
+  --thread: var(--book-red);
+
   /* Cards are cut, not rounded. */
   --radius: 3px;
 
@@ -74,8 +95,22 @@ body {
     0 14px 34px rgb(62 42 20 / 14%);
 }
 
+/* A book's colour, named rather than valued: the name is on the element and the
+   six hexes are here, so retuning the palette touches this file and no stored
+   book. Unscoped, because the page, a swatch and a row of the book menu all
+   wear one the same way. */
+[data-colour="red"] { --thread: var(--book-red); }
+[data-colour="ochre"] { --thread: var(--book-ochre); }
+[data-colour="green"] { --thread: var(--book-green); }
+[data-colour="teal"] { --thread: var(--book-teal); }
+[data-colour="blue"] { --thread: var(--book-blue); }
+[data-colour="plum"] { --thread: var(--book-plum); }
+
 /* The binding: thread, not a dashed border. Short stitches with paper between
-   them, which is what the dashed line was trying and failing to suggest. */
+   them, which is what the dashed line was trying and failing to suggest.
+
+   Since 0015 it is the open book's colour rather than always the red — one
+   colour of thread and one ribbon, because that is what a book is bound in. */
 .app::before {
   content: "";
   position: absolute;
@@ -83,9 +118,37 @@ body {
   width: 2px;
   background: repeating-linear-gradient(
     to bottom,
-    rgb(168 68 58 / 55%) 0 9px,
-    rgb(168 68 58 / 0) 9px 19px
+    var(--thread) 0 9px,
+    transparent 9px 19px
   );
+  opacity: 0.55;
+}
+
+/* The ribbon, sewn in at the head of the binding: down the page just outside the
+   stitching, and hanging past the foot onto the ground with a cut end.
+
+   It is the one thing on the page that says which book this is without being
+   read, and it is the book's colour at full strength — which it can be because
+   it sits in the page's own margin, where there is nothing to read on top of it.
+   See specs/features/look/telling-books-apart.feature. */
+.ribbon {
+  position: absolute;
+  top: -0.5rem;
+  bottom: -2.6rem;
+  left: 0.32rem;
+  width: 0.66rem;
+  background-color: var(--thread);
+  /* Darker where it turns over the head of the page, and again at the fold just
+     below it. A ribbon is not a flat stripe. */
+  background-image: linear-gradient(
+    to bottom,
+    rgb(62 42 20 / 40%) 0 0.5rem,
+    rgb(62 42 20 / 15%) 0.5rem 0.95rem,
+    rgb(62 42 20 / 0) 1.5rem
+  );
+  box-shadow: 0 1px 2px rgb(62 42 20 / 22%);
+  /* The swallowtail: how a ribbon is finished so it does not fray. */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 0.75rem), 0 100%);
 }
 
 /* One piece of tape, straddling the top edge so it holds the page to the
@@ -202,7 +265,9 @@ body {
 }
 
 .books__switch {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   width: 100%;
   padding: 0.35rem 0.5rem;
   border: 0;
@@ -227,6 +292,68 @@ body {
 
 .books__switch[aria-current] {
   font-weight: 700;
+}
+
+/* Every book wears its own colour, at the outside edge of the row: the ribbon
+   end showing out of the book. This is the one place all of them are seen
+   together, and it is what the book menu is glanced at for. Beside the name,
+   never instead of it — see
+   specs/features/look/telling-books-apart.feature. */
+.books__switch::after {
+  content: "";
+  flex: none;
+  margin-left: auto;
+  width: 0.4rem;
+  height: 1.15em;
+  background: var(--thread);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%);
+}
+
+/* The swatches: six ribbon ends in a row, pressed directly. Not a line of text
+   leading to a colour picker — a press, not a question. See specs/persona.md. */
+.books__colours {
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+  padding: 0.5rem 0.5rem 0.6rem;
+}
+
+/* The ribbon end is drawn by the pseudo and the ring goes on the button, because
+   a clip-path clips an outline too — a ring on the swatch itself would be cut
+   away by the very notch that makes it a ribbon. */
+.books__colour {
+  flex: none;
+  width: 1.35rem;
+  height: 1.85rem;
+  padding: 0.16rem;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  cursor: pointer;
+}
+
+.books__colour::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--thread);
+  /* The same cut end the ribbon has, so what is pressed is what appears down
+     the page. */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+/* The chosen one is not said in colour alone: it stands proud of the row and
+   keeps a ring, so the mark reads for anybody who cannot tell two of the six
+   apart. */
+.books__colour[aria-pressed="true"] {
+  outline: 1.5px solid var(--faded);
+  margin-top: -0.3rem;
+}
+
+.books__colour:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
 }
 
 .books__actions,

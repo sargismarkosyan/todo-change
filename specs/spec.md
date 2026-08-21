@@ -56,6 +56,7 @@ open:
     {
       "id": "1739827000000-1a2b3c4d5e6f7a8b",
       "name": "Sweets",
+      "colour": "green",
       "recipes": [
         {
           "id": "1739827200000-9f2c41ab7e0d5c83",
@@ -80,6 +81,13 @@ open:
 A book has a non-empty `id`, a non-empty `name`, and a `recipes` array ordered
 newest first. Books themselves sit oldest first. `openId` names the book on
 screen; one that names nothing opens the first book.
+
+`colour` is what a book is bound in: one of `"red"`, `"ochre"`, `"green"`,
+`"teal"`, `"blue"` or `"plum"`. It is a **name, not a value** — the hexes are the
+stylesheet's business, so the palette can be retuned without touching a stored
+book. Absent, or anything else, reads as `"red"`, which is what every book was
+drawn in before 0015; the default is not written down, so there is nothing to
+clear.
 
 Since 0013 **the address is what puts a book on screen**, and going to one sets
 `openId` — the two never disagree, because one follows the other. On the home no
@@ -140,6 +148,16 @@ Used consistently in specs, code, and UI copy:
   not "category", not "notepad".
 - **the open book** — the one whose recipes are on screen. Not "active", not
   "current", not "selected".
+- **a book's colour** — which of the six a book is bound in, named rather than
+  numbered: *red*, *ochre*, *green*, *teal*, *blue*, *plum*. Not "the theme", not
+  "an accent", not "a tag", and never "a category" — a book is not one, and a
+  colour on it does not make it one.
+- **the ribbon** — the band of the open book's colour down the binding edge of
+  the page, sewn in at the head and hanging past the foot. What says which book
+  is on screen without being read. Not "the accent bar", not "the stripe".
+- **the swatches** — the strip of six in the book menu, one press each, that
+  colours the open book. Not "the palette" — that word is the stylesheet's — and
+  never "the colour picker", which is the thing they exist instead of.
 - **the contents** — the recipe names in the open book, top to bottom. Always
   one book's worth. This is what the old product called "the list".
 - **ingredient** — one line of what a recipe takes, amount included. Not

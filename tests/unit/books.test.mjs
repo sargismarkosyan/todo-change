@@ -5,8 +5,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  BOOK_COLOURS,
+  DEFAULT_COLOUR,
   DEFAULT_NAME,
   addBook,
+  colourBook,
+  colourOf,
   emptyStore,
   isBook,
   migrateList,
@@ -191,4 +195,59 @@ test('the last book does not go, and neither does an unknown one', () => {
 
   const store = { books: [book('a', 'One'), book('b', 'Two')], openId: 'a' };
   assert.equal(removeBook(store, 'gone'), store);
+});
+
+// ---- what a book is bound in ---------------------------------------------
+//
+// The swatches offer six and nothing else, so the guard below is unreachable
+// from the page. It is here because "a colour this app does not offer changes
+// nothing" is the promise that keeps a stored book from ever holding one.
+
+test('the six are named, and the first is the one nothing is written down for', () => {
+  assert.deepEqual(BOOK_COLOURS, ['red', 'ochre', 'green', 'teal', 'blue', 'plum']);
+  assert.equal(DEFAULT_COLOUR, 'red');
+});
+
+test('colourOf reads anything at all as one of the six', () => {
+  assert.equal(colourOf(book('a', 'One')), 'red');
+  assert.equal(colourOf({ ...book('a', 'One'), colour: 'plum' }), 'plum');
+  assert.equal(colourOf({ ...book('a', 'One'), colour: 'chartreuse' }), 'red');
+  assert.equal(colourOf({ ...book('a', 'One'), colour: 42 }), 'red');
+  assert.equal(colourOf(undefined), 'red');
+});
+
+test('a colour this app does not offer changes nothing', () => {
+  const store = { books: [book('a', 'One')], openId: 'a' };
+  assert.equal(colourBook(store, 'a', 'chartreuse'), store);
+  assert.equal(colourBook(store, 'a', undefined), store);
+});
+
+test('an id that is not there changes nothing either', () => {
+  const store = { books: [book('a', 'One')], openId: 'a' };
+  assert.deepEqual(colourBook(store, 'gone', 'plum').books, store.books);
+});
+
+test('choosing the red takes the key back out rather than writing it down', () => {
+  const store = { books: [book('a', 'One'), book('b', 'Two')], openId: 'a' };
+
+  const plum = colourBook(store, 'a', 'plum');
+  assert.equal(plum.books[0].colour, 'plum');
+  // The other book is untouched, and keeps its identity rather than a copy.
+  assert.equal(plum.books[1], store.books[1]);
+
+  const back = colourBook(plum, 'a', 'red');
+  assert.equal('colour' in back.books[0], false);
+  assert.equal(colourOf(back.books[0]), 'red');
+});
+
+test('a stored colour is read as untrusted as every other field', () => {
+  const read = (colour) =>
+    sanitizeStore({ books: [{ ...book('a', 'One'), colour }], openId: 'a' }).books[0];
+
+  assert.equal(read('teal').colour, 'teal');
+  // Not one of the six, the default written down, and not a string at all: all
+  // three are a book with no colour, which is what red means.
+  assert.equal('colour' in read('chartreuse'), false);
+  assert.equal('colour' in read('red'), false);
+  assert.equal('colour' in read({ hex: '#4e7a3a' }), false);
 });

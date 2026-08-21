@@ -22,6 +22,21 @@ export const token = (name) => ROOT[name];
 export const resolve = (value) =>
   value.replace(/var\(--([\w-]+)\)/g, (_, name) => ROOT[name]).replace(/\s+/g, ' ').trim();
 
+/**
+ * The declarations of the first rule written for `selector`, verbatim.
+ *
+ * For the handful of things jsdom cannot compute at all: a pseudo-element's
+ * style. Asking the stylesheet which token a pseudo draws from is not the same
+ * as asking the browser what it painted — but it is the difference between the
+ * ribbon and the stitching being able to drift apart and not, which is what the
+ * rule is about. Selectors are matched at the start of a line, which is how
+ * every rule in the file is written.
+ */
+export function ruleFor(selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return CSS.match(new RegExp(`^${escaped}\\s*\\{([^}]*)\\}`, 'm'))?.[1] ?? '';
+}
+
 /** The three channels of `#rrggbb` or of an `rgb(...)` — jsdom hands back both. */
 const channels = (colour) => {
   const value = colour.trim();

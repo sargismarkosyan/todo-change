@@ -41,9 +41,22 @@ to configure the thing before using it — a page, a list of options, a decision
 asked before there is a reason for one. It does not rule out a switch, in a
 popover, holding an answer somebody has already been asked for once. The book
 menu has been exactly that since 0006, and `features/books/spec.md` makes the
-same argument: opened for two seconds and closed is not a screen. If either of
-them ever grows a third line, that is the signal this distinction has stopped
-being honest.
+same argument: opened for two seconds and closed is not a screen.
+
+**The third-line signal fired, and is replaced rather than ignored.** This
+paragraph used to end: *"If either of them ever grows a third line, that is the
+signal this distinction has stopped being honest."* The book menu already had
+three — the new-book form, rename, delete — and 0015 adds the swatches as a
+fourth. So it fired, and it is worth saying that counting lines was always a
+proxy. **The thing it was a proxy for is: do you have to go somewhere and decide
+before you can use the app?** Nothing in either popover does. A book nobody
+colours is the book this app has always drawn, no screen shows an unanswered
+question, and the book menu is opened to switch books — the one frequent thing in
+it — with everything else reached from where you already were. What is still
+ruled out is exactly what it always was: a page, a list of options, and a
+decision asked before there is a reason for one. The moment either popover asks a
+question instead of offering a press, this distinction *has* stopped being
+honest, and no line count will be needed to notice.
 
 **A mark you make, not one you are asked for.** "Asked to be marked as anything"
 is amended by version 0014 in the same way, and the word carrying it is *asked*.
