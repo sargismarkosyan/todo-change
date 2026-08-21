@@ -207,6 +207,10 @@ Used consistently in specs, code, and UI copy:
 - **the AI settings** — the popover in the colophon holding the switch. Never a
   screen, never a page, and never somewhere you have to go before using the
   app.
+- **the announcer** — the one off-screen line that says what just changed, for
+  whatever reads the page aloud. Never visible, never more than one, and never
+  saying anything the screen does not already show. Not "a toast", not "a
+  notification".
 
 Retired with version 0004, and not to be reintroduced: **todo**, **sub-todo**,
 **parent**, **done / unfinished**, **the list**, **notepad**.
