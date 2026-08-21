@@ -64,6 +64,39 @@ away.
 A blank name is not a name: a book cannot be made or renamed with one, which is
 what makes an all-whitespace book impossible.
 
+## Colour
+
+**A book is bound in one of six colours**, and wears it down the binding edge of
+the page — the ribbon and the stitching — and beside its name in the book menu.
+What that looks like is `../look/spec.md`; what it is *for* is here.
+
+It is for the sentence two sections up: a page of five recipe names looks much
+the same in any book, and writing into the wrong one is the mistake this feature
+makes possible. Until 0015 the only defence was a name in the masthead, read by
+somebody who is looking down the page and typing into a box that never asks. A
+colour is seen rather than read, which is the difference.
+
+**Six, not any.** A book is bound in cloth somebody had, not mixed to order. Six
+are checked once against the paper — every one clears 3 to 1 against the page and
+against the ground — and tell each other apart at the size of a swatch. A colour
+picker would move that check onto every read and make "which colours are allowed"
+a rule instead of a palette.
+
+**Red is not a choice, it is the absence of one.** The first swatch is the colour
+every book has been drawn in since 0005, it is not written down, and a book
+nobody colours is the book this app has always drawn. There is nothing to clear
+and no third state.
+
+**Only the open book is coloured**, like renaming and deleting, and for the same
+reason: the rows used to switch stay clear of controls. A new book is red and is
+coloured later or never — the one place this app refuses to add a decision is
+making something, and `create-notepad-opens-it-empty` is why.
+
+**Colour never says anything on its own.** Every place a book's colour appears,
+its name appears beside it. The tempting next change is a book menu of swatches
+with the names dropped, and `colour-is-never-the-only-thing-saying-which-book`
+exists to refuse it.
+
 ## Deleting, and the size of the mistake
 
 Deleting a book is the largest destructive action in this app. There is still no

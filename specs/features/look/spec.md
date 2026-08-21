@@ -10,7 +10,16 @@ is not allowed to cost.
   stylesheet, so nothing is fetched: see `../../setup/constraints.md`.
 - **A page** laid on that ground, lighter than it, with the crease the binding
   pulls into the paper and the stitching itself down the inside edge: short
-  thread with paper between the stitches, not a dashed border.
+  thread with paper between the stitches, not a dashed border. Since 0015 the
+  thread is the open book's colour rather than always the red.
+- **A ribbon**, sewn in at the head of the binding, running the full height of
+  the page just outside the stitching and hanging past the foot onto the ground
+  with a cut end. It is the book's colour, and it is the one thing on the page
+  that says which book this is without being read. It carries no words and
+  nothing is drawn over it — it sits outside the text column, in the page's own
+  margin, which is what lets it be a colour at full strength. A book you cook
+  from has a ribbon in it; that is the whole argument for this shape rather than
+  a border, a bar, or a tinted page.
 - **One piece of tape**, straddling the top edge of the page with torn ends and
   enough translucency to show the paper through. Once, at the top: tape
   everywhere is a theme; tape once is a book. Flat, square-ended and floating
@@ -44,6 +53,14 @@ and from a step back. A warm palette is where that quietly goes: cream on cream
 is the most natural mistake in this direction. Every colour a recipe is read in
 clears 4.5 to 1 against what it sits on, and that is checked rather than judged.
 
+**A book's colour is not one of those colours, and that is the point.** The six a
+book can be bound in are checked at 3 to 1 against the page and against the
+ground — the bar for a graphic that carries meaning, not for text — because
+nothing is ever read *in* them. It is also why 0015 put the colour on the binding
+rather than on the paper: tinting the page would turn seven checked pairs into
+forty-two, and would make *"the ground, the page and the card are all warm"*
+false of a blue book.
+
 **Nothing moves while it is being read.** No rotated cards that straighten when
 opened, no lift on hover, no transition on a recipe unfolding. Workflow 3 is
 reading with your hands full, and anything that moves while being read is
@@ -63,9 +80,11 @@ dragged — no reflow, no lift on anything not being held. And
 `prefers-reduced-motion` removes the sliding entirely: the line is simply
 somewhere else, which is the same outcome by the same gesture.
 
-**Texture never gets under text.** The grain is on the ground and stops there.
-The page and the cards are flat, because texture behind words is the fastest way
-to lose the thing the words are for.
+**Texture never gets under text, and neither does colour.** The grain is on the
+ground and stops there. The page and the cards are flat, because texture behind
+words is the fastest way to lose the thing the words are for — and a book's
+colour lives in the page's margin for the same reason, where it can be a colour
+at full strength precisely because there is nothing to read on top of it.
 
 ## Faces
 
