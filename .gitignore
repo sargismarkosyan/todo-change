@@ -11,3 +11,6 @@ coverage/
 .trace/
 report.md
 docs/screenshots/.frames/
+
+# worktrees
+.claude/worktrees/
