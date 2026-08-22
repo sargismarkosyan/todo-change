@@ -1,4 +1,4 @@
-@feature:book-renaming
+@feature:book-renaming @workflow:organise-the-books
 Feature: Renaming a book
 
   A name typed in a hurry is a name typed wrong, and the name is the only thing

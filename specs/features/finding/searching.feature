@@ -1,4 +1,4 @@
-@feature:finding-searching
+@feature:finding-searching @workflow:find-a-recipe
 Feature: Finding a recipe in any book
 
   A book exists so there is less to read down at once, and the price of that is

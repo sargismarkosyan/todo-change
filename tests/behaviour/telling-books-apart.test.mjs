@@ -1,4 +1,4 @@
-// specs/features/look/telling-books-apart.feature
+// specs/features/books/telling-books-apart.feature
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

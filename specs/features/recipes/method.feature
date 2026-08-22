@@ -1,4 +1,4 @@
-@feature:recipe-method
+@feature:recipe-method @workflow:fill-a-recipe-in
 Feature: The method
 
   The method is what to do, one step per line, in the order it happens. Steps

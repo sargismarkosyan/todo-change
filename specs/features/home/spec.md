@@ -9,7 +9,7 @@ It exists because of a gap that books opened and searching only half closed. The
 app can reach across every book — but only for somebody who already has a word
 to type. Arriving with nothing in mind leaves exactly one thing on screen: the
 contents of whichever book was open last. Everything in the other books is
-invisible until somebody names it, and `workflows.md` says the trigger for
+invisible until somebody names it, and `workflows/find-a-recipe.feature` says the trigger for
 browsing is "standing at the fridge, deciding what to make" — which is the
 moment of having nothing in mind, not something in it.
 
@@ -35,7 +35,7 @@ view layer implying one — is now a deliberate yes to the first and still a no 
 the second. Popovers are still not pages.
 
 The reason to spend an address on this rather than an in-page toggle is
-[workflow 5](../../workflows.md). A pinned tab is how this app is used, and a
+`@guarantee:survives-return`. A pinned tab is how this app is used, and a
 pinned tab remembers a URL. `#/book/<id>` means reopening it lands on the book it
 was left on, with the box under the cursor, without the app having to guess from
 storage.

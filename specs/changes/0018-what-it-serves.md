@@ -1,6 +1,6 @@
 # Spec 0018: what it serves
 
-- **Status:** proposed
+- **Status:** approved
 - **Issue:** [#35](https://github.com/sargismarkosyan/todo-change/issues/35) —
   "I am not sure if we have mechanisms to enforce their update… I insist to make
   workflows separate files, and reusing Gherkin in it."
@@ -194,7 +194,17 @@ untouched, so **no test moves and no test changes** — only paths.
 | `look/paper.feature` | `guarantees/paper.feature` | `@guarantee:readable-while-cooking` |
 | `look/within-reach.feature` | `guarantees/within-reach.feature` | `@guarantee:within-reach` |
 | `look/telling-books-apart.feature` | `books/telling-books-apart.feature` | `@workflow:find-a-recipe` `@workflow:organise-the-books` |
-| `look/spec.md` | `guarantees/spec.md` + the ribbon paragraphs into `books/spec.md` | — |
+| `look/spec.md` | `guarantees/spec.md` + the contrast argument into `books/spec.md`; a tombstone left at the old path | — |
+
+Change specs 0005 through 0017 link to the old paths and were **not** rewritten:
+a frozen change spec says what was true when it shipped, and repointing its links
+after the fact edits history to match what we now think. So `look/spec.md` stays
+as a **tombstone** — the third in this change, after `persona.md` and
+`workflows.md`, and for the same reason: eleven links in eight frozen specs, and
+history that stops resolving stops being evidence. A folder holding one gravestone
+and no feature files is not a feature area, which is the point. The move is also
+recorded in [`features/RETIRED.md`](../features/RETIRED.md), which already exists
+to answer "why is this gone" and now answers it for an area as well as a rule id.
 
 **Feature ids keep their `look-` prefix** — `look-paper`, `look-within-reach`,
 `look-telling-books-apart` — for the reason `RETIRED.md` already gives about
@@ -359,10 +369,13 @@ was. The change makes that guarantee *more* checked than it is today, not less.
 The screenshot pass, by hand. There is no screenshot — nothing on screen changes
 — so these are the pipeline's equivalent.
 
-1. **The gate fails on the untagged repo, for the right reasons.** Stash the
-   feature-file tags and run `npm run trace`. It must name exactly the nine
-   orphans issue #35 lists, and `@guarantee:instant` as unasserted. If it passes,
-   it is not checking anything.
+1. **The gate names the nine orphans, and nothing else.** Stripping every tag
+   proves nothing — it reports all thirty-five. The real check is to restore the
+   claim set the old hand-written `Specs.` lists actually held at version 0017:
+   untag exactly the nine files no workflow listed, and run `npm run trace`. It
+   must name those nine and no others. **Run, and it does** — seven
+   `suggesting/`, `recipes/reordering-by-hand`, and `paper`, which is the list in
+   issue #35. `@guarantee:instant` shows as `·` planned in the map either way.
 2. **`npm run verify` is green on the finished branch**, with the standing
    `reordering.feature: 125 lines` warning and the new `@planned` note on
    `instant`, and no others.
@@ -370,8 +383,19 @@ The screenshot pass, by hand. There is no screenshot — nothing on screen chang
    `@workflow:` tag from a feature; point one at a workflow that does not exist;
    delete `@retired` from `rowan.md`; delete a workflow test. Five edits, five
    failures, each naming the file and what to do about it. Then `git checkout`.
-4. **The app is byte-identical.** `git diff main -- src/ index.html vendor/`
-   returns nothing at all.
+4. **No line of the app changed.** `git diff main -- src/ index.html vendor/`
+   comes back as six one-line comment edits in `src/app.mjs` and one link in
+   `src/fonts/README.md`, all of them paths this change moved — `persona.md` →
+   `personas/nell.md`, `features/look/` → `features/guarantees/`. Nothing else:
+   no statement, no selector, no markup.
+
+   **This is a correction to what this spec said before it was approved**, which
+   claimed byte-identical. The claim was made before the references were counted,
+   and a stale path in a comment is the case
+   [process.md](../setup/process.md#when-the-process-gets-in-the-way) says to fix
+   and say so. `src/app.mjs:190` pointed at
+   `specs/features/look/within-reach.feature`, which after this change is a path
+   that does not exist.
 5. **Every link resolves.** Open `specs/persona.md` and `specs/workflows.md` —
    the tombstones — and follow them through to `personas/nell.md` and
    `workflows/README.md`. Then open the oldest change spec that links to either

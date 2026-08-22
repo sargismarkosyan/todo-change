@@ -1,4 +1,4 @@
-@feature:suggesting-while-it-writes
+@feature:suggesting-while-it-writes @workflow:fill-a-recipe-in
 Feature: While the model is writing
 
   Running the model is the second slow thing, and the one that happens every

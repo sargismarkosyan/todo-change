@@ -1,4 +1,4 @@
-@feature:storage-persistence
+@feature:storage-persistence @guarantee:survives-return
 Feature: Recipes survive a reload
 
   There is no server. localStorage is the only copy of the data, so anything the

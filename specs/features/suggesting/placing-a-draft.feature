@@ -1,4 +1,4 @@
-@feature:suggesting-placing
+@feature:suggesting-placing @workflow:fill-a-recipe-in
 Feature: Where a proposal sits
 
   The model knows where its lines go. Asked to fill in a method that already

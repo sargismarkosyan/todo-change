@@ -1,4 +1,4 @@
-// specs/features/look/within-reach.feature
+// specs/features/guarantees/within-reach.feature
 //
 // The four guarantees the 0017 audit found missing. None of them is visible,
 // which is the point: this is the same book, reached by hands and ears the

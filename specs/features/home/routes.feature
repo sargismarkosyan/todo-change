@@ -1,4 +1,4 @@
-@feature:home-routes
+@feature:home-routes @workflow:find-a-recipe @guarantee:survives-return
 Feature: A front door, and a book with its own address
 
   There are two things to look at now. **A book** is a contents page that is

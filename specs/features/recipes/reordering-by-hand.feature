@@ -1,4 +1,4 @@
-@feature:recipe-reordering-by-hand
+@feature:recipe-reordering-by-hand @workflow:correct-a-line
 Feature: Taking hold of a line
 
   A line is dragged by its grip and by nothing else. The rest of the row — the

@@ -407,7 +407,7 @@ async function open(seed, model = null, at = 'book', day = null) {
      * How solid a grip is drawn, with nothing hovered.
      *
      * The number a step shows is drawn by the grip, so a grip that faded until
-     * hovered would take the numbering with it — which features/look/spec.md
+     * hovered would take the numbering with it — which features/guarantees/spec.md
      * does not allow. jsdom cannot compute pseudo-element styles, so the number
      * itself is checked by hand in the browser; this checks the thing it rides
      * on.

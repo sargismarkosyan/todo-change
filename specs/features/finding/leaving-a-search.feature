@@ -1,4 +1,4 @@
-@feature:finding-leaving
+@feature:finding-leaving @workflow:find-a-recipe
 Feature: Leaving a search
 
   A search is where the reader is looking, not something they own. Nothing about

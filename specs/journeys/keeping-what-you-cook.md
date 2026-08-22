@@ -12,6 +12,16 @@ That is why this layer earns its place rather than being a longer
 [`../personas/nell.md`](../personas/nell.md) first; this is what they do with the
 app over a year, and the workflows are the individual attempts it is made of.
 
+**Workflows this joins**, in the order they are first reached:
+`@workflow:name-a-recipe`, `@workflow:fill-a-recipe-in`,
+`@workflow:organise-the-books`, `@workflow:find-a-recipe`,
+`@workflow:correct-a-line`, `@workflow:throw-something-out`.
+
+That line is the one machine-readable thing in this file. `npm run trace` fails
+if it names a workflow that does not exist — a dangling reference is factually
+wrong rather than a judgment call — and everything below it is prose nothing
+checks.
+
 ## The arc
 
 **Month one — the drawer moves in.** Nell types in the recipes they can find:

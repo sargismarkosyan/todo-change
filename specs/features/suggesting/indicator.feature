@@ -1,4 +1,4 @@
-@feature:suggesting-indicator
+@feature:suggesting-indicator @workflow:fill-a-recipe-in
 Feature: Where the AI stands
 
   One line in the masthead saying whether the machine can help yet. It answers

@@ -1,4 +1,4 @@
-@feature:recipe-empty-state
+@feature:recipe-empty-state @workflow:find-a-recipe
 Feature: The empty book
 
   A book with nothing in it should say so, rather than showing a blank panel

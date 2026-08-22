@@ -20,8 +20,9 @@ in markdown and not in `.feature` files.
 6. **[skills.md](skills.md)** — the two project skills and when each fires.
 
 Then read [`../README.md`](../README.md) for how the spec layers fit together,
-and [`../persona.md`](../persona.md) and [`../workflows.md`](../workflows.md)
-for who the app is for.
+and [`../personas/`](../personas/README.md) and
+[`../workflows/`](../workflows/README.md) for who the app is for and what they
+do with it.
 
 ## The one-paragraph version
 

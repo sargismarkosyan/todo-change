@@ -1,4 +1,4 @@
-@feature:book-creating
+@feature:book-creating @workflow:organise-the-books
 Feature: Starting a new book
 
   A book is made by naming it, and it opens straight away — so the reason it was

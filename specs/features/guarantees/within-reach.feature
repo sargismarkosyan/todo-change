@@ -1,4 +1,4 @@
-@feature:look-within-reach
+@feature:look-within-reach @guarantee:within-reach
 Feature: Within reach — the same book for every hand
 
   Version 0017 is a design revisit with nothing on it to see. The look was

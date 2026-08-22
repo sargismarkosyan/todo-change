@@ -32,7 +32,7 @@ rule('ai-settings-is-a-popover', () => {
     assert.equal(
       await app.aiSettingsLines(),
       2,
-      'a third line means this became the settings screen persona.md rules out',
+      'a third line means this became the settings screen personas/nell.md rules out',
     );
   });
 

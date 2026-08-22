@@ -63,6 +63,54 @@ limits.
 The output is a per-feature matrix — `✓` traced, `✗` untraced, `·` planned —
 followed by a count. It is worth reading even when green.
 
+### The same loop, one layer up
+
+Since [change 0018](../changes/0018-what-it-serves.md) the same gate closes the
+same loop over the layers that say what the product *is* and who it is *for*.
+Everything below is `tools/trace.mjs` reusing `tools/gherkin.mjs`; nothing new
+was invented to read it.
+
+```
+feature   →  workflow / guarantee   every feature says what it serves
+workflow  →  feature                no workflow nothing implements
+workflow  →  test                   no walkthrough nothing walks
+workflow  →  persona                no workflow for nobody
+persona   →  workflow               no persona nobody does anything as
+guarantee →  feature                no always-claim nothing asserts
+journey   →  workflow               no dangling reference
+```
+
+| Failure | What it means |
+|---|---|
+| a feature naming no `@workflow:` or `@guarantee:` | It serves nothing anybody wrote down. Tag it, or the thing it serves is missing from `specs/workflows/`. |
+| a feature naming a workflow or guarantee that does not exist | A typo, or an id that was renamed. The ids are in `specs/workflows/` and `specs/spec.md`. |
+| a workflow claimed by no feature | Specced and never built. Tag a feature, or tag the workflow `@planned`. |
+| a workflow walked by no test | Its `Example:` blocks are a costume. Write the walkthrough in `tests/workflows/`. |
+| a workflow naming no live `@persona:` | A workflow for nobody, or one pointing only at a `@retired` persona. |
+| a persona named by no workflow | Nobody does anything as them. Give them a workflow, or tag the file `@retired` — which is what keeps Rowan in the repo. |
+| a guarantee asserted by no feature | The product spec claims something always true that nothing checks. Tag a feature, or tag the bullet `@planned` to say so out loud. |
+| a `@planned` workflow or guarantee that *is* claimed | Same as a `@planned` Rule with a test: the tag should have come off. |
+| a journey naming a workflow that does not exist | A dangling reference is factually wrong, not a judgment call. |
+
+**One warning, not four.** A workflow naming no `@journey:` warns rather than
+fails, because where an attempt sits in the arc is a judgment. It is the only
+warning added here on purpose:
+[`journeys/README.md`](../journeys/README.md) adopts the norm that **a warning
+surviving two versions either becomes an error or gets deleted**, and four new
+warning kinds would have turned the output into wallpaper in one version.
+
+**Not yet enforced, and deliberately:** whether a journey has been looked at
+since the workflows under it changed, and whether N features have piled up under
+a workflow since its file was last edited. Both are git questions rather than
+file questions, and CI checks out at `fetch-depth: 1` where `git log -- <path>`
+returns nothing — so both would silently pass forever. They are version 0019.
+
+The second half of the output is the map: every workflow and guarantee, who it
+is for, and the feature files serving it. It is the thing the hand-maintained
+`Specs.` lists in the old `workflows.md` were trying to be, and it is generated
+rather than typed — which is the whole of the fix, since nine of thirty-five
+files had drifted out of those lists by version 0017.
+
 ## The id system
 
 ```gherkin
@@ -86,11 +134,22 @@ Feature: Writing a recipe down
   will report the test as claiming something that does not exist.
 - `@planned` marks a rule that is specced but not built. Specs land before code,
   so this is the normal state of a new rule.
+- `@workflow:<id>` and `@guarantee:<id>` on every Feature, saying what it serves.
+  Both may repeat: a feature can serve two workflows, and `recipes/reading`
+  asserts two guarantees.
+- `@persona:<id>` and `@journey:<id>` on every workflow. Not on features — every
+  feature reaches a persona through its workflow, and a second path to the same
+  fact is a second thing to keep true.
+- **Workflow and persona ids are permanent for the same reason rule ids are.**
+  A test says `workflow('name-a-recipe', ...)`.
 
 `tools/gherkin.mjs` is the reader — no dependencies, small enough to read in
 one sitting. It also
 enforces structure: one Feature per file, no scenario outside a Rule, no
-duplicate ids, nothing unnamed. Soft limits of 120 lines and 6 rules per file
+duplicate ids, nothing unnamed. A **workflow** file is the one exception and is
+parsed with `requireRules: false`: it has no `Rule:` at all, because it is one
+bounded attempt rather than a set of them, and its scenarios hang off the
+`Feature:` line as walkthroughs of the whole thing. Soft limits of 120 lines and 6 rules per file
 produce warnings, because small per-component files are the point.
 
 ## Gate 2 — coverage (`tools/test.mjs`)
@@ -184,8 +243,24 @@ They were tested against deliberate violations rather than assumed to work:
 | behaviour test outside `rule()` | fails |
 | behaviour file with no `rule()` at all | fails |
 | `@planned` rule that has a test | fails |
+| feature naming no `@workflow:` or `@guarantee:` | fails |
+| feature naming a workflow that does not exist | fails |
+| workflow claimed by no feature | fails |
+| workflow walked by no test | fails |
+| workflow naming a persona that does not exist | fails |
+| persona with `@retired` removed and no workflow naming them | fails |
+| guarantee asserted by no feature | fails |
+| journey naming a workflow that does not exist | fails |
+| workflow naming no `@journey:` | warns, does not fail |
 | module at 40% branch / 50% function coverage | fails |
 | fully covered module | passes |
+
+The 0018 rows were checked by breaking each one in turn against the finished
+branch and reading the message it produced — see that change spec's acceptance
+checks. The feature→workflow row was checked a second and better way: by
+restoring the claim set the old hand-written `Specs.` lists actually held at
+version 0017, where the gate named the nine orphans issue #35 found, and nothing
+else.
 
 If you change either gate, re-check it the same way. A gate that has never failed
 is not known to be a gate.

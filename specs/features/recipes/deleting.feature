@@ -1,4 +1,4 @@
-@feature:recipe-deleting
+@feature:recipe-deleting @workflow:throw-something-out
 Feature: Throwing something out
 
   Deleting removes a recipe, an ingredient or a step for good. There is no undo

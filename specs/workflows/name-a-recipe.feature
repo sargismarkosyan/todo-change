@@ -40,7 +40,7 @@ Feature: Name a recipe
     Given the book "Sweets" is open
     When I write down "Apple cake"
     Then "Apple cake" is at the top of the contents
-    And the box is empty and still has the cursor
+    And the box is empty, ready for the next one
     And it is in the book "Sweets"
 
   Example: it is still there next time

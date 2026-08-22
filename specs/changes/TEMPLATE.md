@@ -6,10 +6,15 @@
 ## Who this is for
 
 Which persona, and which of *their* situations. Name the workflow from
-[workflows.md](../workflows.md) this sits in, and where in it.
+[workflows/](../workflows/README.md) this sits in, and where in it. A change that
+serves a guarantee rather than a workflow says which — the ids are in
+[spec.md](../spec.md). A technical change that serves neither says so plainly and
+argues for whoever it is for; see
+[setup/process.md](../setup/process.md#a-technical-change-that-serves-no-workflow-is-correct-not-a-gap).
 
 If this does not serve Nell, say so here and argue for it anyway — that is a
-legitimate move, but it has to be made out loud. See [persona.md](../persona.md).
+legitimate move, but it has to be made out loud. See
+[personas/](../personas/README.md).
 
 ## The job behind the request
 

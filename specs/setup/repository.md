@@ -17,8 +17,11 @@ src/                     app modules and styles
 
 specs/
   spec.md                product-level prose: why, vocabulary, storage contract
-  persona.md             who the app is for, and who it is not for
-  workflows.md           the five things that person actually does
+  personas/*.md          who the app is for — one file, one @persona: tag
+  journeys/*.md          the arc across months, and the seams — prose, never asserted
+  workflows/*.feature    the six bounded attempts, each walked by a test
+  persona.md             tombstone → personas/
+  workflows.md           tombstone → workflows/
   README.md              how the spec layers fit together
   setup/                 this folder — how the repo works
   features/<area>/
@@ -54,8 +57,8 @@ docs/feedback/           screenshots attached to issues
 | How to write a test it accepts | [testing.md](testing.md) |
 | What the skills do | [skills.md](skills.md) |
 | How specs are layered | [`../README.md`](../README.md) |
-| Who the app is for | [`../persona.md`](../persona.md) |
-| What "done" means for a workflow | [`../workflows.md`](../workflows.md) |
+| Who the app is for | [`../personas/`](../personas/README.md) |
+| What "done" means for a workflow | [`../workflows/`](../workflows/README.md) |
 
 ## Branches and pull requests
 

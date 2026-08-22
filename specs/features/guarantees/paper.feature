@@ -1,4 +1,4 @@
-@feature:look-paper
+@feature:look-paper @guarantee:readable-while-cooking
 Feature: Paper, ink, and a second voice
 
   The app looks like a book somebody has actually cooked from: a grained paper

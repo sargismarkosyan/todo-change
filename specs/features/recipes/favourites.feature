@@ -1,4 +1,4 @@
-@feature:recipe-favourites
+@feature:recipe-favourites @workflow:find-a-recipe
 Feature: Marking a recipe as one of the usual
 
   Most of what gets cooked comes from a handful of recipes, and the rest of the
@@ -8,7 +8,7 @@ Feature: Marking a recipe as one of the usual
   It is not a tick and it is not a rating. A tick says *finished* — the thing
   goes away by being done — and a star says the opposite: come back to this one.
   There is no scale, no second star, and nothing about whether a recipe is any
-  good. `persona.md` rules out being *asked* to mark things, and nothing here
+  good. `personas/nell.md` rules out being *asked* to mark things, and nothing here
   asks: a recipe nobody stars behaves exactly as it always has.
 
   What the star buys is on the home, in `../home/favourites.feature`. What it

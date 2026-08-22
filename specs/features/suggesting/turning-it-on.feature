@@ -1,4 +1,4 @@
-@feature:suggesting-offer
+@feature:suggesting-offer @workflow:fill-a-recipe-in
 Feature: Being offered the AI, once
 
   It is offered rather than assumed. The model is a download measured in
@@ -13,7 +13,7 @@ Feature: Being offered the AI, once
   real.
 
   It is asked below the box, not above it. The top of the page is the
-  three-second capture `../../workflows.md` protects, and a question that pushes
+  three-second capture `../../workflows/name-a-recipe.feature` protects, and a question that pushes
   the box down costs the one workflow this app is most protective of.
 
   Background:

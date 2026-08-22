@@ -61,7 +61,7 @@ hand.
   together, however small.
 - **Spec before code.** No implementation without an approved change spec, and no
   change spec without `refine-spec` first. A request is not a spec.
-- **A change to `workflows.md` or `persona.md` is confirmed on its own.** Those
+- **A change to `specs/workflows/` or `specs/personas/` is confirmed on its own.** Those
   two files say what the product is and who it is for, and every other layer in
   `specs/` is downstream of them. **The reason this needs a rule is that such an
   edit never arrives on its own** — it rides inside a spec nominally about a
@@ -100,6 +100,39 @@ It sometimes will — a one-word typo fix does not need a persona analysis. The
 judgment call is whether the change alters **behaviour someone could notice**. If
 it does, it needs a spec, however small it looks. If it does not (a comment, a
 stale path in a doc, a broken link), fix it and say so.
+
+### A technical change that serves no workflow is correct, not a gap
+
+Written down since [change 0018](../changes/0018-what-it-serves.md), because
+the gates make the absence visible and an absence nobody explained reads as an
+escape hatch being used.
+
+A change can be real, necessary, argued for in a numbered spec — and serve none
+of the six workflows, add no feature file, and touch neither
+[`personas/`](../personas/README.md) nor [`workflows/`](../workflows/README.md).
+That is not the process being dodged. It is the honest shape of a change whose
+whole requirement is that **nothing a person can see moves**.
+
+**[Change 0016](../changes/0016-somebody-elses-frame.md) is the worked example.**
+The Vue migration was taken for the organisation that owns the code, not for
+Nell. Its spec says so in its first paragraph and spends its length arguing the
+trade in the open, and every workflow came out the far side with exactly the
+shape it went in with — which was the requirement.
+
+What such a change still owes:
+
+- **A numbered change spec.** *Who this is for* says **not Nell**, out loud, and
+  argues for whoever it is for instead.
+- **An acceptance check proportional to the risk.** A rewrite that changes
+  nothing visible is the one kind of change where "it looks fine" and "it is
+  fine" are indistinguishable, so 0016 bought a walkthrough of every workflow.
+- **Silence in the gates, not an exemption from them.** `npm run verify` is
+  green the ordinary way. No feature is retagged to make a number look better.
+
+What it does **not** owe is an invented workflow to sit in. Filing a framework
+migration under `find-a-recipe` because the template asked for a workflow is the
+failure this paragraph exists to prevent — one bad tag is worse than an honest
+blank, because the gate cannot tell them apart and the map is what goes stale.
 
 When unsure, write the spec. The cost of an unnecessary small spec is a few
 minutes. The cost of undocumented behaviour change is that the screenshot series

@@ -1,4 +1,4 @@
-@feature:book-switching
+@feature:book-switching @workflow:find-a-recipe
 Feature: Switching books
 
   Recipes live in a book, and exactly one book is open at a time. The contents
