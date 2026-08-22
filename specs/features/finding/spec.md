@@ -7,7 +7,7 @@ it is in.
 
 It exists because books created the problem. Before version 0006 there was one
 contents page and nothing to search; now there are several, and a recipe you
-cannot place is one you have to go looking for book by book. `persona.md` names
+cannot place is one you have to go looking for book by book. `personas/nell.md` names
 "hunting for the recipe they know is in there somewhere" as one of the four
 things that annoy Nell, and books made that worse before this made it better.
 
@@ -60,7 +60,7 @@ context with no book behind it is a recipe written into a book nobody chose. One
 invariant holds instead: **what is on screen is always in the open book.**
 
 For the same reason, anything that follows a search ends it. Writing a recipe
-down clears it, because `workflows.md` promises a new recipe is visibly there at
+down clears it, because `workflows/name-a-recipe.feature` promises a new recipe is visibly there at
 the top of the contents, and it cannot be if a search is covering the contents.
 Switching books clears it, because another book is another contents page.
 

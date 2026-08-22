@@ -1,4 +1,4 @@
-@feature:suggesting-refusing
+@feature:suggesting-refusing @workflow:fill-a-recipe-in
 Feature: Not taking the draft
 
   Three ways to end up with nothing, and all three leave the recipe exactly as

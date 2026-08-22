@@ -1,4 +1,4 @@
-@feature:suggesting-taking
+@feature:suggesting-taking @workflow:fill-a-recipe-in
 Feature: Taking the draft
 
   A draft is taken a line at a time, which is the guarantee the whole feature

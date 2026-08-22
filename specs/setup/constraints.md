@@ -38,7 +38,7 @@ still open on a usable screen.
 **Why this is strict.** There is no server to fall back on and no export. A read
 that throws takes the whole page down, because there is nothing else to render.
 That failure ends trust in the tool in a way no missing feature does — see
-workflow 5 in [`../workflows.md`](../workflows.md).
+`@guarantee:survives-return` in [`../spec.md`](../spec.md).
 
 **Known gaps**, documented rather than solved: two tabs will overwrite each other
 (nothing listens for the `storage` event), and a full quota will throw on write.
@@ -77,7 +77,7 @@ true the moment there was a module to import.
 typeface, under a licence that travels with it. It adds no build step, no
 runtime fetch to anyone else's machine, and nothing to keep current — which is
 what this constraint is actually protecting. A `<link>` to a font host would
-fail all three and is ruled out; see `../features/look/spec.md`.
+fail all three and is ruled out; see `../features/guarantees/spec.md`.
 
 ## Two vendored libraries
 
@@ -209,7 +209,7 @@ amendment is [change 0013](../changes/0013-a-front-door.md) and it is narrow:
 **Why it was worth amending.** The app grew a second thing to look at — a front
 door that is not a book — and something has to say which one is on screen. An
 in-page toggle would have said it in less code and thrown away the reason to want
-it: [`../workflows.md`](../workflows.md) workflow 5 is a pinned tab reopened
+it: `@guarantee:survives-return` is a pinned tab reopened
 months later, a pinned tab remembers a URL, and an address is what makes
 reopening land where it was left rather than where storage guesses. Back and
 forward then work for free, which is otherwise a thing to be built.
@@ -228,7 +228,7 @@ the same posture this file takes to a stored string.
 **Popovers are still not pages.** The book menu and the AI settings both open
 over the contents and shut on the next click; nothing is navigated to and nothing
 is navigated back from, and neither gets an address. A "settings page" would
-break this constraint and `../persona.md` at once, which is why neither of them
+break this constraint and `../personas/nell.md` at once, which is why neither of them
 is one.
 
 ## Logic stays out of the DOM where it can

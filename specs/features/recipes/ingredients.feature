@@ -1,4 +1,4 @@
-@feature:recipe-ingredients
+@feature:recipe-ingredients @workflow:fill-a-recipe-in
 Feature: What a recipe takes
 
   An ingredient is one line, written the way it is said out loud — "200g plain

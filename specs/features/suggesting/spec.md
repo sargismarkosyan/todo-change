@@ -9,7 +9,7 @@ method**, both at once, from the name and whatever is already written down.
 
 ## The line this crosses
 
-`../../persona.md` said, of importing a recipe from the web: *"typing it out is
+`../../personas/nell.md` said, of importing a recipe from the web: *"typing it out is
 how it ends up in your words."* Version 0009 takes that on directly, and the
 honest thing is to say what changed rather than to find a reading of the old
 sentence that lets this through.
@@ -30,12 +30,12 @@ a time.** A draft you read, corrected, and took four lines of is as much yours
 as one you typed; a draft you waved through is not, and that is a real risk this
 version takes on rather than solves. See *What this costs* below.
 
-The amendment is written into `../../persona.md` in the same change, rather than
+The amendment is written into `../../personas/nell.md` in the same change, rather than
 left as a contradiction between two files.
 
 ## Why a model is here at all
 
-`../../workflows.md` describes writing a recipe down as two things: the name, in
+`../../workflows/` splits writing a recipe down into two attempts: the name, in
 three seconds, and then "the ingredients and the method, one line each". The
 first is fast and the app is good at it. The second is a dozen separate
 submissions, and it is where a recipe stops.
@@ -273,7 +273,7 @@ a mix of two things, and only the person reading it knows which is which.
 
 ## What this is not
 
-- **Not importing.** No URL, no fetch, no backend. `../../persona.md` rules that
+- **Not importing.** No URL, no fetch, no backend. `../../personas/nell.md` rules that
   out and it stays ruled out; the model is on the machine.
 - **Not a chat.** There is no box to ask it something, no conversation, no
   history. One prompt exists, it is invisible, and it is about one recipe.

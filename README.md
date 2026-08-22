@@ -21,7 +21,8 @@ and coverage clears 95%.
 - How this repo works, in full: [specs/setup/](specs/setup/README.md)
 - The short version: [CLAUDE.md](CLAUDE.md)
 - How specs are structured: [specs/README.md](specs/README.md)
-- Who the app is for: [specs/persona.md](specs/persona.md)
+- Who the app is for: [specs/personas/](specs/personas/README.md)
+- What they do with it: [specs/workflows/](specs/workflows/README.md)
 - Problems found while testing: [GitHub Issues](https://github.com/sargismarkosyan/todo-change/issues)
 - The series, one animated GIF per version: [docs/screenshots/](docs/screenshots/)
 

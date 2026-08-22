@@ -12,7 +12,7 @@ Nothing this app draws leaves the machine.
   The Caveat Project Authors, <https://github.com/googlefonts/caveat>.
 - **Used for:** the masthead, the open book's name, the two group headings, and
   the empty-book message. Nothing that is read while cooking — see
-  [`../../specs/features/look/spec.md`](../../specs/features/look/spec.md).
+  [`../../specs/features/guarantees/spec.md`](../../specs/features/guarantees/spec.md).
 
 The full latin subset is here rather than a tighter one because a book's name is
 typed by the person using the app, so the character set cannot be known in

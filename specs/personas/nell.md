@@ -1,0 +1,150 @@
+@persona:nell
+
+# Nell — cooking from what they have written down
+
+Every spec in this repo is answerable to one question: *does this help them?*
+If the answer takes a paragraph to construct, the answer is no.
+
+Nell cooks most nights, from recipes they have been collecting for years: a card
+in a grandmother's handwriting, one a friend read out over the phone, one they
+improvised in March that happened to work.
+
+## The job, and the one underneath it
+
+**The job.** Keep the recipes they actually cook somewhere quicker to reach than
+the drawer they are in now, and have them still be there next year.
+
+**The one underneath it.** *Some of these exist nowhere else.* The card is the
+only copy, the phone call is not coming again, and March will not be improvised
+twice. That is not a feature request and it is not annoyance — it is the reason
+the app is trusted with them at all, and it is why
+[`@guarantee:survives-return`](../spec.md) outranks every workflow in
+[`../workflows/`](../workflows/README.md). A version that loses one recipe has
+failed in a way no amount of the rest makes up for.
+
+This paragraph used to be half a sentence at the end of *What annoys them*. It
+is first now because it is the largest constraint in the product, and the
+gate that made every feature name what it serves is what made its absence from
+the top of this file visible.
+
+## Context
+
+They open the app in a pinned browser tab, on one machine, twice in an evening.
+Once at the point of deciding what to make, standing at the fridge with the door
+open. Once with the pan already on, glancing back at it with their hands full.
+It is not open all day, and there is nothing to keep on top of.
+
+The gap between one visit and the next is measured in months as often as hours.
+What happens across that gap is in
+[`../journeys/keeping-what-you-cook.md`](../journeys/keeping-what-you-cook.md).
+
+## What good looks like to them
+
+A recipe someone is reading out gets written down before they hang up. Weeks
+later, opening the book shows a page of names, and the one they want opens with
+the ingredients at the top — because what it takes is what decides whether it is
+tonight's dinner. Nothing has expired, been tidied away, or asked to be marked as
+anything.
+
+## What annoys them
+
+Retyping something they already wrote down. Hunting for the recipe they know is
+in there somewhere. Being asked, by a thing that is supposed to be a book,
+whether they have *finished* a cake.
+
+## Books are occasions, not categories
+
+Sweets, Dinner, Chicken, the four things they make when there is no time. Which
+book a recipe goes in is answered by whichever one is already open, because they
+were already in it when the recipe turned up. A book is chosen by opening it, and
+never asked for while typing.
+
+## What they will never do
+
+Tick a recipe off. Rate one, time one, scale one, count servings, log what they
+ate, or fill in a nutrition panel. Photograph the food. Read a settings screen.
+If a feature only pays off for someone who does these things, it is not for Nell.
+
+**A settings screen, not a switch.** What that line rules out is a place you go
+to configure the thing before using it — a page, a list of options, a decision
+asked before there is a reason for one. It does not rule out a switch, in a
+popover, holding an answer somebody has already been asked for once. The book
+menu has been exactly that since 0006, and
+[`../features/books/spec.md`](../features/books/spec.md) makes the same argument:
+opened for two seconds and closed is not a screen.
+
+**The third-line signal fired, and is replaced rather than ignored.** This
+paragraph used to end: *"If either of them ever grows a third line, that is the
+signal this distinction has stopped being honest."* The book menu already had
+three — the new-book form, rename, delete — and 0015 adds the swatches as a
+fourth. So it fired, and it is worth saying that counting lines was always a
+proxy. **The thing it was a proxy for is: do you have to go somewhere and decide
+before you can use the app?** Nothing in either popover does. A book nobody
+colours is the book this app has always drawn, no screen shows an unanswered
+question, and the book menu is opened to switch books — the one frequent thing in
+it — with everything else reached from where you already were. What is still
+ruled out is exactly what it always was: a page, a list of options, and a
+decision asked before there is a reason for one. The moment either popover asks a
+question instead of offering a press, this distinction *has* stopped being
+honest, and no line count will be needed to notice.
+
+**A mark you make, not one you are asked for.** "Asked to be marked as anything"
+is amended by version 0014 in the same way, and the word carrying it is *asked*.
+A recipe may now be starred as one of the handful actually cooked — see
+[`../features/recipes/favourites.feature`](../features/recipes/favourites.feature)
+— and nothing about that is a question. Nobody is prompted, a recipe nobody stars
+behaves exactly as it always has, and the front door of a browser that has never
+starred anything is the one version 0013 shipped. "Rate one" survives intact and
+is the boundary this must not cross: one bit, no scale, no second star, nothing
+about whether a recipe is any *good*, and nothing ordered by it. A tick means
+finished and can go away, and this points the other way — come back to this one.
+If the star ever grows a number, a second state, or a prompt, that is the signal
+this distinction has stopped being honest.
+
+## Their real alternative
+
+A drawer of loose paper and a phone full of screenshots. That is the bar:
+quicker to find than the drawer, and it survives being closed.
+
+## Not for
+
+Stating this plainly, because most feature requests drift here:
+
+- **Teams.** No sharing, publishing, commenting, or seeing anyone else's book.
+- **Meal planning.** No calendar, no week ahead, no shopping list, no "what's for
+  dinner on Thursday". Those are a different product that happens to read
+  recipes.
+- **Nutrition and scaling.** No calories, no macros, no serving maths, no unit
+  conversion. An ingredient is a line of text on purpose — see
+  [`../features/recipes/spec.md`](../features/recipes/spec.md).
+- **Importing from the web.** No pasting a URL and having it filled in. There is
+  no backend to fetch with, and a recipe fetched from a site is somebody else's,
+  in somebody else's words.
+
+  **"Typing it out is how it ends up in your words" is amended, not deleted.**
+  Version 0009 lets the browser's own model draft a recipe's ingredients and
+  method, accepted a line at a time. What that sentence protected was
+  *provenance* — that the book holds what you decided goes in it — and that is
+  now protected by acceptance rather than by typing. Nobody's recipes are better
+  for having been typed twice. What it did not survive is the claim that the
+  labour itself is the point. See
+  [`../features/suggesting/spec.md`](../features/suggesting/spec.md), which also
+  writes down what this costs.
+- **Multi-device life.** One machine, one browser. Sync is a different product.
+
+A request that only makes sense for one of these is not a small feature. It is a
+different persona, and it needs to be argued for as such.
+
+## Archives, and why this reads differently now
+
+The old persona said "the list is about now, history is not a feature". **That
+sentence is retired with it.** A recipe book is an archive and that is the whole
+point of one: it holds what you are not cooking today so it is still there in
+March. Nothing here is put away to stop being visible — every book is opened and
+read — but nothing ages out either, and nothing is kept only because it is
+current.
+
+This is the direct contradiction that
+[change 0004](../changes/0004-recipe-book.md) exists to resolve, and it is
+resolved by changing the product rather than by finding a reading of the old
+persona that lets it through.

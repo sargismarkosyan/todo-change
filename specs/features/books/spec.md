@@ -23,7 +23,7 @@ in a book, and it never had to be told which one.
 
 **Writing a recipe down does not gain a decision.** The box asks nothing about
 books; a new recipe lands in whichever book is open, because that is the one
-being read. `workflows.md` names "a book to pick" as what breaks the first
+being read. `workflows/name-a-recipe.feature` names "a book to pick" as what breaks the first
 workflow, and the difference is that the choice happens rarely, at switch time,
 not every time something is written down.
 
@@ -35,7 +35,7 @@ setting, an "unfiled" book — this feature has cost more than it bought.
 Next to the title, showing the open book's name, and opening a short menu: the
 books to switch between, then making, renaming and deleting. It is a menu over
 the one page, not a screen to navigate to — the contents stays where it is
-behind it. `persona.md` rules out reading a settings screen, and a popover that
+behind it. `personas/nell.md` rules out reading a settings screen, and a popover that
 is opened for two seconds and closed is not one.
 
 The name of the open book is on screen at all times, because a page of five
@@ -68,7 +68,7 @@ what makes an all-whitespace book impossible.
 
 **A book is bound in one of six colours**, and wears it down the binding edge of
 the page — the ribbon and the stitching — and beside its name in the book menu.
-What that looks like is `../look/spec.md`; what it is *for* is here.
+What that looks like is `../guarantees/spec.md`; what it is *for* is here.
 
 It is for the sentence two sections up: a page of five recipe names looks much
 the same in any book, and writing into the wrong one is the mistake this feature
@@ -81,6 +81,15 @@ are checked once against the paper — every one clears 3 to 1 against the page 
 against the ground — and tell each other apart at the size of a swatch. A colour
 picker would move that check onto every read and make "which colours are allowed"
 a rule instead of a palette.
+
+**Three to one, not four and a half.** That is the bar for a graphic that
+carries meaning rather than for text, and it applies because nothing is ever
+read *in* a book's colour. It is also why 0015 put the colour on the binding
+rather than on the paper: tinting the page would turn seven checked pairs into
+forty-two, and would make *"the ground, the page and the card are all warm"*
+false of a blue book. `every-book-colour-shows-on-paper` moved into this folder
+with `telling-books-apart.feature` in 0018, and this paragraph is the reasoning
+that came with it.
 
 **Red is not a choice, it is the absence of one.** The first swatch is the colour
 every book has been drawn in since 0005, it is not written down, and a book
@@ -103,7 +112,7 @@ Deleting a book is the largest destructive action in this app. There is still no
 undo, so the protection is proportionality rather than ceremony:
 
 - **An empty book** is deleted immediately, with nothing asked. Nothing is at
-  stake, and asking would be the confirmation dialog `persona.md` complains
+  stake, and asking would be the confirmation dialog `personas/nell.md` complains
   about.
 - **A book with recipes in it** is asked about once, and the question says how
   many recipes go with it. That number is the whole point of the question —

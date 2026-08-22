@@ -35,3 +35,29 @@ Their replacement is a single rule saying the state is gone:
 `persist-notepads`, `old-list-opens-as-one-notepad` — were kept deliberately.
 An id is a handle, not a description; churning twenty of them to match new
 wording would have been the largest orphaning risk in the change, for no gain.
+
+## Retired by [change 0018](../changes/0018-what-it-serves.md) — the look was never an area
+
+**No rule id was spent here.** All fourteen rules survived, with their ids and
+their tests untouched; what was retired is the *folder they lived in*.
+
+`features/look/` was created by 0005 and grew because a redesign had happened. A
+visual change alters an existing behaviour, produces a new one, or — if it is
+genuinely stylistic — produces neither. It does not produce a feature area of its
+own, any more than a refactor does, and an area nobody owns becomes the home for
+whatever did not fit. By 0017 it held one file nothing had ever referenced.
+
+| Was | Is now | Serves |
+|---|---|---|
+| `look/paper.feature` | `guarantees/paper.feature` | `@guarantee:readable-while-cooking` |
+| `look/within-reach.feature` | `guarantees/within-reach.feature` | `@guarantee:within-reach` |
+| `look/telling-books-apart.feature` | `books/telling-books-apart.feature` | `@workflow:find-a-recipe`, `@workflow:organise-the-books` |
+| `look/spec.md` | `guarantees/spec.md`, plus the book-colour contrast argument into `books/spec.md` | — |
+
+**The feature ids keep their `look-` prefix** — `look-paper`,
+`look-within-reach`, `look-telling-books-apart` — for the reason given at the top
+of this file about rule ids. An id is a handle, not a description.
+
+Change specs 0005 through 0017 link to the old paths. Those links are history and
+were not rewritten: a frozen change spec says what was true when it shipped, and
+`git log --follow` is what connects the two.

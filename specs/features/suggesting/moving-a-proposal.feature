@@ -1,4 +1,4 @@
-@feature:suggesting-moving
+@feature:suggesting-moving @workflow:fill-a-recipe-in
 Feature: Moving a proposal
 
   A proposal is on the page but not in the book, and it is still a line you can

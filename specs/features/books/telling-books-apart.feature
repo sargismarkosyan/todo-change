@@ -1,4 +1,4 @@
-@feature:look-telling-books-apart
+@feature:look-telling-books-apart @workflow:find-a-recipe @workflow:organise-the-books
 Feature: Telling one book from another without reading
 
   A book's colour is only worth storing if it can be seen. This file is where it

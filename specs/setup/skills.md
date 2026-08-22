@@ -31,8 +31,8 @@ not the best one.
 
 **What it does.**
 
-1. **Reads the fixed points first** — `persona.md`, `workflows.md`, `spec.md`,
-   the existing features, the issue.
+1. **Reads the fixed points first** — `personas/`, `workflows/`, `journeys/`,
+   `spec.md`, the existing features, the issue.
 2. **Finds the job.** The literal ask, the job stated without naming any
    solution, the trigger moment, and what the person does today instead. If the
    job cannot be written without naming a UI element, it has not been found yet.
@@ -48,7 +48,7 @@ not the best one.
    the dropped alternatives so they are not relitigated later.
 7. **Writes** the Gherkin rules (`@planned`) and the numbered change spec, checks
    `npm run trace`, and commits the spec on its own.
-8. **Confirms a `workflows.md` or `persona.md` edit on its own**, before
+8. **Confirms a `specs/workflows/` or `specs/personas/` edit on its own**, before
    anything else is approved. Those two say what the product is and who it is
    for; an edit to either rides inside a spec about something else, where one
    "approved" would silently cover both. The diff is shown by itself with one
@@ -108,7 +108,8 @@ noticed should be lost between their chat message and the tracker.
 **What it never does.** Fix anything. A fix without a spec breaks the process.
 
 **Remember who is reporting.** The human testing this repo is not the persona —
-see [`../persona.md`](../persona.md). What they *find* is real: a crash is a
+see [`../personas/README.md`](../personas/README.md), which gives them a
+paragraph and deliberately no `@persona:` tag. What they *find* is real: a crash is a
 crash. What they *want* has to be checked against Nell before it becomes a spec.
 
 ---

@@ -27,8 +27,8 @@ shows recipes from books nobody opened. Reordering shows the line *arriving*,
 which is two frames minimum.
 
 When the version changed the core of the app rather than one corner, record the
-tour instead — Write it down → Browse → Cook from it, the three workflows
-carrying the value (`specs/workflows.md`):
+tour instead — name a recipe → fill it in → find it again, the workflows carrying
+the value (`specs/workflows/README.md`):
 
 1. The empty book, message showing.
 2. Write three recipes down, one at a time — a frame after each.

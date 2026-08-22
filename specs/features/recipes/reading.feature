@@ -1,4 +1,4 @@
-@feature:recipe-reading
+@feature:recipe-reading @guarantee:readable-while-cooking @guarantee:nothing-is-finished
 Feature: Opening a recipe to read it
 
   A book is a page of names until one of them is opened. That page is the

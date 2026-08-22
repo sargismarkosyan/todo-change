@@ -1,4 +1,4 @@
-@feature:book-deleting
+@feature:book-deleting @workflow:throw-something-out
 Feature: Throwing a book away
 
   Deleting a book is the only thing in this app that can destroy more than what

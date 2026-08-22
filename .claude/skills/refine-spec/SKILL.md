@@ -15,8 +15,11 @@ write the spec. **Not to build anything.** No `src/` edits in this skill, ever.
 
 ## Before anything else, read
 
-- `specs/persona.md` — who Nell is, and who this app is explicitly not for
-- `specs/workflows.md` — the five things Nell actually does
+- `specs/personas/nell.md` — who Nell is, and who this app is explicitly not for
+- `specs/workflows/README.md` — the six bounded attempts Nell makes, and the map
+  saying which of them carry the value
+- `specs/journeys/keeping-what-you-cook.md` — the arc across months, and the
+  seams between workflows where neither one is at fault
 - `specs/spec.md` — product boundaries, the storage contract, and the vocabulary
 - `specs/features/` — what is already specced, so you do not contradict or
   duplicate a live Rule
@@ -45,14 +48,31 @@ serves the job better is the most valuable thing this skill produces.
 ## 2. Place it on the map
 
 - **Which persona?** If it only pays off for someone who counts calories and
-  scales servings, it is not for Nell, and `persona.md` says that out loud. That
+  scales servings, it is not for Nell, and `personas/nell.md` says that out loud. That
   does
   not kill it — but the spec must argue for the new persona explicitly instead of
   smuggling them in.
 - **Which workflow, and where in it?** Name the step. A change that touches no
-  workflow in `workflows.md` is either serving something undocumented (update
-  `workflows.md` as part of the change) or serving nobody.
-- **Did that just change `workflows.md` or `persona.md`?** Then stop treating it
+  workflow in `specs/workflows/` is either serving something undocumented (add or
+  edit a workflow as part of the change) or serving nobody.
+
+  **Or it serves a guarantee rather than a workflow.** A property every workflow
+  holds — instant, survives a return, readable while cooking, nothing is
+  finished, within reach — has no trigger and no end state. The ids are in
+  `specs/spec.md` under *What it must always be*, and a feature carries
+  `@guarantee:<id>` instead of `@workflow:<id>`. Do not invent a workflow for one.
+
+  **Or it honestly serves neither**, which a technical change often does. That is
+  a documented case, not an escape hatch — see
+  `specs/setup/process.md`, *"A technical change that serves no workflow is
+  correct, not a gap"*. Say so out loud in *Who this is for*; do not file it under
+  a workflow to fill the box.
+
+  Whatever it is, `npm run trace` will check it: every feature must name a live
+  workflow or guarantee, every workflow must be claimed by a feature and walked by
+  a test in `tests/workflows/`, every persona must be named by a workflow or
+  tagged `@retired`.
+- **Did that just change `specs/workflows/` or `specs/personas/`?** Then stop treating it
   as part of this spec. Those two say what the product *is* and who it is *for*;
   a button is downstream of them, and the edit you just made is the larger of the
   two changes on the table however small the diff looks. It gets confirmed on its
@@ -126,7 +146,8 @@ properly — those four sections are the whole point of this skill, and a spec
 that has them filled with restated feature description has failed.
 
 **Prose specs.** If this changes a decision or adds vocabulary, update
-`specs/spec.md`, the area `spec.md`, or `workflows.md` in the same pass. A prose
+`specs/spec.md`, the area `spec.md`, or the workflow's own `.feature` in the same
+pass. A prose
 spec that contradicts a live feature file is worse than one that says nothing.
 
 ## 7. Check and hand back
@@ -164,7 +185,7 @@ Persona, workflow, end value and scope are all *in* the spec under their own
 headings. Repeating them in chat gives the reader two versions to reconcile, and
 the one in the terminal is the one that goes stale.
 
-### If `workflows.md` or `persona.md` changed, confirm that first
+### If `specs/workflows/` or `specs/personas/` changed, confirm that first
 
 **Separately, and before the spec's own approval.** These edits never arrive on
 their own — they ride inside a spec nominally about something else, and a single
@@ -182,7 +203,10 @@ reader reviews one thing in this round, it is this**, and the two questions must
 not be merged into one for tidiness.
 
 A rewrite is not the only way this fires. Adding a workflow, retiring one,
-adding a `Specs.` entry, or amending a persona boundary all count.
+adding a persona, adding a guarantee id to `spec.md`'s always-list, or amending a
+persona boundary all count. Adding a `@workflow:` tag to a feature does not — the
+gate checks that one, and it is a claim about the feature rather than about the
+workflow.
 
 ### Ask for approval in one plain line
 

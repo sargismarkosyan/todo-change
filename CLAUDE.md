@@ -21,8 +21,9 @@ working here.**
 | How to write a test the pipeline accepts | [specs/setup/testing.md](specs/setup/testing.md) |
 | The `refine-spec` and `feedback` skills | [specs/setup/skills.md](specs/setup/skills.md) |
 | How the spec layers fit together | [specs/README.md](specs/README.md) |
-| Who the app is for | [specs/persona.md](specs/persona.md) |
-| What they actually do with it | [specs/workflows.md](specs/workflows.md) |
+| Who the app is for | [specs/personas/](specs/personas/README.md) |
+| What they actually do with it | [specs/workflows/](specs/workflows/README.md) |
+| The arc across months, and the seams | [specs/journeys/](specs/journeys/README.md) |
 
 ## The loop
 
@@ -42,8 +43,8 @@ working here.**
 - **Spec before code.** No implementation without an approved change spec, and no
   change spec without `refine-spec` first — a request is not a spec.
 - **One change spec = one step = one version.** Never bundle unrelated changes.
-- **A workflow or persona change is confirmed on its own.** `specs/workflows.md`
-  and `specs/persona.md` say what the product is and who it is for. An edit to
+- **A workflow or persona change is confirmed on its own.** `specs/workflows/`
+  and `specs/personas/` say what the product is and who it is for. An edit to
   either always rides inside a spec about something else, where the spec's own
   approval silently covers it — so show that diff by itself and get it confirmed
   *before* asking approval for the spec. If the human reviews one thing in a
@@ -87,8 +88,11 @@ npm run serve    # http://localhost:8000
 index.html            the app — the only page
 src/                  app modules and styles
 specs/setup/          how this repo works — start here
-specs/                persona, workflows, features (Gherkin), changes
-tests/                unit/ and behaviour/
+specs/personas/       who it is for — one file each, @persona: tagged
+specs/journeys/       the arc and the seams — prose, never asserted
+specs/workflows/      the six attempts, in Gherkin, each walked by a test
+specs/                spec.md, features (Gherkin), changes
+tests/                unit/, behaviour/ and workflows/
 tools/                gherkin.mjs, trace.mjs, test.mjs
 .claude/skills/       refine-spec, feedback
 .github/workflows/    CI and Pages deploy

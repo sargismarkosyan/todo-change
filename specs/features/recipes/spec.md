@@ -127,7 +127,7 @@ contents, and unset by pressing it again.
 **It is the only state a recipe has, and it is not the state 0004 removed.** A
 tick meant *finished, and now it can go away*; a star means *come back to this*,
 which is the direction a recipe book runs in. There is no scale, no second star,
-and nothing about whether a recipe is any good — `persona.md` still rules out
+and nothing about whether a recipe is any good — `personas/nell.md` still rules out
 rating one, and the paragraph there is what this is answerable to.
 
 **Nothing on this page changes because of it.** The contents does not reorder,

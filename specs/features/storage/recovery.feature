@@ -1,4 +1,4 @@
-@feature:storage-recovery
+@feature:storage-recovery @guarantee:survives-return
 Feature: Surviving bad stored data
 
   localStorage is editable by anyone with devtools and shared with every other

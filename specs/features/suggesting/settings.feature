@@ -1,4 +1,4 @@
-@feature:suggesting-settings
+@feature:suggesting-settings @workflow:fill-a-recipe-in
 Feature: Turning the AI on and off
 
   Somewhere to change your mind. Dismissing the offer has to be reversible or it
@@ -6,7 +6,7 @@ Feature: Turning the AI on and off
   used the thing yet — and turning it off has to be possible or the only way out
   of a feature you dislike is a browser that cannot run it.
 
-  **A popover in the colophon, not a screen.** `../../persona.md` says Nell will
+  **A popover in the colophon, not a screen.** `../../personas/nell.md` says Nell will
   never read a settings screen and `../../setup/constraints.md` says there is no
   second page. Both survive: this is the same shape as the book menu, which
   `../books/spec.md` already defended — "a menu over the one page, not a screen

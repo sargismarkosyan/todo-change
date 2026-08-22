@@ -1,9 +1,9 @@
-// specs/features/look/paper.feature
+// specs/features/guarantees/paper.feature
 //
 // A look is mostly taste and mostly not testable. These are the three parts of
 // it that are: the palette stays warm and readable, and the labelling face
 // never carries anything anyone reads while cooking. What the look is *for* is
-// in specs/features/look/spec.md.
+// in specs/features/guarantees/spec.md.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -114,7 +114,7 @@ rule('handwriting-labels-but-is-not-read', () => {
   test('the labelling face falls back to a book face, never to whatever cursive is', async () => {
     // `cursive` always matches something, and where nothing handwritten is
     // installed that something is the default sans — beside a serif body it
-    // reads as a mistake rather than a choice. See features/look/spec.md.
+    // reads as a mistake rather than a choice. See features/guarantees/spec.md.
     assert.ok(!/\bcursive\b/.test(LABELLING), `the labelling stack ends in: ${LABELLING}`);
     assert.ok(/serif$/.test(LABELLING), 'the labelling stack must end in a serif');
   });

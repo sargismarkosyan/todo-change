@@ -1,4 +1,4 @@
-@feature:recipe-reordering-keyboard
+@feature:recipe-reordering-keyboard @workflow:correct-a-line
 Feature: Moving a line without a mouse
 
   Dragging is one way to hold a line, not the only one. The same handle takes

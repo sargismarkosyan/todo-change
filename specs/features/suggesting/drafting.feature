@@ -1,4 +1,4 @@
-@feature:suggesting-drafting
+@feature:suggesting-drafting @workflow:fill-a-recipe-in
 Feature: The AI drafting a recipe
 
   A recipe is written down in three seconds and then filled in one line at a

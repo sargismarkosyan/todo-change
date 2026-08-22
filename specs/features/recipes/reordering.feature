@@ -1,4 +1,4 @@
-@feature:recipe-reordering
+@feature:recipe-reordering @workflow:correct-a-line
 Feature: Putting a line where it belongs
 
   A recipe is dictated out of order. "Cream the butter and sugar — oh, and heat
@@ -7,7 +7,7 @@ Feature: Putting a line where it belongs
   method is fourteen operations to correct one.
 
   For the method it is not a tidiness problem, it is a correctness one.
-  `../look/spec.md` numbers the steps "because a step's position is part of what
+  `../guarantees/spec.md` numbers the steps "because a step's position is part of what
   it says" — a method in the wrong order is a recipe that lies, and it lies most
   at the moment somebody is cooking from it.
 

@@ -1,4 +1,4 @@
-@feature:storage-books-migration
+@feature:storage-books-migration @guarantee:survives-return
 Feature: Lists saved before books existed
 
   Two keys came before this one. Version 0003 saved notepads of todos under

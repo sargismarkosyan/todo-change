@@ -23,20 +23,42 @@ sync between machines.
 
 ## What it must always be
 
-- **Instant.** No loading states, no spinners. Every action lands on the next
-  frame, because nothing leaves the machine. **One exception**, added in version
-  0009 and bounded there: fetching the browser's own model, once, on a press.
-  It is the only thing in the app that can wait, and nothing else ever waits on
-  it — see [features/suggesting/spec.md](features/suggesting/spec.md).
-- **Trustworthy.** Anything on screen has been written to `localStorage`. If it
-  is visible, it survives a refresh. Some of what is in here exists nowhere
-  else.
-- **Legible at a glance, and from a step back.** The contents is the interface of
-  a book, and an open recipe is read with your hands full. Chrome around either
-  earns its place or it goes. The home is the one other thing to look at, and it
-  holds a box and a short column of names for the same reason.
-- **Kept, not cleared.** Nothing is finished, expires, or ages out. There is no
-  tick box anywhere in this product.
+**These five are the guarantees**, and since version 0018 they are ids a feature
+file can be answerable to. A guarantee is a property every workflow holds — no
+trigger, no attempt, nothing to walk — which is why it is a tag here rather than
+a file in [`workflows/`](workflows/README.md). Every one must be claimed by at
+least one feature, or carry `@planned`; `npm run trace` fails otherwise. See
+[features/guarantees/spec.md](features/guarantees/spec.md).
+
+- `@guarantee:instant` `@planned` — **Instant.** No loading states, no spinners.
+  Every action lands on the next frame, because nothing leaves the machine.
+  **One exception**, added in version 0009 and bounded there: fetching the
+  browser's own model, once, on a press. It is the only thing in the app that
+  can wait, and nothing else ever waits on it — see
+  [features/suggesting/spec.md](features/suggesting/spec.md).
+
+  **`@planned` means no feature file asserts this**, which is what the gate
+  found on its first run: seventeen versions have claimed it here with nothing
+  anywhere checking it. The tag says so out loud rather than letting the silence
+  read as coverage. It comes off when a feature file claims it.
+- `@guarantee:survives-return` — **Trustworthy.** Anything on screen has been
+  written to `localStorage`. If it is visible, it survives a refresh. Some of
+  what is in here exists nowhere else, which is why this one outranks every
+  workflow — see [personas/nell.md](personas/nell.md). Asserted at the end of all
+  six workflow walkthroughs as well as by `features/storage/`.
+- `@guarantee:readable-while-cooking` — **Legible at a glance, and from a step
+  back.** The contents is the interface of a book, and an open recipe is read
+  with your hands full. Chrome around either earns its place or it goes. The home
+  is the one other thing to look at, and it holds a box and a short column of
+  names for the same reason.
+- `@guarantee:nothing-is-finished` — **Kept, not cleared.** Nothing is finished,
+  expires, or ages out. There is no tick box anywhere in this product.
+- `@guarantee:within-reach` — **Reachable by every hand.** A control drawn small
+  still offers a fingertip to hit, what changes off screen is said aloud, focus
+  is never dropped on the floor, and every size is relative so the browser's own
+  setting reaches every word. Version 0017 shipped all four and called them
+  guarantees in its own words; this bullet is where that claim should have been
+  written down, and 0018's gate is what noticed it was not.
 
 ## What it deliberately is not
 

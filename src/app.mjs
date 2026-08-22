@@ -187,7 +187,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
    * screen does not already show — a search redraws a list nobody reading by
    * ear can glance at, and a delete takes away the very thing that was in hand.
    * Screen state, and not even that: it is on the page and nowhere else.
-   * See specs/features/look/within-reach.feature.
+   * See specs/features/guarantees/within-reach.feature.
    */
   const announcement = ref('');
 
@@ -465,7 +465,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
         // drag-and-drop. Native never starts here: the grip is a <button>, and
         // a browser will not begin a drag from a control that handles its own
         // press. It also puts the moving row back under our styling instead of
-        // the browser's translucent snapshot — see specs/features/look/spec.md.
+        // the browser's translucent snapshot — see specs/features/guarantees/spec.md.
         forceFallback: true,
         // A press is a press until it has travelled. Without this a slow click
         // on the grip reads as a tiny drag.
@@ -873,7 +873,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
    * The strip of six, under the books and above making, renaming and deleting.
    *
    * The swatches themselves rather than a line of text leading to a picker: this
-   * offers a press, not a question, which is what persona.md's rule about
+   * offers a press, not a question, which is what personas/nell.md's rule about
    * popovers now rests on.
    */
   function swatchStrip() {
@@ -1027,7 +1027,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
       children.push(
         menuButton('books__delete', 'Delete this book', () => {
           // Nothing is at stake in an empty one, and asking anyway is the
-          // confirmation dialog persona.md complains about.
+          // confirmation dialog personas/nell.md complains about.
           if (recipes().length === 0) {
             shutMenu();
             readingId.value = null;
@@ -1157,7 +1157,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
       menuButton('colophon__toggle', on ? 'Turn the AI off' : 'Turn the AI on', () =>
         on ? turnAiOff() : turnAiOn(),
       ),
-      // Two lines. A third means this has become the settings screen persona.md
+      // Two lines. A third means this has become the settings screen personas/nell.md
       // rules out, and the argument in spec 0009 was wrong.
       h('p', { class: 'colophon__note' }, 'It runs on this machine. Nothing leaves it.'),
     ]);
@@ -1346,7 +1346,7 @@ export function mountApp(doc, storage, model = null, now = () => new Date()) {
               event.preventDefault();
               const box = doc.getElementById('new-recipe');
               const next = addRecipe(recipes(), box.value);
-              // workflows.md promises a new recipe is visibly there, at the top
+              // workflows/name-a-recipe.feature promises a new recipe is visibly there, at the top
               // of the contents — which it cannot be while results are covering
               // the contents.
               stopFinding();

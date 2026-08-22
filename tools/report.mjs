@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadFeatures } from './gherkin.mjs';
+import { loadFeatures, loadGuarantees, loadWorkflows } from './gherkin.mjs';
 
 const BASE_REF = process.env.BASE_REF || 'main';
 const LCOV_FILE = 'coverage/lcov.info';
@@ -36,11 +36,12 @@ function countTests(root) {
   try {
     walk(root);
   } catch {
-    return { behaviour: 0, unit: 0 };
+    return { behaviour: 0, unit: 0, walkthroughs: 0 };
   }
   return {
     behaviour: found.filter((f) => f.includes(`${join('tests', 'behaviour')}`)).length,
     unit: found.filter((f) => f.includes(`${join('tests', 'unit')}`)).length,
+    walkthroughs: found.filter((f) => f.includes(`${join('tests', 'workflows')}`)).length,
   };
 }
 
@@ -48,10 +49,15 @@ function countTests(root) {
 function measure(root) {
   const { features, rulesById } = loadFeatures(join(root, 'specs', 'features'));
   const rules = [...rulesById.values()];
+  const { workflows } = loadWorkflows(join(root, 'specs', 'workflows'));
+  const { guarantees } = loadGuarantees(join(root, 'specs', 'spec.md'));
   return {
     features: features.length,
     live: rules.filter((r) => !r.planned).length,
     planned: rules.filter((r) => r.planned),
+    workflows: workflows.length,
+    guarantees: guarantees.filter((g) => !g.planned).length,
+    guaranteesPlanned: guarantees.filter((g) => g.planned).length,
     ...countTests(join(root, 'tests')),
   };
 }
@@ -110,7 +116,10 @@ withBaseline((base) => {
     ['Live rules', base?.live, now.live],
     ['Planned rules', base?.planned.length, now.planned.length],
     ['Feature files', base?.features, now.features],
+    ['Workflows', base?.workflows, now.workflows],
+    ['Guarantees asserted', base?.guarantees, now.guarantees],
     ['Behaviour test files', base?.behaviour, now.behaviour],
+    ['Workflow walkthroughs', base?.walkthroughs, now.walkthroughs],
     ['Unit test files', base?.unit, now.unit],
   ];
   for (const [label, before, after] of rows) {

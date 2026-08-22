@@ -1,4 +1,4 @@
-@feature:recipe-writing
+@feature:recipe-writing @workflow:name-a-recipe
 Feature: Writing a recipe down
 
   A recipe comes into existence as a name, typed into the box at the top and

@@ -1,4 +1,4 @@
-@feature:home-picks
+@feature:home-picks @workflow:find-a-recipe
 Feature: Somewhere to start from
 
   A front door with an empty search box and nothing under it is a dead end: it

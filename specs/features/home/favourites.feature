@@ -1,4 +1,4 @@
-@feature:home-favourites
+@feature:home-favourites @workflow:find-a-recipe
 Feature: The usual ones, at the front door
 
   The picks answer "I have nothing in mind". **The favourites answer the other

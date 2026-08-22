@@ -1,4 +1,4 @@
-@feature:book-colouring
+@feature:book-colouring @workflow:organise-the-books
 Feature: Giving a book a colour
 
   Every book in this app renders identically. The only thing telling one from

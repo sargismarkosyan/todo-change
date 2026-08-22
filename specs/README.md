@@ -6,25 +6,38 @@ describes the product.
 
 What follows is about the product.
 
-Four layers, four jobs. They are not alternatives — a change usually touches
-several.
+Five layers, five jobs. They are not alternatives — a change usually touches
+several. Only three of them are ever asserted; the other two are orientation,
+and saying which is which is what stops a gate being invented for prose.
 
 | Layer | Where | Answers | Lifetime |
 |---|---|---|---|
-| **Who and what for** | `persona.md`, `workflows.md` | *Who is this for, and what are they doing?* | Living — rarely, and deliberately |
+| **Persona** | `personas/*.md` | *Who is this for?* | Living — rarely, and deliberately · reference only |
+| **Journey** | `journeys/*.md` | *How do the attempts connect, over months?* | Living · orientation, never asserted |
+| **Workflow** | `workflows/*.feature` | *What are they attempting right now?* | Living · **asserted** — one walkthrough test each |
 | **General spec** | `spec.md` files | *Why does this exist, and what is it for?* | Living — edited as understanding changes |
 | **Feature spec** | `features/**/*.feature` | *What must be true?* | Living — the current contract |
 | **Change spec** | `changes/NNNN-*.md` | *What is changing in this one step?* | Frozen once shipped |
 
-## Who and what for — `persona.md`, `workflows.md`
+## Who and what for — `personas/`, `journeys/`, `workflows/`
 
-The fixed points. [`persona.md`](persona.md) names who the app is built for and,
-just as usefully, who it is not for. [`workflows.md`](workflows.md) describes the
-five things that person actually does with it.
+The fixed points. [`personas/`](personas/README.md) names who the app is built
+for and, just as usefully, who it is not for. [`workflows/`](workflows/README.md)
+holds the six bounded attempts that person makes — a trigger, an end state, and
+examples something walks. [`journeys/`](journeys/README.md) is the prose layer
+that carries what no workflow file can: the arc across months, and the seams
+between two workflows where neither one is at fault.
 
-Every change spec must name the persona and the workflow step it serves. These
-two files are what makes that a real check rather than a box to tick, and the
-`refine-spec` skill measures every incoming request against them.
+**Guarantees are not a fourth folder.** A property every workflow holds — instant,
+survives a return, readable while cooking — has no trigger and no attempt, so
+there is no scenario to write. The ids live in [`spec.md`](spec.md) under *What
+it must always be*, and ordinary feature files carry `@guarantee:<id>`.
+
+Every change spec must name the persona and the workflow it serves. Since
+[change 0018](changes/0018-what-it-serves.md) that is a gate rather than a habit:
+`npm run trace` fails if a feature serves nothing, if a workflow is implemented
+by nothing, if a workflow is walked by no test, if a persona is named by no
+workflow, or if a guarantee is asserted by no feature.
 
 They change rarely. When one does change, it is a decision about what the product
 *is*, and belongs in a change spec of its own — and **that edit is confirmed on
