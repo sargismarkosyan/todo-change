@@ -61,6 +61,15 @@ hand.
   together, however small.
 - **Spec before code.** No implementation without an approved change spec, and no
   change spec without `refine-spec` first. A request is not a spec.
+- **A change to `workflows.md` or `persona.md` is confirmed on its own.** Those
+  two files say what the product is and who it is for, and every other layer in
+  `specs/` is downstream of them. **The reason this needs a rule is that such an
+  edit never arrives on its own** — it rides inside a spec nominally about a
+  button, where a single "approved" silently covers both, and the largest half
+  is the half nobody was looking at. So it does not travel with the spec's
+  approval: show that diff by itself, say in one line what it changes about who
+  this is for or what they do, and get it confirmed *before* asking for approval
+  of the spec. **If only one thing is reviewed in a round, it is this one.**
 - **Feedback is never fixed on the spot.** It becomes an issue, then a spec, then
   a commit. Fixing something the moment it is mentioned is the fastest way to
   lose the record of why it changed.

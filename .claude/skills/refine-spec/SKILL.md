@@ -52,6 +52,11 @@ serves the job better is the most valuable thing this skill produces.
 - **Which workflow, and where in it?** Name the step. A change that touches no
   workflow in `workflows.md` is either serving something undocumented (update
   `workflows.md` as part of the change) or serving nobody.
+- **Did that just change `workflows.md` or `persona.md`?** Then stop treating it
+  as part of this spec. Those two say what the product *is* and who it is *for*;
+  a button is downstream of them, and the edit you just made is the larger of the
+  two changes on the table however small the diff looks. It gets confirmed on its
+  own, before the spec is — see the hand-back.
 - **Does it make writing a recipe down, or browsing, shorter or longer?** Adding
   a step to writing one down to serve a once-a-year need is the single most
   common bad trade here.
@@ -158,6 +163,26 @@ them**:
 Persona, workflow, end value and scope are all *in* the spec under their own
 headings. Repeating them in chat gives the reader two versions to reconcile, and
 the one in the terminal is the one that goes stale.
+
+### If `workflows.md` or `persona.md` changed, confirm that first
+
+**Separately, and before the spec's own approval.** These edits never arrive on
+their own — they ride inside a spec nominally about something else, and a single
+"approved" covers both, with the larger half being the one nobody was looking at.
+
+Show it by itself:
+
+- the diff, or the paragraph as it now reads;
+- one line on what it changes about who this is for, or what they do;
+- what that newly allows in the product, or newly rules out.
+
+Then ask for that alone — one plain line, same as below, never a multiple choice.
+Only once it is confirmed does the spec's own approval get asked for. **If the
+reader reviews one thing in this round, it is this**, and the two questions must
+not be merged into one for tidiness.
+
+A rewrite is not the only way this fires. Adding a workflow, retiring one,
+adding a `Specs.` entry, or amending a persona boundary all count.
 
 ### Ask for approval in one plain line
 

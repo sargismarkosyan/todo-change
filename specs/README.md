@@ -27,7 +27,10 @@ two files are what makes that a real check rather than a box to tick, and the
 `refine-spec` skill measures every incoming request against them.
 
 They change rarely. When one does change, it is a decision about what the product
-*is*, and belongs in a change spec of its own.
+*is*, and belongs in a change spec of its own — and **that edit is confirmed on
+its own**, separately and before the spec carrying it is approved. It is the
+largest thing a change can do and the easiest to approve without noticing. See
+[setup/process.md](setup/process.md#the-rules).
 
 ## General specs — `spec.md`
 

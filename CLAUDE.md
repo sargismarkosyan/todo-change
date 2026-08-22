@@ -42,6 +42,12 @@ working here.**
 - **Spec before code.** No implementation without an approved change spec, and no
   change spec without `refine-spec` first — a request is not a spec.
 - **One change spec = one step = one version.** Never bundle unrelated changes.
+- **A workflow or persona change is confirmed on its own.** `specs/workflows.md`
+  and `specs/persona.md` say what the product is and who it is for. An edit to
+  either always rides inside a spec about something else, where the spec's own
+  approval silently covers it — so show that diff by itself and get it confirmed
+  *before* asking approval for the spec. If the human reviews one thing in a
+  round, it is this.
 - **Feedback is never fixed on the spot.** Issue, then spec, then commit.
 - **No silent scope growth.** Found something else broken? File it as its own
   issue rather than fixing it inline.

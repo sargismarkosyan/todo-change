@@ -48,7 +48,14 @@ not the best one.
    the dropped alternatives so they are not relitigated later.
 7. **Writes** the Gherkin rules (`@planned`) and the numbered change spec, checks
    `npm run trace`, and commits the spec on its own.
-8. **Hands back a link, not a summary.** Clickable `path:line` references to the
+8. **Confirms a `workflows.md` or `persona.md` edit on its own**, before
+   anything else is approved. Those two say what the product is and who it is
+   for; an edit to either rides inside a spec about something else, where one
+   "approved" would silently cover both. The diff is shown by itself with one
+   line on what it changes about who this is for or what they do, and the spec's
+   own approval is asked for only after. If the reader reviews one thing in a
+   round, it is this.
+9. **Hands back a link, not a summary.** Clickable `path:line` references to the
    spec and the feature files, above them only what the file cannot say — the
    job found, what was assumed, what was dropped. Approval is asked for in one
    plain line, never as a multiple-choice question: the spec is there to be
